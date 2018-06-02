@@ -1,0 +1,59 @@
+######################################################
+#                                                    #
+#              mcMMO Horses Config 4.2               #
+#                                                    #
+######################################################
+
+# Save interval (20 ticks = 1 second, 24000 ticks = 20 minutes)
+save-interval: 24000
+
+# Give a player's first horse for free (works with /h summon not /h claim)
+free-horse: false
+
+# If a claimed horse dies, it's gone forever
+permanent-death: false
+
+# Horse death timer (in seconds)
+# (Uses timer if permanent death is disabled)
+death-timer: 120
+
+# Horse banish timer (in seconds)
+# (A horse can't be summoned for this time after being banished)
+banish-timer: 120
+
+# Horse sprint cooldown (in seconds)
+sprint-cooldown: 20
+
+# Horse infuriate cooldown (in seconds)
+infuriate-cooldown: 20
+
+# Sets the max horses a player can own (-1 for unlimited)
+# Requires permission node mcmmohorses.groups.(group name)
+# I recommend using -1 for each group if using economy.
+# The horse cost multiplier makes owning tons of horses exponentially expensive
+groups:
+    default: 10 # Given to everyone by default
+    admin: -1 # Given to ops by default
+#    nooblets: 5 # Requires node: mcmmohorses.groups.nooblets
+#    moderators: -1 # Requires node: mcmmohorses.groups.moderators
+#    vip: 20 # Requires node: mcmmohorses.groups.vip
+
+
+#### Economy
+
+# Enables the economy features (requires Vault)
+enable-economy: false
+
+# Default cost to claim a horse
+claim-cost: 500
+
+# Horse claim cost multiplier (1 to disable)
+# (e.g. horse 1 = $500, horse 2 = $1000, horse 3 = $2000 with 2x multiplier)
+claim-cost-multiplier: 2
+
+# Horse cost per summon 
+summon-cost: 10
+
+# Horse banish cost
+banish-cost: 0
+

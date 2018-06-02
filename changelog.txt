@@ -1,0 +1,189 @@
+Version 4.3.22
+	Added LLama support
+
+Version 4.3.21
+	Added messages.yml
+
+Version 4.3.20
+	Fixed constant claiming
+
+Version 4.3.19
+	Made it so tab will add underscores to the horses name, amking it easier to tab.
+	Fixed ClaimOnTaim
+
+Version 4.3.18
+	Attempted to fix banish when warping to other worlds.
+	Fixed saving for multiple horses.
+
+Version 4.3.17
+	Adding Gifting horses if OP
+
+Version 4.3.16
+	Added level count to leader board
+
+Versions 4.3.15
+	Added ClaimOnTame to the config as an optional feature. Enable it to require the user to claim the horse when taming.
+
+Version 4.3.14
+	Added explanation on how to summon a bought horse.
+	Closed shop after clicking item
+
+Version 4.3.13
+	Fixed NPE for scoreboard.
+
+Version 4.3.12
+	Added shops
+	Fixed horse duplication
+	
+Version 4.3.11
+	Fixed Github updater
+
+Version 4.3.10
+	Added github updaters
+	Fixed leaderboards
+	Looking into the horse-dissappearing act done when banish-on-quit is disabled
+
+Version 4.3.9
+	//Added attribute support: Horse speed/jumphieght should stay the same across summons --Invalid. Seems there is no good way to keep and store this value
+	Fied /h stats menu
+	Added /h leaderboard
+	Fixed XP farming by standing on cactus at high levels. Though the XP system was never meant ot be balanced, this should help make sure you don't get redic' levels.
+	
+
+Version 4.3.8
+	Added githubUpdater
+	Fixed item duplication glitch when horses die
+
+Version 4.3.7
+	Fixed updater
+
+Version 4.3.6
+	Fixed horse duplication bug
+
+Version 4.3.5
+	Fixed horse stat saving
+	Added BStats metrics.
+
+Version 4.3.4
+	Fixed no horse config bug.
+	Added ability to disable horse breeding
+
+Version 4.3.3
+	Fixed quit bug.
+
+Version 4.3.2
+	Added '/h s' and '/h b' sub commands
+
+Version 4.3.1
+	Fixed quit bug.
+
+Version 4.3
+	Added option for disabling banishment.
+	Added auto save option
+	Added ability to disable banishment on reload and onQuit
+	Added more names
+	Added saving for inventories
+	
+
+Version 4.2
+	Added support for saving horses to a File
+	Added tab command support
+	Added a changelog.
+	Added saddle support (will only add horse saddles if the horse had a saddle when they despawned)
+	Fixed changing colors, styles, and types for horses
+	Added horse's name to stats scoreboard
+	Added support for other scoreboards.
+	
+	
+Version 4.1
+
+    Fixed issue with version dependency. It should now be able to work on any update.
+    Fixed horse inventory issue: Saddles should now appear on all horse types.
+
+Version 4.0
+
+    Ownership has been transferred to Zombie_Striker.
+    Added support from 1.8 up to 1.12.
+    Fixed Variance issue.
+
+Version 3.1
+
+    Fixed buying/selling horses bug
+
+Version 3.0
+
+    Added "/h addxp" and "/h delxp" commands
+    Added "/h set color" and "/h set style" commands
+    Added tons of new permission nodes
+    Added option to disable economy (config.yml)
+    Added option for summon/banish command costs (config.yml)
+    Added option for permanent horse deaths (config.yml)
+    Added banish timer option (config.yml)
+    Added maximum horse permission groups (config.yml)
+    Added extra names to the random name generator
+    Changed "/h delete" to "/h kill" and added it to default user permission
+    Fixed possibility for duplicate names (causes errors)
+    Owned horses are now sorted by highest power level then alphabetical order
+    Removed "/hr" command alias (my Horse Races plugin now uses the alias)
+    Packed with lots of love
+
+Version 2.3
+
+    Added "/h buy" and "/h sell" commands
+    Enhanced "/h stats" command (uses scoreboard)
+    Fixed Golden Apples/Carrots (now each gives 5xp and 4xp respectively)
+    Fixed chat prefix ugly-ness
+    Fixed other logic errors
+
+Version 2.2
+
+    Changed name (Horse RPG to mcMMO Horses)
+    Can use /h <command> instead of /hr <command> now
+    Added Vault integration
+    Added "/h claim" command to claim horses
+    Added more config.yml options (e.g. horse cost)
+    Disabled Trample ability (no easy way to fix it)
+    Wrath now gains xp by taking damage (like vitality)
+
+Version 2.1
+
+    Re-worked skills (Swiftness, Agility, Vitality, Wrath)
+    Added new abilities (e.g. - Infuriate, Revitalize)
+    Added skill commands (e.g. - /hr swiftness)
+    Fixed multiple horse issues (can only summon one at a time)
+    Cleaned up lots of logic errors
+    Removed 'help.yml' to clean things up
+
+Version 2.0
+
+    Added admin commands (breed, remove, set name/type)
+    Juggernaut now levels off of all types of damage
+    Agility no longer levels off of fall damage (unless the horse rolls)
+    Cleaned up some logic errors
+    Removed 'messages.yml' since it was basically useless
+
+Version 1.2
+
+    Added configurable horse death timer
+    Enhanced and re-worked skills/abilities (added cooldowns)
+    Endurance skill now levels by 100 blocks traveled = 1xp
+    Swiftness still gives 3xp per sprint
+    Agility skill levels with "golden (full) jumps" = 1xp
+    Juggernaut xp per damage has been nerfed
+    Regeneration levels 4xp per golden apple, 3xp per golden carrot
+    Added and fixed event listeners
+    Re-worked code to prepare for future updates
+    Cleaned up code and logic statements
+
+Version 1.1
+
+    Added skills (endurance, swiftness, agility, juggernaut, regeneration)
+    Added abilities (roll, sprint, dodge)
+    Added a database column for future updates
+    Enhanced code and fixed logic errors
+
+Version 1.0
+
+    Initial release
+
+	

@@ -1,0 +1,47 @@
+name: mcMMOHorse
+main: com.blueskullgames.horserpg.HorseRPG
+version: 4.3.22
+description: An awesome role-playing plugin for horses.
+authors: [GetGoodKid,Zombie_Striker]
+website: http://www.blueskullgames.com
+permissions:
+    mcmmohorses.user:
+        default: true
+        description: Given to users by default.
+        children:
+            mcmmohorses.help: true
+            mcmmohorses.me: true
+            mcmmohorses.stats: true
+            mcmmohorses.skills.info: true
+            mcmmohorses.claim: true
+            mcmmohorses.buy: true
+            mcmmohorses.sell: true
+            mcmmohorses.summon: true
+            mcmmohorses.banish: true
+            mcmmohorses.kill: true
+            mcmmohorses.leaderboard: true
+            mcmmohorses.groups.default: true
+            mcmmohorses.shop: true
+            mcmmohorses.breed: true
+    mcmmohorses.admin:
+        default: op
+        description: Given to ops by default.
+        children:
+            mcmmohorses.groups.admin: true
+            mcmmohorses.admin.protect: true
+            mcmmohorses.admin.unprotect: true
+            mcmmohorses.admin.addxp: true
+            mcmmohorses.admin.delxp: true
+            mcmmohorses.admin.set: true
+            mcmmohorses.admin.set.name: true
+            mcmmohorses.admin.set.color: true
+            mcmmohorses.admin.set.style: true
+            mcmmohorses.admin.set.type: true
+            mcmmohorses.admin.create: true
+            mcmmohorses.admin.save: true
+            mcmmohorses.admin.db: true
+            mcmmohorses.admin.reload: true        
+commands:
+    h:
+        description: Type /h help for more information
+        permission-message: You don't have permission to use mcMMO Horses!
