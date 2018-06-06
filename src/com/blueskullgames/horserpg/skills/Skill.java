@@ -1,10 +1,13 @@
 package com.blueskullgames.horserpg.skills;
 
+import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import com.blueskullgames.horserpg.HorseRPG;
 import com.blueskullgames.horserpg.RPGHorse;
+
+import me.zombie_striker.pluginconstructor.HotbarMessager;
 
 public abstract class Skill {
 	
@@ -56,8 +59,16 @@ public abstract class Skill {
 		level = xpToLevel(xp);
 		int difference = level-oldLevel;
 		if (level != oldLevel) {
-			if (p != null)
-				HorseRPG.msg(p, "&e" + name + " skill increased by " + difference + ". Total (" + level + ")" );
+			if (p != null) {
+				String inc = HorseRPG.SKILL_INCREASED_BY.replaceAll("%name%", name).replaceAll("%difference%",difference+"").replaceAll("%level%", level+"");
+				HorseRPG.msg(p, inc);
+				try {
+					HotbarMessager.sendHotBarMessage(p, ChatColor.translateAlternateColorCodes('&', inc));
+				}catch(Error|Exception e) {
+					
+				}
+			}
+			//"&e" + name + " skill increased by " + difference + ". Total (" + level + ")" 
 			h.powerLevel += difference;
 			update();
 		}

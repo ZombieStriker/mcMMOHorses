@@ -1,3 +1,6 @@
+Version 4.3.23
+	Added more messages to the message.yml.
+
 Version 4.3.22
 	Added LLama support
 

@@ -58,10 +58,10 @@ public class Wrath extends Skill {
 			
 			try{
 				if (h.horse != null && !h.horse.getPassengers().isEmpty())
-					HorseRPG.msg((Player)h.horse.getPassengers().get(0), "&a**Your &e" + PASSIVE_2 + "&a is refreshed**");				
+					HorseRPG.msg((Player)h.horse.getPassengers().get(0), HorseRPG.SKILL_REFRESH.replaceAll("%ability%",PASSIVE_2));				
 			}catch(Exception|Error e){
 			if (h.horse != null && h.horse.getPassenger() != null)
-				HorseRPG.msg((Player)h.horse.getPassenger(), "&a**Your &e" + PASSIVE_2 + "&a is refreshed**");
+				HorseRPG.msg((Player)h.horse.getPassenger(),HorseRPG.SKILL_REFRESH.replaceAll("%ability%",PASSIVE_2));
 			}
 		}
 	}

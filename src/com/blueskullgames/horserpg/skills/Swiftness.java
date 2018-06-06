@@ -54,10 +54,10 @@ public class Swiftness extends Skill {
 
 			try{
 				if (h.horse != null && !h.horse.getPassengers().isEmpty())
-					HorseRPG.msg((Player)h.horse.getPassengers().get(0), "&a**Your &e" + ABILITY + "&a is refreshed*");		
+					HorseRPG.msg((Player)h.horse.getPassengers().get(0), HorseRPG.SKILL_REFRESH.replaceAll("%ability%",ABILITY));		
 			}catch(Exception|Error e){			
 			if (h.horse != null && h.horse.getPassenger() != null)
-				HorseRPG.msg((Player)h.horse.getPassenger(), "&a**Your &e" + ABILITY + "&a is refreshed*");
+				HorseRPG.msg((Player)h.horse.getPassenger(), HorseRPG.SKILL_REFRESH.replaceAll("%ability%",ABILITY));
 			}
 		}
 	}

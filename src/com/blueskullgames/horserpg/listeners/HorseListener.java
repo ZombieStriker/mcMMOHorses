@@ -2,10 +2,10 @@ package com.blueskullgames.horserpg.listeners;
 
 import java.util.Optional;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Ageable;
-import org.bukkit.entity.Creature;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Horse.Variant;
@@ -28,6 +28,7 @@ import com.blueskullgames.horserpg.skills.Swiftness;
 import com.blueskullgames.horserpg.utils.NewHorseVarientUtil;
 import com.blueskullgames.horserpg.utils.ReflectionUtil;
 
+@SuppressWarnings("deprecation")
 public class HorseListener implements Listener {
 
 	/**
@@ -48,7 +49,6 @@ public class HorseListener implements Listener {
 	/**
 	 * Horse Damage Event
 	 **/
-	@SuppressWarnings("deprecation")
 	@EventHandler
 	public void onEntityDamage(EntityDamageEvent evt) {
 		if (evt.getEntityType() == EntityType.HORSE) {
@@ -147,30 +147,28 @@ public class HorseListener implements Listener {
 
 		h.isDead = true;
 		h.respawnTimer = HorseRPG.deathTimer;
+		
+		Player owner = Bukkit.getPlayer(h.owner);
 
-		for (Player p : HorseRPG.instance.getServer().getOnlinePlayers()) {
-			if (p.getName().equalsIgnoreCase(h.owner)) {
-				HorseRPG.pCurrentHorse.remove(p);
-				if (HorseRPG.permanentDeath) {
-					HorseRPG.ownedHorses.get(p.getName()).remove(h);
-					HorseRPG.msg(p, "&b" + h.name + "&a died!");
-				} else {
-					evt.getDrops().clear();
-					// This should make sure that if the horse can be respawned, the items still
-					// remain with the horse
-				}
-				break;
-			}
+		if(owner !=null) {
+			if (HorseRPG.permanentDeath) {
+				HorseRPG.ownedHorses.get(owner.getName()).remove(h);
+				HorseRPG.msg(owner, "&b" + h.name + "&a died!");
+			} 
 		}
-
-		if (HorseRPG.permanentDeath)
+		
+		if (HorseRPG.permanentDeath) {
 			HorseRPG.horses.remove(h);
+			//Remove the horse from the list of all horses
+		}else {
+			evt.getDrops().clear();
+			//If the horse will respawn, remove the saddle.
+		}
 	}
 
 	/**
 	 * Horse Jump Event
 	 **/
-	@SuppressWarnings("deprecation")
 	@EventHandler
 	public void onHorseJump(HorseJumpEvent evt) {
 		Optional<?> a = ReflectionUtil.getMethod(evt.getClass(), "getEntity");

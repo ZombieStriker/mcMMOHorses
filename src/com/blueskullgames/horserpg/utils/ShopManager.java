@@ -75,8 +75,9 @@ public class ShopManager implements Listener {
 		if (e.getInventory().getTitle().equals(title)) {
 			e.setCancelled(true);
 			if (e.getCurrentItem() != null) {
+				
 				for (Variant v : Variant.values()) {
-					if (e.getCurrentItem().getItemMeta().getDisplayName().endsWith(v.name())) {
+					if (e.getCurrentItem().getItemMeta().getDisplayName().endsWith(" "+v.name())) {
 						e.getWhoClicked().closeInventory();
 						if (HorseRPG.econ != null && HorseRPG.econ
 								.getBalance((OfflinePlayer) e.getWhoClicked()) >= HorseRPG.costForHorse.get(v)) {

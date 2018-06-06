@@ -92,6 +92,22 @@ public class HorseRPG extends JavaPlugin {
 	public static String NOT_ENOUGH_MONEY = "&aYou do not have enough money to buy this horse!";
 	public static String BOUGHT_HORSE = "&aYou have just bought the horse ";
 	public static String BOUGHT_HORSE_EXP1 = "&aTo summon your new horse, use the command /h summon <Your Horse>";
+	
+	
+	
+	//new messages
+	public static String HORSE_NEEDS_TAME = "&aThis horse needs to tamed and saddled first!";
+	public static String PURCHASED_FOR_CLAIM = "&aHorse purchased for &e%amount%";
+	public static String NEXT_HORSE_COST = "&aNext horse costs: &e";
+	public static String CLAIM_NAME = "&b %name% &a claimed!";
+	public static String SKILL_INCREASED_BY = "&e %name% skill increased by %difference%. Total (%level%)" ;
+	public static String NOTENOUGHMONEY="&aYou don't have enough money!";
+	public static String NEED_TIME_TO_RECHARGE="&e%name%&c needs some time to recharge.";
+	public static String SKILL_REFRESH = "&a**Your &e%ability%&a is refreshed*";
+	
+	
+	
+	
 
 	public static BukkitTask saveTask, cooldownTask;
 	public static ConfigAccessor config;
@@ -495,7 +511,7 @@ public class HorseRPG extends JavaPlugin {
 					||( !((org.bukkit.entity.AbstractHorse) horse).getInventory().contains(Material.SADDLE)&& !((org.bukkit.entity.AbstractHorse) horse).getInventory().contains(Material.CARPET));
 		}
 		if (kl) {
-			msg(p, "&aThis horse needs to tamed and saddled first!");
+			msg(p, HORSE_NEEDS_TAME);
 			return;
 		}
 
@@ -508,11 +524,11 @@ public class HorseRPG extends JavaPlugin {
 				r = econ.withdrawPlayer(p.getName(), currentCost);
 			}
 			if (r.transactionSuccess()) {
-				msg(p, "&aHorse purchased for &e" + econ.format(currentCost));
-				msg(p, "&aNext horse costs: &e"
-						+ econ.format(Math.pow(claimCostMultiplier, senderHorses + 1) * claimCost));
+				msg(p, PURCHASED_FOR_CLAIM.replaceAll("%amount%",  ""+econ.format(currentCost)));
+				msg(p, NEXT_HORSE_COST.replaceAll("%amount%", 
+						econ.format(Math.pow(claimCostMultiplier, senderHorses + 1) * claimCost)));
 			} else {
-				msg(p, "&aYou don't have enough money!");
+				msg(p, NOTENOUGHMONEY);
 				msg(p, "&aYou need: &e" + econ.format(currentCost));
 				return;
 			}
@@ -534,7 +550,7 @@ public class HorseRPG extends JavaPlugin {
 		ownedHorses.get(p.getName()).add(h);
 		horses.add(h);
 
-		msg(p, "&b" + h.name + "&a claimed!");
+		msg(p, CLAIM_NAME.replaceAll("%name%",h.name));
 	}
 
 	/**
@@ -706,7 +722,7 @@ public class HorseRPG extends JavaPlugin {
 				return;
 			}
 			if (h.isBanished || h.isDead) {
-				HorseRPG.msg(p, "&e" + h.name + "&c needs some time to recharge.");
+				HorseRPG.msg(p, NEED_TIME_TO_RECHARGE.replaceAll("%name%",h.name));
 			} else {
 				if (useEconomy && summonCost > 0) {
 					boolean b = false;
@@ -1160,6 +1176,7 @@ public class HorseRPG extends JavaPlugin {
 		initHorses();
 
 		msg(sender, "&aHorse database reloaded.");
+		
 	}
 
 	/**
@@ -1315,6 +1332,15 @@ public class HorseRPG extends JavaPlugin {
 		BOUGHT_HORSE = messages.a("Bought_horse", BOUGHT_HORSE);
 		BOUGHT_HORSE_EXP1 = messages.a("Bought_horse_exp1", BOUGHT_HORSE_EXP1);
 
+		 HORSE_NEEDS_TAME= messages.a("Horse_needs_tame", HORSE_NEEDS_TAME);
+		PURCHASED_FOR_CLAIM = messages.a("PurchasedHorse", PURCHASED_FOR_CLAIM);
+		 NEXT_HORSE_COST= messages.a("Next_cost", NEXT_HORSE_COST);
+		CLAIM_NAME = messages.a("Claimed_name",CLAIM_NAME );
+		 SKILL_INCREASED_BY= messages.a("Skill_Increased_By",SKILL_INCREASED_BY );
+		 NOTENOUGHMONEY= messages.a("Not_enough_money",NOTENOUGHMONEY );
+		 NEED_TIME_TO_RECHARGE= messages.a("Need_Time_To_Recharge", NEED_TIME_TO_RECHARGE);
+		 SKILL_REFRESH= messages.a("Skill_Refreshed", SKILL_REFRESH);
+
 		ShopManager.title=messages.a("Shop Title",ShopManager.title);
 	}
 
@@ -1417,6 +1443,7 @@ public class HorseRPG extends JavaPlugin {
 		setHelp.put(H_SET_COLOR, "&b/h set color &a<color|random>");
 		setHelp.put(H_SET_STYLE, "&b/h set style &a<style|random>");
 		setHelp.put(H_SET_TYPE, "&b/h set type &a<donkey|horse|mule|skele|zombie|rand>");
+		
 	}
 
 	/**
@@ -1725,7 +1752,7 @@ public class HorseRPG extends JavaPlugin {
 		HandlerList.unregisterAll(this);
 		saveHorses(null);
 		saveTask.cancel();
-		cooldownTask.cancel();
+		cooldownTask.cancel(); 
 	}
 
 	/**
