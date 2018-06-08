@@ -105,6 +105,8 @@ public class HorseRPG extends JavaPlugin {
 	public static String NEED_TIME_TO_RECHARGE="&e%name%&c needs some time to recharge.";
 	public static String SKILL_REFRESH = "&a**Your &e%ability%&a is refreshed*";
 	
+	public static String BANISH_LOADED_CHUNK = "&a The chunk your horse is in must be loaded before bansishement!";
+	
 	
 	
 	
@@ -759,6 +761,14 @@ public class HorseRPG extends JavaPlugin {
 			msg(sender, NO_HORSE_SUMMONED);
 			return;
 		}
+		RPGHorse horse = pCurrentHorse.get(p);
+		if(!horse.horse.getLocation().getChunk().isLoaded()) {
+			msg(sender,BANISH_LOADED_CHUNK);
+			return;
+		}
+		
+		
+		
 		if (useEconomy && banishCost > 0) {
 			boolean b = false;
 			try {
@@ -774,7 +784,7 @@ public class HorseRPG extends JavaPlugin {
 				return;
 			}
 		}
-		RPGHorse horse = pCurrentHorse.remove(p);
+		pCurrentHorse.remove(p);
 		horse.banish();
 		for (RPGHorse others : ownedHorses.get(p.getName())) {
 			if (hSpawnedHorses.containsKey(others.horse)) {
@@ -1340,6 +1350,9 @@ public class HorseRPG extends JavaPlugin {
 		 NOTENOUGHMONEY= messages.a("Not_enough_money",NOTENOUGHMONEY );
 		 NEED_TIME_TO_RECHARGE= messages.a("Need_Time_To_Recharge", NEED_TIME_TO_RECHARGE);
 		 SKILL_REFRESH= messages.a("Skill_Refreshed", SKILL_REFRESH);
+		 
+		 BANISH_LOADED_CHUNK= messages.a("Banished_In_Unloaded_Chunk", BANISH_LOADED_CHUNK);
+		 
 
 		ShopManager.title=messages.a("Shop Title",ShopManager.title);
 	}

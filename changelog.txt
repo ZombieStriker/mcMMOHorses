@@ -1,3 +1,6 @@
+Version 4.3.24
+	Stopped horses from being banishded in non-loaded chunks.
+
 Version 4.3.23
 	Added more messages to the message.yml.
 
