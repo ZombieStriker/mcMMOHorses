@@ -99,6 +99,8 @@ public class HorseConfigHandler {
 		config.set("Horses." + horse.owner + "." + horse.rpgUUID.toString() + Keys.variant, horse.variant.name());
 		config.set("Horses." + horse.owner + "." + horse.rpgUUID.toString() + Keys.hassaddle, horse.hasSaddle);
 		config.set("Horses." + horse.owner + "." + horse.rpgUUID.toString() + Keys.sex, horse.isMale);
+		if(horse.hasChest)
+		config.set("Horses." + horse.owner + "." + horse.rpgUUID.toString() + Keys.hasChest, horse.hasChest);
 		if (horse.horse != null && !horse.isDead && !horse.isBanished) {
 			config.set("Horses." + horse.owner + "." + horse.rpgUUID.toString() + Keys.entityslastUUID,
 					horse.horse.getUniqueId().toString());
@@ -177,6 +179,9 @@ public class HorseConfigHandler {
 
 				final RPGHorse rpgHorse = new RPGHorse(horsename, owner, c, s, v, gm, sswift, sagil, svit, swrath, uuid,
 						jumpPow, sprintPow,sex);
+				if (config.contains("Horses." + owner + "." + rpguuids + "."+Keys.hasChest)) {
+					rpgHorse.setHasChest(config.getBoolean("Horses." + owner + "." + rpguuids +"."+ Keys.hasChest));
+				}
 
 				if (config.contains("Horses." + owner + "." + rpguuids + Keys.inventory.toString())) {
 					@SuppressWarnings("unchecked")
@@ -228,7 +233,7 @@ public class HorseConfigHandler {
 												".agility"), swiftness(".swiftness"), vitality(".vitality"), color(
 														".color"), isdead(".isdead"), powerlevel(".powerlevel"), style(
 																".style"), variant(".variant"), jumpPow(
-																		".jumpPow"), sprintPow(".sprintPow"),sex(".sex");
+																		".jumpPow"), sprintPow(".sprintPow"),sex(".sex"),hasChest("hasChest");
 		private String n;
 
 		private Keys(String name) {

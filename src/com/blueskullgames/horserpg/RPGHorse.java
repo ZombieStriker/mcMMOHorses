@@ -70,6 +70,8 @@ public class RPGHorse implements Comparable<RPGHorse> {
 
 	public boolean hasSaddle;
 
+	public boolean hasChest = false;
+
 	public UUID rpgUUID;
 
 	public ItemStack[] inventory;
@@ -99,9 +101,9 @@ public class RPGHorse implements Comparable<RPGHorse> {
 		top: while (true) {
 			name = FIRST_NAMES[(int) (Math.random() * FIRST_NAMES.length)] + " "
 					+ LAST_NAMES[(int) (Math.random() * LAST_NAMES.length)];
-			if (!HorseRPG.ownedHorses.containsKey(p))
+			if (!HorseRPG.ownedHorses.containsKey(p.getName()))
 				return name;
-			for (RPGHorse h : HorseRPG.ownedHorses.get(p))
+			for (RPGHorse h : HorseRPG.ownedHorses.get(p.getName()))
 				if (name.equalsIgnoreCase(h.name))
 					continue top;
 			break;
@@ -265,6 +267,14 @@ public class RPGHorse implements Comparable<RPGHorse> {
 			}
 	}
 
+	public void setHasChest(boolean hasChest) {
+		this.hasChest = hasChest;
+	}
+
+	public boolean hasChest() {
+		return hasChest;
+	}
+
 	/**
 	 * Sets a new style for the horse
 	 * 
@@ -377,27 +387,52 @@ public class RPGHorse implements Comparable<RPGHorse> {
 			// to mules, llamas, ect.
 		}
 
+		try {
+			if (hasChest) {
+				if (horse instanceof org.bukkit.entity.Donkey) {
+					((org.bukkit.entity.Donkey) horse).setCarryingChest(true);
+				}
+				if (horse instanceof org.bukkit.entity.Mule) {
+					((org.bukkit.entity.Mule) horse).setCarryingChest(true);
+				}
+			}
+		} catch (Exception e) {
+		}
 		((Ageable) horse).setAdult();
 		((Tameable) horse).setTamed(true);
 		horse.setCustomName(ChatColor.translateAlternateColorCodes('&', name));
 		if (inventory == null) {
-			inventory = new ItemStack[1];
+			inventory = new ItemStack[hasChest ? 16 : 1];
 			if (hasSaddle)
 				inventory[0] = new ItemStack(Material.SADDLE);
 		}
-		try {
-			// ((HorseInventory) ((AbstractHorse) horse).getInventory())
-			// .setSaddle(new ItemStack(Material.SADDLE));
-			((HorseInventory) ((AbstractHorse) horse).getInventory()).setContents(inventory);
-		} catch (Exception | Error e) {
+		if (horse instanceof org.bukkit.entity.ChestedHorse) {
+			((org.bukkit.entity.ChestedHorse) horse).getInventory().setContents(inventory);
+		} else {
 			try {
-				// ((HorseInventory) ((Horse) horse).getInventory())
+				// ((HorseInventory) ((AbstractHorse) horse).getInventory())
 				// .setSaddle(new ItemStack(Material.SADDLE));
-				((HorseInventory) ((Horse) horse).getInventory()).setContents(inventory);
-			} catch (Exception | Error e2) {
-				// ((Inventory) ((AbstractHorse) horse).getInventory())
-				// .setItem(0, new ItemStack(Material.SADDLE));
-				((Inventory) ((AbstractHorse) horse).getInventory()).setContents(inventory);
+				((AbstractHorse) horse).getInventory().setContents(inventory);
+			} catch (Exception | Error e) {
+				try {
+					// ((HorseInventory) ((Horse) horse).getInventory())
+					// .setSaddle(new ItemStack(Material.SADDLE));
+					((Horse) horse).getInventory().setContents(inventory);
+				} catch (Exception | Error e2) {
+					HorseRPG.msg(p, " Something went wrong with the horse's inventory. Contact the server owner and tell them to report the error message in the console");
+					HorseRPG.msg(p, "The contents of the horse's inventory has been given to you (or dropped on the floor if your inventory is full)");
+					e.printStackTrace();
+					e2.printStackTrace();
+					for(ItemStack is : inventory) {
+						if(is!=null) {
+							if(p.getInventory().firstEmpty()==-1) {
+								p.getWorld().dropItem(p.getLocation(), is);
+							}else {
+								p.getInventory().addItem(is);
+							}
+						}
+					}
+				}
 			}
 		}
 
@@ -427,7 +462,7 @@ public class RPGHorse implements Comparable<RPGHorse> {
 	public void banish(boolean timer) {
 		if (horse != null) {
 			if (!horse.getLocation().getChunk().isLoaded()) {
-				//This should fix issues if you cannot remove entities from unloaded worlds.
+				// This should fix issues if you cannot remove entities from unloaded worlds.
 				horse.getWorld().loadChunk(horse.getLocation().getChunk());
 			}
 
@@ -442,8 +477,17 @@ public class RPGHorse implements Comparable<RPGHorse> {
 				inventory = ((Horse) horse).getInventory().getContents();
 			}
 			HorseRPG.hSpawnedHorses.remove(horse);
+			try {
+				if (horse instanceof org.bukkit.entity.Donkey) {
+					setHasChest(((org.bukkit.entity.Donkey) horse).isCarryingChest());
+				}
+				if (horse instanceof org.bukkit.entity.Mule) {
+					setHasChest(((org.bukkit.entity.Mule) horse).isCarryingChest());
+				}
+			} catch (Exception e) {
+			}
 
-			HorseRPG.h_config.saveHorse(this,true);
+			HorseRPG.h_config.saveHorse(this, true);
 
 			horse.eject();
 			horse.remove();
@@ -453,6 +497,7 @@ public class RPGHorse implements Comparable<RPGHorse> {
 				respawnTimer = HorseRPG.banishTimer;
 
 		}
+
 	}
 
 	/**

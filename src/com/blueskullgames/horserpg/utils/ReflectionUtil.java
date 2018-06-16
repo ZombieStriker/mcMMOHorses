@@ -157,6 +157,7 @@ public class ReflectionUtil {
 	 * @param value
 	 *            The new value of the field
 	 */
+	@SuppressWarnings("deprecation")
 	public static void setInstanceField(Object handle, String name,
 			Object value) {
 		Class<?> clazz = handle.getClass();
@@ -182,6 +183,7 @@ public class ReflectionUtil {
 	 * 
 	 * @return The result
 	 */
+	@SuppressWarnings("deprecation")
 	public static Object getInstanceField(Object handle, String name) {
 		Class<?> clazz = handle.getClass();
 		Optional<Field> fieldOptional = getField(clazz, name);

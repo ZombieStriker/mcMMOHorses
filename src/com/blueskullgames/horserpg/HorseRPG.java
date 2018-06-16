@@ -18,9 +18,11 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Damageable;
+import org.bukkit.entity.Donkey;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Horse;
 import org.bukkit.entity.Horse.*;
+import org.bukkit.entity.Mule;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Tameable;
 import org.bukkit.event.HandlerList;
@@ -92,24 +94,19 @@ public class HorseRPG extends JavaPlugin {
 	public static String NOT_ENOUGH_MONEY = "&aYou do not have enough money to buy this horse!";
 	public static String BOUGHT_HORSE = "&aYou have just bought the horse ";
 	public static String BOUGHT_HORSE_EXP1 = "&aTo summon your new horse, use the command /h summon <Your Horse>";
-	
-	
-	
-	//new messages
+
+	// new messages
 	public static String HORSE_NEEDS_TAME = "&aThis horse needs to tamed and saddled first!";
 	public static String PURCHASED_FOR_CLAIM = "&aHorse purchased for &e%amount%";
 	public static String NEXT_HORSE_COST = "&aNext horse costs: &e";
 	public static String CLAIM_NAME = "&b %name% &a claimed!";
-	public static String SKILL_INCREASED_BY = "&e %name% skill increased by %difference%. Total (%level%)" ;
-	public static String NOTENOUGHMONEY="&aYou don't have enough money!";
-	public static String NEED_TIME_TO_RECHARGE="&e%name%&c needs some time to recharge.";
+	public static String SKILL_INCREASED_BY = "&e %name% skill increased by %difference%. Total (%level%)";
+	public static String NOTENOUGHMONEY = "&aYou don't have enough money!";
+	public static String NEED_TIME_TO_RECHARGE = "&e%name%&c needs some time to recharge.";
 	public static String SKILL_REFRESH = "&a**Your &e%ability%&a is refreshed*";
-	
+	//public static String CLOSERTHAN100 = "&a You need to be within 100 blocks of your horse to banish them!";
+
 	public static String BANISH_LOADED_CHUNK = "&a The chunk your horse is in must be loaded before bansishement!";
-	
-	
-	
-	
 
 	public static BukkitTask saveTask, cooldownTask;
 	public static ConfigAccessor config;
@@ -510,7 +507,8 @@ public class HorseRPG extends JavaPlugin {
 			kl = !((Tameable) horse).isTamed() || ((Horse) horse).getInventory().getSaddle() == null;
 		} catch (Error | Exception e) {
 			kl = !((Tameable) horse).isTamed()
-					||( !((org.bukkit.entity.AbstractHorse) horse).getInventory().contains(Material.SADDLE)&& !((org.bukkit.entity.AbstractHorse) horse).getInventory().contains(Material.CARPET));
+					|| (!((org.bukkit.entity.AbstractHorse) horse).getInventory().contains(Material.SADDLE)
+							&& !((org.bukkit.entity.AbstractHorse) horse).getInventory().contains(Material.CARPET));
 		}
 		if (kl) {
 			msg(p, HORSE_NEEDS_TAME);
@@ -526,8 +524,12 @@ public class HorseRPG extends JavaPlugin {
 				r = econ.withdrawPlayer(p.getName(), currentCost);
 			}
 			if (r.transactionSuccess()) {
-				msg(p, PURCHASED_FOR_CLAIM.replaceAll("%amount%",  ""+econ.format(currentCost)));
-				msg(p, NEXT_HORSE_COST.replaceAll("%amount%", 
+				try {
+					msg(p, PURCHASED_FOR_CLAIM.replace("%amount%", "" + econ.format(currentCost)));
+				} catch (Exception e4) {
+					msg(p, PURCHASED_FOR_CLAIM.replace("%amount%", "[ERROR]"));
+				}
+				msg(p, NEXT_HORSE_COST.replace("%amount%",
 						econ.format(Math.pow(claimCostMultiplier, senderHorses + 1) * claimCost)));
 			} else {
 				msg(p, NOTENOUGHMONEY);
@@ -539,9 +541,22 @@ public class HorseRPG extends JavaPlugin {
 		RPGHorse h;
 		try {
 			h = new RPGHorse(p, (Horse) horse);
+			h.setVariant(((Horse) horse).getVariant());
 		} catch (Error | Exception e) {
 			h = new RPGHorse(p, (org.bukkit.entity.AbstractHorse) horse);
+			h.setVariant(((org.bukkit.entity.AbstractHorse) horse).getVariant());
 		}
+
+		try {
+			if (h instanceof Donkey) {
+				((Donkey) h).isCarryingChest();
+			}
+			if (h instanceof Mule) {
+				((Mule) h).isCarryingChest();
+			}
+		} catch (Error | Exception e) {
+		}
+
 		h.horse = horse;
 		h.setName(h.name);
 
@@ -552,7 +567,7 @@ public class HorseRPG extends JavaPlugin {
 		ownedHorses.get(p.getName()).add(h);
 		horses.add(h);
 
-		msg(p, CLAIM_NAME.replaceAll("%name%",h.name));
+		msg(p, CLAIM_NAME.replaceAll("%name%", h.name));
 	}
 
 	/**
@@ -724,7 +739,7 @@ public class HorseRPG extends JavaPlugin {
 				return;
 			}
 			if (h.isBanished || h.isDead) {
-				HorseRPG.msg(p, NEED_TIME_TO_RECHARGE.replaceAll("%name%",h.name));
+				HorseRPG.msg(p, NEED_TIME_TO_RECHARGE.replaceAll("%name%", h.name));
 			} else {
 				if (useEconomy && summonCost > 0) {
 					boolean b = false;
@@ -762,13 +777,19 @@ public class HorseRPG extends JavaPlugin {
 			return;
 		}
 		RPGHorse horse = pCurrentHorse.get(p);
-		if(!horse.horse.getLocation().getChunk().isLoaded()) {
-			msg(sender,BANISH_LOADED_CHUNK);
+		if (!horse.horse.getLocation().getChunk().isLoaded()) {
+			msg(sender, BANISH_LOADED_CHUNK);
 			return;
 		}
-		
-		
-		
+		if (horse.horse.getLocation().getWorld() != ((Player) sender).getWorld()) {
+			msg(sender, BANISH_LOADED_CHUNK);
+			return;
+		}
+		if(p.getLocation().distanceSquared(horse.horse.getLocation()) >= 10000) {
+			horse.horse.teleport(p.getLocation());
+			//Hopefully teleporting the horse will allow it to be banished correctly.
+		}
+
 		if (useEconomy && banishCost > 0) {
 			boolean b = false;
 			try {
@@ -1186,7 +1207,7 @@ public class HorseRPG extends JavaPlugin {
 		initHorses();
 
 		msg(sender, "&aHorse database reloaded.");
-		
+
 	}
 
 	/**
@@ -1342,19 +1363,19 @@ public class HorseRPG extends JavaPlugin {
 		BOUGHT_HORSE = messages.a("Bought_horse", BOUGHT_HORSE);
 		BOUGHT_HORSE_EXP1 = messages.a("Bought_horse_exp1", BOUGHT_HORSE_EXP1);
 
-		 HORSE_NEEDS_TAME= messages.a("Horse_needs_tame", HORSE_NEEDS_TAME);
+		HORSE_NEEDS_TAME = messages.a("Horse_needs_tame", HORSE_NEEDS_TAME);
 		PURCHASED_FOR_CLAIM = messages.a("PurchasedHorse", PURCHASED_FOR_CLAIM);
-		 NEXT_HORSE_COST= messages.a("Next_cost", NEXT_HORSE_COST);
-		CLAIM_NAME = messages.a("Claimed_name",CLAIM_NAME );
-		 SKILL_INCREASED_BY= messages.a("Skill_Increased_By",SKILL_INCREASED_BY );
-		 NOTENOUGHMONEY= messages.a("Not_enough_money",NOTENOUGHMONEY );
-		 NEED_TIME_TO_RECHARGE= messages.a("Need_Time_To_Recharge", NEED_TIME_TO_RECHARGE);
-		 SKILL_REFRESH= messages.a("Skill_Refreshed", SKILL_REFRESH);
-		 
-		 BANISH_LOADED_CHUNK= messages.a("Banished_In_Unloaded_Chunk", BANISH_LOADED_CHUNK);
-		 
+		NEXT_HORSE_COST = messages.a("Next_cost", NEXT_HORSE_COST);
+		CLAIM_NAME = messages.a("Claimed_name", CLAIM_NAME);
+		SKILL_INCREASED_BY = messages.a("Skill_Increased_By", SKILL_INCREASED_BY);
+		NOTENOUGHMONEY = messages.a("Not_enough_money", NOTENOUGHMONEY);
+		NEED_TIME_TO_RECHARGE = messages.a("Need_Time_To_Recharge", NEED_TIME_TO_RECHARGE);
+		SKILL_REFRESH = messages.a("Skill_Refreshed", SKILL_REFRESH);
+		//CLOSERTHAN100 = messages.a("Must_be_closer_than_100", CLOSERTHAN100);
 
-		ShopManager.title=messages.a("Shop Title",ShopManager.title);
+		BANISH_LOADED_CHUNK = messages.a("Banished_In_Unloaded_Chunk", BANISH_LOADED_CHUNK);
+
+		ShopManager.title = messages.a("Shop Title", ShopManager.title);
 	}
 
 	/**
@@ -1364,7 +1385,8 @@ public class HorseRPG extends JavaPlugin {
 		try {
 			FileConfiguration fc = config.getConfig();
 			int saveInterval = fc.getInt("save-interval");
-			saveTask = new SaveTask().runTaskTimer(this, saveInterval, saveInterval);
+			if (saveInterval > 0)
+				saveTask = new SaveTask().runTaskTimer(this, saveInterval, saveInterval);
 
 			freeHorse = fc.getBoolean("free-horse");
 			permanentDeath = fc.getBoolean("permanent-death");
@@ -1456,7 +1478,7 @@ public class HorseRPG extends JavaPlugin {
 		setHelp.put(H_SET_COLOR, "&b/h set color &a<color|random>");
 		setHelp.put(H_SET_STYLE, "&b/h set style &a<style|random>");
 		setHelp.put(H_SET_TYPE, "&b/h set type &a<donkey|horse|mule|skele|zombie|rand>");
-		
+
 	}
 
 	/**
@@ -1529,14 +1551,12 @@ public class HorseRPG extends JavaPlugin {
 		Connection connect = null;
 		try {
 			if (((int) h_config.getGlobalVariable(Keys.G_dbtransfermode.toString())) == 2) {
-
 				for (TreeSet<RPGHorse> horseSet : ownedHorses.values()) {
 					for (RPGHorse h : horseSet) {
 						h_config.saveHorse(h, false);
 					}
 				}
 				h_config.save();
-
 			} else {
 				connect = DriverManager.getConnection("jdbc:sqlite:horses.db");
 				Statement statement = connect.createStatement();
@@ -1765,7 +1785,8 @@ public class HorseRPG extends JavaPlugin {
 		HandlerList.unregisterAll(this);
 		saveHorses(null);
 		saveTask.cancel();
-		cooldownTask.cancel(); 
+		if (cooldownTask != null)
+			cooldownTask.cancel();
 	}
 
 	/**

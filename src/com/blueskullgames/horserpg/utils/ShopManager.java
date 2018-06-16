@@ -9,7 +9,6 @@ import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Horse.Color;
 import org.bukkit.entity.Horse.Style;
 import org.bukkit.entity.Horse.Variant;
@@ -25,6 +24,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import com.blueskullgames.horserpg.HorseRPG;
 import com.blueskullgames.horserpg.RPGHorse;
 
+@SuppressWarnings("deprecation")
 public class ShopManager implements Listener {
 	private Inventory shop;
 

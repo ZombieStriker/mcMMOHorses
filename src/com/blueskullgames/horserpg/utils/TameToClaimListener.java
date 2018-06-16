@@ -1,6 +1,5 @@
 package com.blueskullgames.horserpg.utils;
 
-import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
@@ -13,7 +12,6 @@ public class TameToClaimListener implements Listener {
 	@EventHandler
 	public void onTame(final PlayerInteractEntityEvent e) {
 		
-		Player p = e.getPlayer();
 		try {
 			if (!(e.getRightClicked() instanceof org.bukkit.entity.AbstractHorse))
 				return;
@@ -28,6 +26,7 @@ public class TameToClaimListener implements Listener {
 
 		new BukkitRunnable() {
 			int i = 0;
+			@SuppressWarnings("deprecation")
 			public void run() {
 				i++;
 				if(i>= 60)

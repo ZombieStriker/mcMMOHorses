@@ -2,7 +2,6 @@ package com.blueskullgames.horserpg.utils;
 
 import java.io.*;
 import java.net.*;
-import java.nio.file.*;
 
 import com.google.gson.*;
 import org.bukkit.*;

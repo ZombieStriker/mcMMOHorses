@@ -1,5 +1,13 @@
+Version 4.3.25
+	Disabled across-world banishment. Should stop ability to duplicate items.
+	Added support for mules and donkeys that carry things
+	Fixed issue wherre golden apples and carrots are not removed when healing horse.
+	Added ability to disable save timer by setting it to -1 in the config.
+	Fixed issue where HorseInventory may not have been able to be loaded by other plugins.
+	Added catch-all for horse spawning. If the horse's inventory could not be set, the items were given to the player.
+
 Version 4.3.24
-	Stopped horses from being banishded in non-loaded chunks.
+	Stopped horses from being banished in non-loaded chunks.
 
 Version 4.3.23
 	Added more messages to the message.yml.
@@ -14,7 +22,7 @@ Version 4.3.20
 	Fixed constant claiming
 
 Version 4.3.19
-	Made it so tab will add underscores to the horses name, amking it easier to tab.
+	Made it so tab will add underscores to the horses name, making it easier to tab.
 	Fixed ClaimOnTaim
 
 Version 4.3.18
