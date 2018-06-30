@@ -141,6 +141,7 @@ public class HorseConfigHandler {
 		setVariable(horse, "", null);
 	}
 
+	@SuppressWarnings("unchecked")
 	public RPGHorse getHorse(final String owner, String horseUUID) {
 		for (final String rpguuids : config.getConfigurationSection("Horses." + owner).getKeys(false)) {
 			if (rpguuids.equalsIgnoreCase(horseUUID)) {
@@ -184,12 +185,17 @@ public class HorseConfigHandler {
 				}
 
 				if (config.contains("Horses." + owner + "." + rpguuids + Keys.inventory.toString())) {
-					@SuppressWarnings("unchecked")
-					Object[] dumptemp = ((List<ItemStack>) config
+					ItemStack[] dymbtemp2 =null;
+					try{
+						Object[] dumptemp = null;dumptemp= ((List<ItemStack>) config
 							.get("Horses." + owner + "." + rpguuids + Keys.inventory.toString())).toArray();
-					ItemStack[] dymbtemp2 = new ItemStack[dumptemp.length];
-					for (int i = 0; i < dumptemp.length; i++) {
-						dymbtemp2[i] = (ItemStack) dumptemp[i];
+						dymbtemp2 = new ItemStack[dumptemp.length];
+						for (int i = 0; i < dumptemp.length; i++) {
+							dymbtemp2[i] = (ItemStack) dumptemp[i];
+						}
+					}catch(Error|Exception e5) {
+						dymbtemp2 = ((ItemStack[]) config
+							.get("Horses." + owner + "." + rpguuids + Keys.inventory.toString()));
 					}
 					rpgHorse.inventory = dymbtemp2;
 				}
@@ -226,7 +232,7 @@ public class HorseConfigHandler {
 
 	public enum Keys {
 		G_dbtransfermode(".savetype"), G_DisableBreeding(".disable_basegame_breeding"), G_banishOnDisable(
-				".banish_on_disable"), G_ClameOnTame(".Force_claim_on_tame"), G_banishonquit(".banish_on_player_quit"), G_nobanish(
+				".banish_on_disable"), G_ClameOnTame(".Force_claim_on_tame"),G_PermToRide(".RequirePermissionToRide"), G_banishonquit(".banish_on_player_quit"), G_nobanish(
 						".disable_banishment"),G_horseCost(".priceForHorse"), entityslastUUID(".lastUUIDinstance"), entityslastWorld(
 								".lastWorldname"), name(".name"), godmode(".godmode"), inventory(
 										".inventory"), hassaddle(".hassaddle"), wrath(".wrath"), agility(

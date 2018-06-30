@@ -55,8 +55,8 @@ public class GithubDependDownloader {
 			final URL download = new URL("https://github.com/" + author + "/" + githubProject + "/releases/download/"
 					+ tagname + "/" + jarname);
 
-			Bukkit.getConsoleSender().sendMessage(ChatColor.GREEN + "Found a new version " + ChatColor.WHITE + tagname
-					+ ChatColor.LIGHT_PURPLE + " downloading now!!");
+			Bukkit.getConsoleSender().sendMessage(ChatColor.GREEN + "Found a dependancy with version id " + ChatColor.WHITE + tagname
+					+ ChatColor.LIGHT_PURPLE + ". downloading now!!");
 
 			new BukkitRunnable() {
 

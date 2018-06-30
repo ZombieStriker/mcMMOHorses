@@ -1,3 +1,19 @@
+Version 4.3.27
+	Fixed version in config.
+	Updated depend-downloader
+	Fixed 'currenthorse' so it is set to the horse the player last rode
+	fixed command messages for '/h breed' so it displayed "/h create"
+	/h me and /h stats now show in both the scoreboard and chat
+	Added confirmation message when changing names
+	Added /h stable
+	Fixed /h db error if itemstacks are stored as array
+	Fixed translated messages if db message is sent to console
+	Removed debug messages for stats menu
+	Fixed auto-update boolean in config.
+
+Version 4.3.26
+	Added "PermToRide" feature to s users from riding horses that are not claimed IF the player does not have the mcmmohorses.claim permission.
+
 Version 4.3.25
 	Disabled across-world banishment. Should stop ability to duplicate items.
 	Added support for mules and donkeys that carry things

@@ -75,6 +75,11 @@ public class PlayerListener implements Listener {
 		}
 	}
 
+	@EventHandler(priority = EventPriority.LOW)
+	public void onMountHorseEventHorse(PlayerInteractEntityEvent event) {
+
+	}
+
 	/**
 	 * Player Feeding Horse Event
 	 **/
@@ -98,20 +103,18 @@ public class PlayerListener implements Listener {
 				} catch (Exception | Error e) {
 					item = p.getItemInHand();
 				}
-				if (item != null) {
-					Material m = item.getType();
-					if (m == Material.GOLDEN_APPLE || m == Material.GOLDEN_CARROT) {
-						RPGHorse h = HorseRPG.hSpawnedHorses.get(horse);
-						if (h != null && h.owner.equalsIgnoreCase(p.getName())) {
-							h.vitality.addXP(m == Material.GOLDEN_APPLE ? 5 : 4, p);
-							ItemStack is = event.getPlayer().getItemInHand();
-							if(is.getAmount() == 1) {
-								is.setType(Material.AIR);
-							}else {
-								is.setAmount(is.getAmount()-1);
-							}
-							event.getPlayer().setItemInHand(is);
+				Material m = null;
+				if (item != null && ((m = item.getType()) == Material.GOLDEN_APPLE || m == Material.GOLDEN_CARROT)) {
+					RPGHorse h = HorseRPG.hSpawnedHorses.get(horse);
+					if (h != null && h.owner.equalsIgnoreCase(p.getName())) {
+						h.vitality.addXP(m == Material.GOLDEN_APPLE ? 5 : 4, p);
+						ItemStack is = event.getPlayer().getItemInHand();
+						if (is.getAmount() == 1) {
+							is.setType(Material.AIR);
+						} else {
+							is.setAmount(is.getAmount() - 1);
 						}
+						event.getPlayer().setItemInHand(is);
 					}
 				} else {
 					final RPGHorse rpg = HorseRPG.hSpawnedHorses.get(horse);
