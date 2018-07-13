@@ -18,8 +18,6 @@ import org.bukkit.entity.Horse.Color;
 import org.bukkit.entity.Horse.Style;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Tameable;
-import org.bukkit.inventory.HorseInventory;
-import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 import com.blueskullgames.horserpg.skills.Agility;
@@ -36,12 +34,12 @@ import com.blueskullgames.horserpg.utils.atributeutils.BaseAtributeUtil;
 @SuppressWarnings("deprecation")
 public class RPGHorse implements Comparable<RPGHorse> {
 
-	public static final String[] FIRST_NAMES = { "Big", "Boomer", "Bubba", "Bubble", "Candy", "Chicken", "Chubby",
+	public static String[] FIRST_NAMES = { "Big", "Boomer", "Bubba", "Bubble", "Candy", "Chicken", "Chubby",
 			"Chunky", "Cinnamon", "Daisy", "Fluffy", "Lil'", "Little", "Muffin", "Peachy", "Pooky", "Rainbow", "Sir",
 			"Snuggle", "Sprinkle", "Stinker", "Swag", "Tickle", "Tinkle", "Tootsie", "Twinkle"
 
 			, "Gary", "Henry", "King", "Foal Ball", "Apple", "Carrot", "Potato", "Sugar", "Butter", "Silver" };
-	public static final String[] LAST_NAMES = { "Blossom", "Booty", "Bottoms", "Boy", "Bunches", "Buttercup",
+	public static String[] LAST_NAMES = { "Blossom", "Booty", "Bottoms", "Boy", "Bunches", "Buttercup",
 			"Cucumber", "Cumquat", "Daddy", "Freckles", "Girl", "Horsey", "Hugs A Lot", "Marshmallow", "McFluffems",
 			"McGiggles", "McNuggs", "McShowoff", "McSnuggles", "Noodles", "Pancake", "Poops A Lot", "Potato"
 

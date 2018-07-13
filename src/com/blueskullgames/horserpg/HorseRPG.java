@@ -17,7 +17,6 @@ import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.entity.Damageable;
 import org.bukkit.entity.Donkey;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Horse;
@@ -84,6 +83,7 @@ public class HorseRPG extends JavaPlugin {
 	public static String NO_MORE_HORSES = "&aYou don't have any more horses!";
 	public static String NO_HORSE_SUMMONED = "&aYou don't have a horse summoned!";
 	public static String NO_PERMISSION = "&aYou are not allowed to use this command!";
+	public static String NO_PERMISSION_HORSE = "&aYou are not allowed to ride this horse!";
 	public static String PAGE_DOES_NOT_EXIST = "&aPage does not exist.";
 	public static String PLAYER_ONLY = "&aThis command can only be run by a &bplayer.";
 
@@ -130,6 +130,8 @@ public class HorseRPG extends JavaPlugin {
 	public static boolean banishondisable = true;
 	public static boolean banishonquit = true;
 	public static boolean disableBreeding = false;
+
+	public static boolean disableTamedHorses = false;
 
 	public static boolean freeHorse;
 	public static boolean permanentDeath;
@@ -343,7 +345,7 @@ public class HorseRPG extends JavaPlugin {
 			ScoreboardManager manager = Bukkit.getScoreboardManager();
 			Scoreboard board = manager.getNewScoreboard();
 			Objective obj = board.registerNewObjective("horsemestats", "dummy");
-			obj.setDisplayName(ChatColor.GOLD+sender.getName()+"'s stats");
+			obj.setDisplayName(ChatColor.GOLD + sender.getName() + "'s stats");
 			obj.setDisplaySlot(DisplaySlot.SIDEBAR);
 			int ownedHor = myHorses.size();
 			int showedHorses = Math.min(ownedHor, 10);
@@ -424,8 +426,8 @@ public class HorseRPG extends JavaPlugin {
 				+ "%" + (ChatColor.DARK_GRAY + "Roll:") + ChatColor.GRAY + "= " + ((int) (h.agility.rollChance * 100))
 				+ "%");
 		p.sendMessage((ChatColor.GREEN + "Vitality") + ChatColor.WHITE + "  " + h.vitality.level);
-		p.sendMessage((ChatColor.DARK_GRAY + "Base") + ChatColor.GRAY + "= "
-				+ ((((Damageable) h.horse).getMaxHealth() - h.vitality.healthBonus)) / 2
+		// TODO: Check if correct: 44 (22 hears) is the base health for all horses
+		p.sendMessage((ChatColor.DARK_GRAY + "Base") + ChatColor.GRAY + "= " + ((44 - h.vitality.healthBonus)) / 2
 				+ (ChatColor.DARK_GRAY + "  Bonus") + ChatColor.GRAY + "= " + ((int) (h.vitality.healthBonus / 2)));
 		p.sendMessage((ChatColor.GREEN + "Wrath") + ChatColor.WHITE + "  " + h.wrath.level);
 		p.sendMessage((ChatColor.DARK_GRAY + "Infuriate: ") + ChatColor.GRAY + "= "
@@ -443,8 +445,8 @@ public class HorseRPG extends JavaPlugin {
 					+ ((int) (h.agility.dodgeChance * 100)) + "%" + (ChatColor.DARK_GRAY + "Roll:") + ChatColor.GRAY
 					+ "= " + ((int) (h.agility.rollChance * 100)) + "%").setScore(5);
 			obj.getScore((ChatColor.GREEN + "Vitality") + ChatColor.WHITE + "  " + h.vitality.level).setScore(4);
-			obj.getScore((ChatColor.DARK_GRAY + "Base") + ChatColor.GRAY + "= "
-					+ ((((Damageable) h.horse).getMaxHealth() - h.vitality.healthBonus)) / 2
+			// TODO: Check if correct: 44 (22 hears) is the base health for all horses
+			obj.getScore((ChatColor.DARK_GRAY + "Base") + ChatColor.GRAY + "= " + ((44 - h.vitality.healthBonus)) / 2
 					+ (ChatColor.DARK_GRAY + "  Bonus") + ChatColor.GRAY + "= " + ((int) (h.vitality.healthBonus / 2)))
 					.setScore(3);
 			obj.getScore((ChatColor.GREEN + "Wrath") + ChatColor.WHITE + "  " + h.wrath.level).setScore(2);
@@ -469,11 +471,10 @@ public class HorseRPG extends JavaPlugin {
 			obj.getScore(Bukkit.getOfflinePlayer((ChatColor.DARK_GRAY + "Dodge:") + ChatColor.GRAY + "= "
 					+ ((int) (h.agility.dodgeChance * 100)) + "%" + (ChatColor.DARK_GRAY + "Roll:") + ChatColor.GRAY
 					+ "= " + ((int) (h.agility.rollChance * 100)) + "%")).setScore(5);
-
+			// TODO: Check if correct: 44 (22 hears) is the base health for all horses
 			obj.getScore(Bukkit.getOfflinePlayer((ChatColor.DARK_GRAY + "Base") + ChatColor.GRAY + "= "
-					+ (h.horse == null ? "?" : +((((Damageable) h.horse).getMaxHealth() - h.vitality.healthBonus) / 2))
-					+ ChatColor.DARK_GRAY + "  Bonus" + ChatColor.GRAY + "= " + ((int) (h.vitality.healthBonus / 2))))
-					.setScore(3);
+					+ (((44 - h.vitality.healthBonus) / 2)) + ChatColor.DARK_GRAY + "  Bonus" + ChatColor.GRAY + "= "
+					+ ((int) (h.vitality.healthBonus / 2)))).setScore(3);
 
 			obj.getScore(Bukkit.getOfflinePlayer((ChatColor.DARK_GRAY + "Infuriate: ") + ChatColor.GRAY + "= "
 					+ ((int) (h.wrath.infuriateChance * 100)) + "%")).setScore(1);
@@ -1422,6 +1423,7 @@ public class HorseRPG extends JavaPlugin {
 		NO_MORE_HORSES = messages.a("No_more_horses", NO_MORE_HORSES);
 		NO_HORSE_SUMMONED = messages.a("No_horses_summoned", NO_HORSE_SUMMONED);
 		NO_PERMISSION = messages.a("No_Permission", NO_PERMISSION);
+		NO_PERMISSION_HORSE = messages.a("No_Permission_Horse", NO_PERMISSION_HORSE);
 		PAGE_DOES_NOT_EXIST = messages.a("Page_does_not_exist", PAGE_DOES_NOT_EXIST);
 		PLAYER_ONLY = messages.a("Player_only", PLAYER_ONLY);
 
@@ -1445,6 +1447,9 @@ public class HorseRPG extends JavaPlugin {
 		// CLOSERTHAN100 = messages.a("Must_be_closer_than_100", CLOSERTHAN100);
 
 		BANISH_LOADED_CHUNK = messages.a("Banished_In_Unloaded_Chunk", BANISH_LOADED_CHUNK);
+
+		RPGHorse.FIRST_NAMES = messages.b("VALID_FIRST_NAMES", RPGHorse.FIRST_NAMES);
+		RPGHorse.LAST_NAMES = messages.b("VALID_LAST_NAMES", RPGHorse.LAST_NAMES);
 
 		ShopManager.title = messages.a("Shop Title", ShopManager.title);
 	}
@@ -1499,6 +1504,9 @@ public class HorseRPG extends JavaPlugin {
 			if (!h_config.containsGlobalVariable(Keys.G_PermToRide.toString())) {
 				h_config.setGlobalVar(Keys.G_PermToRide.toString(), false);
 			}
+			if (!h_config.containsGlobalVariable(Keys.G_REMOVETAME.toString())) {
+				h_config.setGlobalVar(Keys.G_REMOVETAME.toString(), false);
+			}
 			for (Variant v : Variant.values()) {
 				if (!h_config.containsGlobalVariable(Keys.G_horseCost.toString() + "." + v.name())) {
 					h_config.setGlobalVar(Keys.G_horseCost.toString() + "." + v.name(), 100.0);
@@ -1510,6 +1518,8 @@ public class HorseRPG extends JavaPlugin {
 			banishondisable = (boolean) h_config.getGlobalVariable(Keys.G_banishOnDisable.toString());
 			banishonquit = (boolean) h_config.getGlobalVariable(Keys.G_banishonquit.toString());
 			disableBreeding = (boolean) h_config.getGlobalVariable(Keys.G_DisableBreeding.toString());
+
+			disableTamedHorses = (boolean) h_config.getGlobalVariable(Keys.G_REMOVETAME.toString());
 
 			forceClaimOnTaim = (boolean) h_config.getGlobalVariable(Keys.G_ClameOnTame.toString());
 			forcePermToRideUnclaimed = (boolean) h_config.getGlobalVariable(Keys.G_PermToRide.toString());

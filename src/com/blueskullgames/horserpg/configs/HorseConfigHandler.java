@@ -232,7 +232,7 @@ public class HorseConfigHandler {
 
 	public enum Keys {
 		G_dbtransfermode(".savetype"), G_DisableBreeding(".disable_basegame_breeding"), G_banishOnDisable(
-				".banish_on_disable"), G_ClameOnTame(".Force_claim_on_tame"),G_PermToRide(".RequirePermissionToRide"), G_banishonquit(".banish_on_player_quit"), G_nobanish(
+				".banish_on_disable"), G_ClameOnTame(".Force_claim_on_tame"),G_PermToRide(".RequirePermissionToRide"), G_REMOVETAME(".disable_basegame_taming"),G_banishonquit(".banish_on_player_quit"), G_nobanish(
 						".disable_banishment"),G_horseCost(".priceForHorse"), entityslastUUID(".lastUUIDinstance"), entityslastWorld(
 								".lastWorldname"), name(".name"), godmode(".godmode"), inventory(
 										".inventory"), hassaddle(".hassaddle"), wrath(".wrath"), agility(

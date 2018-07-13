@@ -2,6 +2,7 @@ package com.blueskullgames.horserpg.configs;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -47,6 +48,24 @@ public class MessagesConfigHandler {
 		return a;
 	}
 	
+	public String[] b(String path, String[] a){
+		if(config.contains(path)) {
+			List<String> k = config.getStringList(path);
+			return k.toArray(new String[k.size()]);
+		}
+		config.set(path, a);
+		if(saveTask==null) {
+			saveTask = new BukkitRunnable() {
+				
+				@Override
+				public void run() {
+					save();
+					saveTask = null;					
+				}
+			}.runTaskLater(HorseRPG.instance, 1);
+		}
+		return a;		
+	}
 	public void save() {
 		try {
 			config.save(file);

@@ -1,3 +1,17 @@
+Version 4.3.29
+	Added disable-basegame-tame in case you do not want regular horses on your server.
+	Fixed claim-on-tame so it forces the user to put a saddle on the horse, so the player does not need to. This should make taming easier
+	Removed redundant code for permtoridelistener
+	cleaned up code
+
+Version 4.3.28
+	Added ability to add or remove custom horse spawn names.
+	Changed TameToClaim to make sure players cannot ride horses if they have more horses than they are allowed to.
+	Changed PermToRide so there is a configurable message.
+
+Version 4.3.27b
+	Fixed exception error for scoreboard health
+
 Version 4.3.27
 	Fixed version in config.
 	Updated depend-downloader
