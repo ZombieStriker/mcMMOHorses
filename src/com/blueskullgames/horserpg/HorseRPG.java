@@ -25,6 +25,7 @@ import org.bukkit.entity.Mule;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Tameable;
 import org.bukkit.event.HandlerList;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.*;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -96,10 +97,10 @@ public class HorseRPG extends JavaPlugin {
 	public static String BOUGHT_HORSE_EXP1 = "&aTo summon your new horse, use the command /h summon <Your Horse>";
 
 	// new messages
-	public static String HORSE_NEEDS_TAME = "&aThis horse needs to tamed and saddled first!";
+	public static String HORSE_NEEDS_TAME = "&aThis horse needs to be tamed and saddled first!";
 	public static String RenameHorse = "&aHorse %oldname% has been changed to %newname%";
 	public static String PURCHASED_FOR_CLAIM = "&aHorse purchased for &e%amount%";
-	public static String NEXT_HORSE_COST = "&aNext horse costs: &e";
+	public static String NEXT_HORSE_COST = "&aNext horse costs: &e%amount%";
 	public static String CLAIM_NAME = "&b %name% &a claimed!";
 	public static String SKILL_INCREASED_BY = "&e %name% skill increased by %difference%. Total (%level%)";
 	public static String NOTENOUGHMONEY = "&aYou don't have enough money!";
@@ -567,9 +568,14 @@ public class HorseRPG extends JavaPlugin {
 		try {
 			kl = !((Tameable) horse).isTamed() || ((Horse) horse).getInventory().getSaddle() == null;
 		} catch (Error | Exception e) {
-			kl = !((Tameable) horse).isTamed()
-					|| (!((org.bukkit.entity.AbstractHorse) horse).getInventory().contains(Material.SADDLE)
-							&& !((org.bukkit.entity.AbstractHorse) horse).getInventory().contains(Material.CARPET));
+			ItemStack sad=null;
+			for(ItemStack is :((org.bukkit.entity.AbstractHorse) horse).getInventory().getContents())
+				if(is!=null&& (is.getType() == (Material.SADDLE)||is.getType().name().contains("CARPET"))) {
+					sad = is;					
+					break;
+				}
+				//= ((org.bukkit.entity.AbstractHorse) horse).getInventory().getItem(0);
+			kl = (!((Tameable) horse).isTamed()) || sad == null;
 		}
 		if (kl) {
 			msg(p, HORSE_NEEDS_TAME);

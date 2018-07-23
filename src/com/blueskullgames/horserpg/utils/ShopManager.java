@@ -108,7 +108,7 @@ public class ShopManager implements Listener {
 	public Color getColorInLore(ItemStack is) {
 		for (String l : is.getItemMeta().getLore()) {
 			if (l.startsWith(ChatColor.WHITE + "Color:")) {
-				return Color.valueOf(l.split(":")[1]);
+				return Color.valueOf(l.split(":")[1].trim());
 			}
 		}
 		return Color.GRAY;
