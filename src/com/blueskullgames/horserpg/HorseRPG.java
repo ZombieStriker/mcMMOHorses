@@ -106,6 +106,14 @@ public class HorseRPG extends JavaPlugin {
 	public static String NOTENOUGHMONEY = "&aYou don't have enough money!";
 	public static String NEED_TIME_TO_RECHARGE = "&e%name%&c needs some time to recharge.";
 	public static String SKILL_REFRESH = "&a**Your &e%ability%&a is refreshed*";
+	
+	public static String TOO_TIRED = "&c%name% is too tired to use that ability. &e(%cd%s)";
+	
+	public static String INVALID_PRICE="&aInvalid horse price.";
+	public static String HORSE_DOES_NOT_EXIST="&b%name%&a does not exist.";
+	public static String OFFER_DECLINED="&aOffer declined.";
+	public static String MUST_RIDE_HORSE_TO_CLAIM="&aYou must be riding your horse to claim it!";
+	public static String NO_OFFER_PENDING="&aYou don't have an offer pending.";
 	// public static String CLOSERTHAN100 = "&a You need to be within 100 blocks of
 	// your horse to banish them!";
 
@@ -224,7 +232,7 @@ public class HorseRPG extends JavaPlugin {
 				if (h.name.equalsIgnoreCase(hName))
 					return h;
 
-		msg(p, "&b" + hName + "&a does not exist.");
+		msg(p, HORSE_DOES_NOT_EXIST.replace("%name%",hName));
 		return null;
 	}
 
@@ -257,7 +265,7 @@ public class HorseRPG extends JavaPlugin {
 				if (h.name.equalsIgnoreCase(hName))
 					return h;
 
-		msg(p, "&b" + hName + "&a does not exist.");
+		msg(p, HORSE_DOES_NOT_EXIST.replace("%name%",hName));
 		return null;
 	}
 
@@ -551,7 +559,7 @@ public class HorseRPG extends JavaPlugin {
 		}
 
 		if (!aHorse) {
-			msg(p, "&aYou must be riding your horse to claim it!");
+			msg(p, MUST_RIDE_HORSE_TO_CLAIM);
 			return;
 		}
 
@@ -653,12 +661,12 @@ public class HorseRPG extends JavaPlugin {
 		Player p = (Player) sender;
 
 		if (!offers.containsKey(p)) {
-			msg(p, "&aYou don't have an offer pending.");
+			msg(p,NO_OFFER_PENDING );
 			return;
 		}
 		if (!buy) {
 			offers.remove(p);
-			msg(p, "&aOffer declined.");
+			msg(p, OFFER_DECLINED);
 			return;
 		}
 		if (pCurrentHorse.containsKey(p)) {
@@ -726,7 +734,7 @@ public class HorseRPG extends JavaPlugin {
 		try {
 			cost = Double.parseDouble(args[1]);
 		} catch (Exception ex) {
-			msg(p, "&aInvalid horse price.");
+			msg(p, INVALID_PRICE);
 			return;
 		}
 
@@ -1450,6 +1458,14 @@ public class HorseRPG extends JavaPlugin {
 		NEED_TIME_TO_RECHARGE = messages.a("Need_Time_To_Recharge", NEED_TIME_TO_RECHARGE);
 		SKILL_REFRESH = messages.a("Skill_Refreshed", SKILL_REFRESH);
 		RenameHorse = messages.a("Renamed_horse", RenameHorse);
+		
+		
+		TOO_TIRED = messages.a("Horse_Too_Tired", TOO_TIRED);
+		INVALID_PRICE = messages.a("Invalid_price", INVALID_PRICE);
+		HORSE_DOES_NOT_EXIST = messages.a("Horse_Does_Not_Exist", HORSE_DOES_NOT_EXIST);
+		OFFER_DECLINED = messages.a("Offer_Declined", OFFER_DECLINED);
+		MUST_RIDE_HORSE_TO_CLAIM = messages.a("MUST_RIDE_HORSE_TO_CLAIM", MUST_RIDE_HORSE_TO_CLAIM);
+		NO_OFFER_PENDING = messages.a("No_Offer_Pending", NO_OFFER_PENDING);
 		// CLOSERTHAN100 = messages.a("Must_be_closer_than_100", CLOSERTHAN100);
 
 		BANISH_LOADED_CHUNK = messages.a("Banished_In_Unloaded_Chunk", BANISH_LOADED_CHUNK);
@@ -1884,7 +1900,7 @@ public class HorseRPG extends JavaPlugin {
 		h_config.save();
 
 		if (banishondisable)
-			for (Entity horse : hSpawnedHorses.keySet()) {
+			for (Entity horse : new ArrayList<>(hSpawnedHorses.keySet())) {
 				hSpawnedHorses.remove(horse).banish();
 			}
 

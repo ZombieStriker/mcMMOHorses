@@ -144,6 +144,7 @@ public class HorseConfigHandler {
 	@SuppressWarnings("unchecked")
 	public RPGHorse getHorse(final String owner, String horseUUID) {
 		for (final String rpguuids : config.getConfigurationSection("Horses." + owner).getKeys(false)) {
+			try {
 			if (rpguuids.equalsIgnoreCase(horseUUID)) {
 				Color c = Color.DARK_BROWN;
 
@@ -180,8 +181,8 @@ public class HorseConfigHandler {
 
 				final RPGHorse rpgHorse = new RPGHorse(horsename, owner, c, s, v, gm, sswift, sagil, svit, swrath, uuid,
 						jumpPow, sprintPow,sex);
-				if (config.contains("Horses." + owner + "." + rpguuids + "."+Keys.hasChest)) {
-					rpgHorse.setHasChest(config.getBoolean("Horses." + owner + "." + rpguuids +"."+ Keys.hasChest));
+				if (config.contains("Horses." + owner + "." + rpguuids +Keys.hasChest)) {
+					rpgHorse.setHasChest(config.getBoolean("Horses." + owner + rpguuids +"."+ Keys.hasChest));
 				}
 
 				if (config.contains("Horses." + owner + "." + rpguuids + Keys.inventory.toString())) {
@@ -225,6 +226,7 @@ public class HorseConfigHandler {
 				System.out.println("Loading " + rpgHorse.name);
 				return rpgHorse;
 			}
+			}catch(Error|Exception e45) {}
 		}
 		System.out.println("Could not load horse");
 		return null;
@@ -239,7 +241,7 @@ public class HorseConfigHandler {
 												".agility"), swiftness(".swiftness"), vitality(".vitality"), color(
 														".color"), isdead(".isdead"), powerlevel(".powerlevel"), style(
 																".style"), variant(".variant"), jumpPow(
-																		".jumpPow"), sprintPow(".sprintPow"),sex(".sex"),hasChest("hasChest");
+																		".jumpPow"), sprintPow(".sprintPow"),sex(".sex"),hasChest(".hasChest");
 		private String n;
 
 		private Keys(String name) {

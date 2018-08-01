@@ -196,7 +196,8 @@ public class HorseListener implements Listener {
 					Swiftness swiftness = h.swiftness;
 					if (!swiftness.refreshed)
 						HorseRPG.msg(p,
-								"&c" + h.name + " is too tired to use that ability. &e(" + swiftness.sprintCd + "s)");
+								HorseRPG.TOO_TIRED.replace("%name%", h.name).replace("%cd%", swiftness.sprintCd+""));//"&c" + h.name + " is too tired to use that ability. &e(" + swiftness.sprintCd + "s)");
+					
 					else {
 						HorseRPG.msg(p, "&a**SPRINTING**");
 						h.swiftness.sprint();

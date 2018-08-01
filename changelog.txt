@@ -1,3 +1,10 @@
+Version 4.3.35
+	Added more customizable messages
+	Fixed chest-saving error
+
+Version 4.3.34
+	Fixed concurrentexception when banishing horses ondisable.
+
 Version 4.3.33
 	Fixed debug code
 	Fixed message so amount is shown when horse is bought.
