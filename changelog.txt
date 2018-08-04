@@ -1,3 +1,9 @@
+Version 4.3.36
+	Fixed API tag
+	Fixed Saddle take issue
+	Fixed issue where saddle was not correctly being taken from the player's inventory
+	Fixed issue where was remained tamed even if horse was not claimed
+
 Version 4.3.35
 	Added more customizable messages
 	Fixed chest-saving error

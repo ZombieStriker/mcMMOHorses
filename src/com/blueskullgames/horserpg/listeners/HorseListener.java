@@ -1,5 +1,6 @@
 package com.blueskullgames.horserpg.listeners;
 
+import java.util.Map.Entry;
 import java.util.Optional;
 
 import org.bukkit.Bukkit;
@@ -36,10 +37,10 @@ public class HorseListener implements Listener {
 	 */
 	@EventHandler
 	public void onInventoryClick(InventoryClickEvent e) {
-		if (e.getSlot() == 0 && e.getClickedInventory().getItem(0) != null
-				&& e.getClickedInventory().getItem(0).getType() == Material.SADDLE) {
-			for (Entity horse : HorseRPG.hSpawnedHorses.keySet()) {
-				if (e.getInventory().equals(horse)) {
+		if (e.getSlot() == 0 && e.getInventory().getItem(0) != null
+				&& e.getInventory().getItem(0).getType() == Material.SADDLE) {
+			for (Entry<Entity, RPGHorse> horse : HorseRPG.hSpawnedHorses.entrySet()) {
+				if (e.getInventory().getTitle().equals(horse.getValue().name)) {
 					e.setCancelled(true);
 				}
 			}

@@ -1,7 +1,6 @@
 package com.blueskullgames.horserpg.utils;
 
 import org.bukkit.Material;
-import org.bukkit.entity.EntityType;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
@@ -81,8 +80,10 @@ public class TameToClaimListener implements Listener {
 								}
 							} else {
 								takenfrom = e.getPlayer().getInventory().first(Material.SADDLE);
-								if (takenfrom > -1)
+								if (takenfrom > -1) {
 									used = e.getPlayer().getInventory().getItem(takenfrom);
+									slot=takenfrom;
+								}
 							}
 							if (used != null) {
 								if (used.getAmount() > 1) {
@@ -95,11 +96,12 @@ public class TameToClaimListener implements Listener {
 								} else {
 									((org.bukkit.entity.AbstractHorse) e.getRightClicked()).getInventory().setItem(slot,
 											used);
-									e.getPlayer().getInventory().setItem(slot, used);
+									e.getPlayer().getInventory().setItem(slot, null);
 								}
 							} else {
 								e.getRightClicked().eject();
 								e.getPlayer().sendMessage(HorseRPG.HORSE_NEEDS_TAME);
+								((org.bukkit.entity.AbstractHorse) e.getRightClicked()).setTamed(false);
 								cancel();
 								return;
 							}
@@ -123,6 +125,7 @@ public class TameToClaimListener implements Listener {
 							} else {
 								e.getRightClicked().eject();
 								e.getPlayer().sendMessage(HorseRPG.HORSE_NEEDS_TAME);
+								((org.bukkit.entity.Horse) e.getRightClicked()).setTamed(false);
 								cancel();
 								return;
 							}
