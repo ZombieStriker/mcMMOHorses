@@ -34,14 +34,14 @@ import com.blueskullgames.horserpg.utils.atributeutils.BaseAtributeUtil;
 @SuppressWarnings("deprecation")
 public class RPGHorse implements Comparable<RPGHorse> {
 
-	public static String[] FIRST_NAMES = { "Big", "Boomer", "Bubba", "Bubble", "Candy", "Chicken", "Chubby",
-			"Chunky", "Cinnamon", "Daisy", "Fluffy", "Lil'", "Little", "Muffin", "Peachy", "Pooky", "Rainbow", "Sir",
-			"Snuggle", "Sprinkle", "Stinker", "Swag", "Tickle", "Tinkle", "Tootsie", "Twinkle"
+	public static String[] FIRST_NAMES = { "Big", "Boomer", "Bubba", "Bubble", "Candy", "Chicken", "Chubby", "Chunky",
+			"Cinnamon", "Daisy", "Fluffy", "Lil'", "Little", "Muffin", "Peachy", "Pooky", "Rainbow", "Sir", "Snuggle",
+			"Sprinkle", "Stinker", "Swag", "Tickle", "Tinkle", "Tootsie", "Twinkle"
 
 			, "Gary", "Henry", "King", "Foal Ball", "Apple", "Carrot", "Potato", "Sugar", "Butter", "Silver" };
-	public static String[] LAST_NAMES = { "Blossom", "Booty", "Bottoms", "Boy", "Bunches", "Buttercup",
-			"Cucumber", "Cumquat", "Daddy", "Freckles", "Girl", "Horsey", "Hugs A Lot", "Marshmallow", "McFluffems",
-			"McGiggles", "McNuggs", "McShowoff", "McSnuggles", "Noodles", "Pancake", "Poops A Lot", "Potato"
+	public static String[] LAST_NAMES = { "Blossom", "Booty", "Bottoms", "Boy", "Bunches", "Buttercup", "Cucumber",
+			"Cumquat", "Daddy", "Freckles", "Girl", "Horsey", "Hugs A Lot", "Marshmallow", "McFluffems", "McGiggles",
+			"McNuggs", "McShowoff", "McSnuggles", "Noodles", "Pancake", "Poops A Lot", "Potato"
 
 			, "McSwifty", "The Brave", "The Noble", "The First", "Johnson", "Grimes", "McSnuffles" };
 
@@ -375,8 +375,6 @@ public class RPGHorse implements Comparable<RPGHorse> {
 			horse = p.getWorld().spawnEntity(p.getLocation(), EntityType.HORSE);
 			setVariant(variant);
 		}
-		// attributeUtil.setJumpHeight(horse, generic_jump);
-		// TODO: attributeUtil.setSpeed(horse,generic_speed);
 		try {
 			((Horse) horse).setColor(color);
 			((Horse) horse).setStyle(style);
@@ -417,15 +415,17 @@ public class RPGHorse implements Comparable<RPGHorse> {
 					// .setSaddle(new ItemStack(Material.SADDLE));
 					((Horse) horse).getInventory().setContents(inventory);
 				} catch (Exception | Error e2) {
-					HorseRPG.msg(p, " Something went wrong with the horse's inventory. Contact the server owner and tell them to report the error message in the console");
-					HorseRPG.msg(p, "The contents of the horse's inventory has been given to you (or dropped on the floor if your inventory is full)");
+					HorseRPG.msg(p,
+							" Something went wrong with the horse's inventory. Contact the server owner and tell them to report the error message in the console");
+					HorseRPG.msg(p,
+							"The contents of the horse's inventory has been given to you (or dropped on the floor if your inventory is full)");
 					e.printStackTrace();
 					e2.printStackTrace();
-					for(ItemStack is : inventory) {
-						if(is!=null) {
-							if(p.getInventory().firstEmpty()==-1) {
+					for (ItemStack is : inventory) {
+						if (is != null) {
+							if (p.getInventory().firstEmpty() == -1) {
 								p.getWorld().dropItem(p.getLocation(), is);
-							}else {
+							} else {
 								p.getInventory().addItem(is);
 							}
 						}
@@ -451,6 +451,10 @@ public class RPGHorse implements Comparable<RPGHorse> {
 		this.wrath.update();
 		this.swiftness.update();
 
+		if (generic_jump > 0)
+			attributeUtil.setJumpHeight(horse, generic_jump);
+		if (generic_speed > 0)
+			attributeUtil.setSpeed(horse, generic_speed);
 		return horse;
 	}
 

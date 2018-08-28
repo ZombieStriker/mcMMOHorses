@@ -8,12 +8,12 @@ public class AtributeUtilAbstractHorse implements BaseAtributeUtil {
 
 	@Override
 	public double getJumpHeight(Entity e) {
-		return ((AbstractHorse) e).getAttribute(Attribute.HORSE_JUMP_STRENGTH).getBaseValue();
+		return ((AbstractHorse) e).getAttribute(Attribute.HORSE_JUMP_STRENGTH).getValue();
 	}
 
 	@Override
 	public double getSpeed(Entity e) {
-		return ((AbstractHorse) e).getAttribute(Attribute.GENERIC_MOVEMENT_SPEED).getBaseValue();
+		return ((AbstractHorse) e).getAttribute(Attribute.GENERIC_MOVEMENT_SPEED).getValue();
 	}
 
 	@Override

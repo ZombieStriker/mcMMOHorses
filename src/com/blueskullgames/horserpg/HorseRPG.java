@@ -34,7 +34,6 @@ import org.bukkit.scoreboard.*;
 
 import com.blueskullgames.horserpg.configs.HorseConfigHandler;
 import com.blueskullgames.horserpg.configs.MessagesConfigHandler;
-import com.blueskullgames.horserpg.configs.HorseConfigHandler.Keys;
 import com.blueskullgames.horserpg.listeners.*;
 import com.blueskullgames.horserpg.tasks.*;
 import com.blueskullgames.horserpg.utils.*;
@@ -106,14 +105,14 @@ public class HorseRPG extends JavaPlugin {
 	public static String NOTENOUGHMONEY = "&aYou don't have enough money!";
 	public static String NEED_TIME_TO_RECHARGE = "&e%name%&c needs some time to recharge.";
 	public static String SKILL_REFRESH = "&a**Your &e%ability%&a is refreshed*";
-	
+
 	public static String TOO_TIRED = "&c%name% is too tired to use that ability. &e(%cd%s)";
-	
-	public static String INVALID_PRICE="&aInvalid horse price.";
-	public static String HORSE_DOES_NOT_EXIST="&b%name%&a does not exist.";
-	public static String OFFER_DECLINED="&aOffer declined.";
-	public static String MUST_RIDE_HORSE_TO_CLAIM="&aYou must be riding your horse to claim it!";
-	public static String NO_OFFER_PENDING="&aYou don't have an offer pending.";
+
+	public static String INVALID_PRICE = "&aInvalid horse price.";
+	public static String HORSE_DOES_NOT_EXIST = "&b%name%&a does not exist.";
+	public static String OFFER_DECLINED = "&aOffer declined.";
+	public static String MUST_RIDE_HORSE_TO_CLAIM = "&aYou must be riding your horse to claim it!";
+	public static String NO_OFFER_PENDING = "&aYou don't have an offer pending.";
 	// public static String CLOSERTHAN100 = "&a You need to be within 100 blocks of
 	// your horse to banish them!";
 
@@ -141,6 +140,9 @@ public class HorseRPG extends JavaPlugin {
 	public static boolean disableBreeding = false;
 
 	public static boolean disableTamedHorses = false;
+
+	public static int savetype = 2;
+	public static boolean logWhenSave = true;
 
 	public static boolean freeHorse;
 	public static boolean permanentDeath;
@@ -232,7 +234,7 @@ public class HorseRPG extends JavaPlugin {
 				if (h.name.equalsIgnoreCase(hName))
 					return h;
 
-		msg(p, HORSE_DOES_NOT_EXIST.replace("%name%",hName));
+		msg(p, HORSE_DOES_NOT_EXIST.replace("%name%", hName));
 		return null;
 	}
 
@@ -265,7 +267,7 @@ public class HorseRPG extends JavaPlugin {
 				if (h.name.equalsIgnoreCase(hName))
 					return h;
 
-		msg(p, HORSE_DOES_NOT_EXIST.replace("%name%",hName));
+		msg(p, HORSE_DOES_NOT_EXIST.replace("%name%", hName));
 		return null;
 	}
 
@@ -576,13 +578,13 @@ public class HorseRPG extends JavaPlugin {
 		try {
 			kl = !((Tameable) horse).isTamed() || ((Horse) horse).getInventory().getSaddle() == null;
 		} catch (Error | Exception e) {
-			ItemStack sad=null;
-			for(ItemStack is :((org.bukkit.entity.AbstractHorse) horse).getInventory().getContents())
-				if(is!=null&& (is.getType() == (Material.SADDLE)||is.getType().name().contains("CARPET"))) {
-					sad = is;					
+			ItemStack sad = null;
+			for (ItemStack is : ((org.bukkit.entity.AbstractHorse) horse).getInventory().getContents())
+				if (is != null && (is.getType() == (Material.SADDLE) || is.getType().name().contains("CARPET"))) {
+					sad = is;
 					break;
 				}
-				//= ((org.bukkit.entity.AbstractHorse) horse).getInventory().getItem(0);
+			// = ((org.bukkit.entity.AbstractHorse) horse).getInventory().getItem(0);
 			kl = (!((Tameable) horse).isTamed()) || sad == null;
 		}
 		if (kl) {
@@ -661,7 +663,7 @@ public class HorseRPG extends JavaPlugin {
 		Player p = (Player) sender;
 
 		if (!offers.containsKey(p)) {
-			msg(p,NO_OFFER_PENDING );
+			msg(p, NO_OFFER_PENDING);
 			return;
 		}
 		if (!buy) {
@@ -1314,15 +1316,16 @@ public class HorseRPG extends JavaPlugin {
 		initHelp();
 		// This is just a work around. This makes sure that we can
 		// transfer db horses to the file
-		Object o = h_config.getGlobalVariable(Keys.G_dbtransfermode.toString());
-		if (o == null || (int) o < 1) {
-			h_config.setGlobalVar(Keys.G_dbtransfermode.toString(), 1);
-		}
+		// Object o = h_config.getGlobalVariable(Keys.G_dbtransfermode.toString());
+		// if (o == null || (int) o < 1) {
+		// h_config.setGlobalVar(Keys.G_dbtransfermode.toString(), 1);
+		// }
 		initHorses();
 
-		if (((int) h_config.getGlobalVariable(Keys.G_dbtransfermode.toString())) < 2) {
-			h_config.setGlobalVar(Keys.G_dbtransfermode.toString(), 2);
-		}
+		// if (((int) h_config.getGlobalVariable(Keys.G_dbtransfermode.toString())) < 2)
+		// {
+		// h_config.setGlobalVar(Keys.G_dbtransfermode.toString(), 2);
+		// }
 
 		new BukkitRunnable() {
 			@Override
@@ -1458,8 +1461,7 @@ public class HorseRPG extends JavaPlugin {
 		NEED_TIME_TO_RECHARGE = messages.a("Need_Time_To_Recharge", NEED_TIME_TO_RECHARGE);
 		SKILL_REFRESH = messages.a("Skill_Refreshed", SKILL_REFRESH);
 		RenameHorse = messages.a("Renamed_horse", RenameHorse);
-		
-		
+
 		TOO_TIRED = messages.a("Horse_Too_Tired", TOO_TIRED);
 		INVALID_PRICE = messages.a("Invalid_price", INVALID_PRICE);
 		HORSE_DOES_NOT_EXIST = messages.a("Horse_Does_Not_Exist", HORSE_DOES_NOT_EXIST);
@@ -1504,47 +1506,64 @@ public class HorseRPG extends JavaPlugin {
 			summonCost = fc.getInt("summon-cost");
 			banishCost = fc.getInt("banish-cost");
 
-			if (!h_config.containsGlobalVariable(Keys.G_nobanish.toString())) {
-				h_config.setGlobalVar(Keys.G_nobanish.toString(), false);
+			/*
+			 * if (!h_config.containsGlobalVariable(Keys.G_nobanish.toString())) {
+			 * h_config.setGlobalVar(Keys.G_nobanish.toString(), false); }else {
+			 * 
+			 * }
+			 * 
+			 * if (!h_config.containsGlobalVariable(Keys.G_banishOnDisable.toString())) {
+			 * h_config.setGlobalVar(Keys.G_banishOnDisable.toString(), true); }
+			 * 
+			 * if (!h_config.containsGlobalVariable(Keys.G_DisableBreeding.toString())) {
+			 * h_config.setGlobalVar(Keys.G_DisableBreeding.toString(), false); }
+			 * 
+			 * if (!h_config.containsGlobalVariable(Keys.G_banishonquit.toString())) {
+			 * h_config.setGlobalVar(Keys.G_banishonquit.toString(), true); } if
+			 * (!h_config.containsGlobalVariable(Keys.G_ClameOnTame.toString())) {
+			 * h_config.setGlobalVar(Keys.G_ClameOnTame.toString(), false); }
+			 * 
+			 * if (!h_config.containsGlobalVariable(Keys.G_PermToRide.toString())) {
+			 * h_config.setGlobalVar(Keys.G_PermToRide.toString(), false); } if
+			 * (!h_config.containsGlobalVariable(Keys.G_REMOVETAME.toString())) {
+			 * h_config.setGlobalVar(Keys.G_REMOVETAME.toString(), false); } for (Variant v
+			 * : Variant.values()) { if
+			 * (!h_config.containsGlobalVariable(Keys.G_horseCost.toString() + "." +
+			 * v.name())) { h_config.setGlobalVar(Keys.G_horseCost.toString() + "." +
+			 * v.name(), 100.0); } costForHorse.put(v, (Double)
+			 * h_config.getGlobalVariable(Keys.G_horseCost.toString() + "." + v.name())); }
+			 */
+			/*
+			 * G_dbtransfermode(".savetype"),
+			 * G_DisableBreeding(".disable_basegame_breeding"), G_banishOnDisable(
+			 * ".banish_on_disable"),
+			 * G_ClameOnTame(".Force_claim_on_tame"),G_PermToRide(".RequirePermissionToRide"
+			 * ), G_REMOVETAME(".disable_basegame_taming"),G_banishonquit(
+			 * ".banish_on_player_quit"), G_nobanish(
+			 * ".disable_banishment"),G_horseCost(".priceForHorse"),
+			 */
+			if (!fc.contains("savetype")) {
+				config.overwriteConfig();
+				fc = config.getConfig();
 			}
+			savetype = fc.getInt("savetype");
 
-			if (!h_config.containsGlobalVariable(Keys.G_banishOnDisable.toString())) {
-				h_config.setGlobalVar(Keys.G_banishOnDisable.toString(), true);
-			}
+			logWhenSave = fc.getBoolean("logWhenSaved");
 
-			if (!h_config.containsGlobalVariable(Keys.G_DisableBreeding.toString())) {
-				h_config.setGlobalVar(Keys.G_DisableBreeding.toString(), false);
-			}
+			nobanishment = fc.getBoolean("disable_banishment");
+			banishondisable = fc.getBoolean("banish_on_disable");
+			banishonquit = fc.getBoolean("banish_on_player_quit");
+			disableBreeding = fc.getBoolean("disable_basegame_breeding");
 
-			if (!h_config.containsGlobalVariable(Keys.G_banishonquit.toString())) {
-				h_config.setGlobalVar(Keys.G_banishonquit.toString(), true);
-			}
-			if (!h_config.containsGlobalVariable(Keys.G_ClameOnTame.toString())) {
-				h_config.setGlobalVar(Keys.G_ClameOnTame.toString(), false);
-			}
+			disableTamedHorses = fc.getBoolean("disable_basegame_taming");
 
-			if (!h_config.containsGlobalVariable(Keys.G_PermToRide.toString())) {
-				h_config.setGlobalVar(Keys.G_PermToRide.toString(), false);
-			}
-			if (!h_config.containsGlobalVariable(Keys.G_REMOVETAME.toString())) {
-				h_config.setGlobalVar(Keys.G_REMOVETAME.toString(), false);
-			}
+			forceClaimOnTaim = fc.getBoolean("Force_claim_on_tame");
+			forcePermToRideUnclaimed = fc.getBoolean("RequirePermissionToRide");
 			for (Variant v : Variant.values()) {
-				if (!h_config.containsGlobalVariable(Keys.G_horseCost.toString() + "." + v.name())) {
-					h_config.setGlobalVar(Keys.G_horseCost.toString() + "." + v.name(), 100.0);
-				}
-				costForHorse.put(v, (Double) h_config.getGlobalVariable(Keys.G_horseCost.toString() + "." + v.name()));
+				costForHorse.put(v, fc.getDouble("priceForHorse." + v.name()));// (Double)
+																				// h_config.getGlobalVariable(Keys.G_horseCost.toString()
+																				// + "." + v.name()));
 			}
-
-			nobanishment = (boolean) h_config.getGlobalVariable(Keys.G_nobanish.toString());
-			banishondisable = (boolean) h_config.getGlobalVariable(Keys.G_banishOnDisable.toString());
-			banishonquit = (boolean) h_config.getGlobalVariable(Keys.G_banishonquit.toString());
-			disableBreeding = (boolean) h_config.getGlobalVariable(Keys.G_DisableBreeding.toString());
-
-			disableTamedHorses = (boolean) h_config.getGlobalVariable(Keys.G_REMOVETAME.toString());
-
-			forceClaimOnTaim = (boolean) h_config.getGlobalVariable(Keys.G_ClameOnTame.toString());
-			forcePermToRideUnclaimed = (boolean) h_config.getGlobalVariable(Keys.G_PermToRide.toString());
 		} catch (Exception e) {
 			getLogger().info("Error loading 'config.yml' file!");
 			e.printStackTrace();
@@ -1594,14 +1613,15 @@ public class HorseRPG extends JavaPlugin {
 	 * Initializes horses.db
 	 */
 	private void initHorses() {
-		if (((int) h_config.getGlobalVariable(Keys.G_dbtransfermode.toString())) == 2) {
+		if (savetype == 2) {
 			if (h_config.anyOwners()) {
 				for (String owner : h_config.getOwners()) {
 					for (String name : h_config.getHorses(owner)) {
 						RPGHorse h = h_config.getHorse(owner, name);
+						if (owner == null || h == null || horses == null)
+							continue;
 						if (!ownedHorses.containsKey(owner))
 							ownedHorses.put(owner, new TreeSet<RPGHorse>());
-
 						ownedHorses.get(owner).add(h);
 						horses.add(h);
 					}
@@ -1659,7 +1679,7 @@ public class HorseRPG extends JavaPlugin {
 			return;
 		Connection connect = null;
 		try {
-			if (((int) h_config.getGlobalVariable(Keys.G_dbtransfermode.toString())) == 2) {
+			if (savetype == 2) {
 				for (TreeSet<RPGHorse> horseSet : ownedHorses.values()) {
 					for (RPGHorse h : horseSet) {
 						h_config.saveHorse(h, false);
@@ -1684,10 +1704,12 @@ public class HorseRPG extends JavaPlugin {
 								+ (h.isMale ? 0 : 1) + ")");
 				}
 			}
+
 			if (sender != null)
 				msg(sender, HORSES_SAVED);
 			if (instance != null)
-				msg(Bukkit.getConsoleSender(), HORSES_SAVED);
+				if (logWhenSave)
+					msg(Bukkit.getConsoleSender(), HORSES_SAVED);
 		} catch (Exception e) {
 			System.err.println(e);
 			msg(sender,

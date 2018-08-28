@@ -1,6 +1,6 @@
 ######################################################
 #                                                    #
-#              mcMMO Horses Config 4.3.27            #
+#              mcMMO Horses Config 4.3.37            #
 #                                                    #
 ######################################################
 
@@ -57,3 +57,40 @@ summon-cost: 10
 # Horse banish cost
 banish-cost: 0
 
+# Allow for automatic updates
+auto-update: true
+
+# Stop the player from banishing horses. 
+disable_banishment: false
+
+# Banishes all claimed horses on disable. This helps prevent duplicate horses from occuring
+banish_on_disable: true
+
+# Disables the in game breeding. Useful for preventing players from being able to get unlimited horses
+disable_basegame_breeding: false
+
+# Banishes all of the player's horses when they quit. This will make sure the horse is protected
+banish_on_player_quit: true
+
+# Save type. Save types 0 and 1 are currently invalid, Savetype 2 is a flatfile, Savetype 3 is an SQL database (not to be confused with MySQL database, which this plugin currently does not support)
+savetype: 2
+
+logWhenSaved: true
+
+# Sets the price for each horse type in the shop.
+priceForHorse:
+  HORSE: 100.0
+  DONKEY: 100.0
+  MULE: 100.0
+  UNDEAD_HORSE: 400.0
+  SKELETON_HORSE: 400.0
+  LLAMA: 100.0
+  
+# Requires the horse to be claimed when they are tamed, or else the player is ejected from the horse
+Force_claim_on_tame: false
+
+# Requires the player to be able to claim the horse to ride them.
+RequirePermissionToRide: false
+
+# Disables base game taming. This makes sure that horses can only by purchased.
+disable_basegame_taming: false
