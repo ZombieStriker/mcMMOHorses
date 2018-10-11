@@ -58,6 +58,8 @@ public class HorseRPG extends JavaPlugin {
 	public static final String H_DELXP = "mcmmohorses.admin.delxp";
 	public static final String H_SET = "mcmmohorses.admin.set";
 	public static final String H_SET_NAME = "mcmmohorses.admin.set.name";
+	public static final String H_SET_SPEED = "mcmmohorses.admin.set.speed";
+	public static final String H_SET_JUMP = "mcmmohorses.admin.set.jump";
 	public static final String H_SET_COLOR = "mcmmohorses.admin.set.color";
 	public static final String H_SET_STYLE = "mcmmohorses.admin.set.style";
 	public static final String H_SET_TYPE = "mcmmohorses.admin.set.type";
@@ -98,6 +100,8 @@ public class HorseRPG extends JavaPlugin {
 	// new messages
 	public static String HORSE_NEEDS_TAME = "&aThis horse needs to be tamed and saddled first!";
 	public static String RenameHorse = "&aHorse %oldname% has been changed to %newname%";
+	public static String ChangeSpeedHorse = "&aHorse %oldname% has had their speed change to %speed%";
+	public static String ChangeJumpHorse = "&aHorse %oldname% has had their jump height change to %jump%";
 	public static String PURCHASED_FOR_CLAIM = "&aHorse purchased for &e%amount%";
 	public static String NEXT_HORSE_COST = "&aNext horse costs: &e%amount%";
 	public static String CLAIM_NAME = "&b %name% &a claimed!";
@@ -446,6 +450,8 @@ public class HorseRPG extends JavaPlugin {
 		p.sendMessage((ChatColor.GOLD + "Power Level") + ChatColor.WHITE + "  " + h.powerLevel);
 		p.sendMessage((ChatColor.GOLD + "Sex") + ChatColor.WHITE + "  " + (h.isMale ? "Male" : "Female")
 				+ (h.variant == Variant.DONKEY || h.variant == Variant.MULE ? "(Gelding)" : ""));
+		p.sendMessage((ChatColor.GREEN + "Base-Speed") + ChatColor.WHITE + "  " + h.generic_speed);
+		p.sendMessage((ChatColor.GREEN + "Base-Jump") + ChatColor.WHITE + "  " + h.generic_jump);
 		try {
 			obj.getScore((ChatColor.GREEN + "Swiftness") + ChatColor.WHITE + "  " + h.swiftness.level).setScore(8);
 			obj.getScore((ChatColor.DARK_GRAY + "Sprint: ") + ChatColor.GRAY + "= " + ((int) (h.swiftness.amplitude))
@@ -467,6 +473,8 @@ public class HorseRPG extends JavaPlugin {
 
 			obj.getScore((ChatColor.GOLD + "Sex") + ChatColor.WHITE + "  " + (h.isMale ? "Male" : "Female")
 					+ (h.variant == Variant.DONKEY || h.variant == Variant.MULE ? "(Gelding)" : "")).setScore(-1);
+			obj.getScore((ChatColor.GREEN + "Base-Speed") + ChatColor.WHITE + "  " + h.generic_speed).setScore(-2);
+			obj.getScore((ChatColor.GREEN + "Base-Jump") + ChatColor.WHITE + "  " + h.generic_jump).setScore(-3);
 
 		} catch (Exception e) {
 			obj.getScore(Bukkit.getOfflinePlayer(ChatColor.GREEN + "Swiftness")).setScore(h.swiftness.level);
@@ -489,6 +497,8 @@ public class HorseRPG extends JavaPlugin {
 
 			obj.getScore(Bukkit.getOfflinePlayer((ChatColor.DARK_GRAY + "Infuriate: ") + ChatColor.GRAY + "= "
 					+ ((int) (h.wrath.infuriateChance * 100)) + "%")).setScore(1);
+			obj.getScore(Bukkit.getOfflinePlayer(ChatColor.GREEN + "Base-Speed")).setScore((int) h.generic_speed);
+			obj.getScore(Bukkit.getOfflinePlayer(ChatColor.GREEN + "Base-Jump")).setScore((int) h.generic_jump);
 
 		}
 		Scoreboard oldsb = p.getScoreboard();
@@ -1028,6 +1038,73 @@ public class HorseRPG extends JavaPlugin {
 		// "&aHorse %oldname% has been changed to %newname%"
 		msg(p, RenameHorse.replace("%oldname%", oldname).replace("%newname%", h.name));
 	}
+	/**
+	 * Changes the currently spawned horse's name
+	 * 
+	 * @param sender
+	 *            is the sender to message
+	 * @param args
+	 *            are the command arguments
+	 */
+	public static void setHorseSpeed(CommandSender sender, String[] args) {
+		if (notAllowed(sender, H_SET_SPEED, true))
+			return;
+		Player p = (Player) sender;
+		if (args.length <= 2) {
+			msg(p, INVALID_NAME);
+			return;
+		}
+
+		RPGHorse h = pCurrentHorse.get(p);
+		if (h == null) {
+			msg(p, NO_HORSE_SUMMONED);
+			return;
+		}
+		double speed = 2.25;
+		//String oldname = h.name;
+
+		if (args[2].equalsIgnoreCase("random"))
+			h.generic_speed = Math.random()*speed;
+		else {
+			h.generic_speed = Double.parseDouble(args[2]);
+		}
+		// "&aHorse %oldname% has been changed to %newname%"
+		msg(p, ChangeSpeedHorse.replace("%oldname%", h.name).replace("%speed%", ""+h.generic_speed));
+	}
+	/**
+	 * Changes the currently spawned horse's name
+	 * 
+	 * @param sender
+	 *            is the sender to message
+	 * @param args
+	 *            are the command arguments
+	 */
+	public static void setHorseJump(CommandSender sender, String[] args) {
+		if (notAllowed(sender, H_SET_SPEED, true))
+			return;
+		Player p = (Player) sender;
+		if (args.length <= 2) {
+			msg(p, INVALID_NAME);
+			return;
+		}
+
+		RPGHorse h = pCurrentHorse.get(p);
+		if (h == null) {
+			msg(p, NO_HORSE_SUMMONED);
+			return;
+		}
+		double speed = 2.25;
+		//String oldname = h.name;
+
+		if (args[2].equalsIgnoreCase("random"))
+			h.generic_jump = Math.random()*speed;
+		else {
+			h.generic_jump = Double.parseDouble(args[2]);
+		}
+		// "&aHorse %oldname% has been changed to %newname%"
+		msg(p, ChangeJumpHorse.replace("%oldname%", h.name).replace("%jump%", ""+h.generic_jump));
+	}
+
 
 	/**
 	 * Changes the current spawned horse's color
@@ -1461,6 +1538,8 @@ public class HorseRPG extends JavaPlugin {
 		NEED_TIME_TO_RECHARGE = messages.a("Need_Time_To_Recharge", NEED_TIME_TO_RECHARGE);
 		SKILL_REFRESH = messages.a("Skill_Refreshed", SKILL_REFRESH);
 		RenameHorse = messages.a("Renamed_horse", RenameHorse);
+		ChangeSpeedHorse = messages.a("Change_Speed_horse", ChangeSpeedHorse);
+		ChangeJumpHorse = messages.a("Change_Jump_horse", ChangeJumpHorse);
 
 		TOO_TIRED = messages.a("Horse_Too_Tired", TOO_TIRED);
 		INVALID_PRICE = messages.a("Invalid_price", INVALID_PRICE);
@@ -1756,6 +1835,14 @@ public class HorseRPG extends JavaPlugin {
 			a(r, "reload", args[0]);
 			a(r, "gift", args[0]);
 		} else {
+			if(args[0].equalsIgnoreCase("set")) {
+				a(r, "name", args[1]);
+				a(r, "speed", args[1]);
+				a(r, "jump", args[1]);
+				a(r, "type", args[1]);
+				a(r, "color", args[1]);
+				a(r, "style", args[1]);
+			}
 			if (args[0].equalsIgnoreCase("stats") || args[0].equalsIgnoreCase("breed")
 					|| args[0].equalsIgnoreCase("summon") || args[0].equalsIgnoreCase("allowbreeding")
 					|| args[0].equalsIgnoreCase("kill")) {
@@ -1886,6 +1973,12 @@ public class HorseRPG extends JavaPlugin {
 			switch (subcmd) {
 			case "name":
 				setHorseName(sender, args);
+				return true;
+			case "speed":
+				setHorseSpeed(sender, args);
+				return true;
+			case "jump":
+				setHorseJump(sender, args);
 				return true;
 			case "type":
 				setHorseVariant(sender, args);

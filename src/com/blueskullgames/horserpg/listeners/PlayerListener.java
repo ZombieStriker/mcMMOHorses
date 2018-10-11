@@ -69,7 +69,7 @@ public class PlayerListener implements Listener {
 		if (/* !HorseRPG.nobanishment || */HorseRPG.banishonquit) {
 			if (HorseRPG.ownedHorses.containsKey(evt.getPlayer().getName()))
 				for (RPGHorse h : HorseRPG.ownedHorses.get(evt.getPlayer().getName())) {
-					if (h != null && h.horse != null)
+					if (h != null && h.horse != null && HorseRPG.hSpawnedHorses.containsKey(h.horse))
 						HorseRPG.hSpawnedHorses.remove(h.horse).banish();
 				}
 		}
@@ -121,9 +121,10 @@ public class PlayerListener implements Listener {
 					if (rpg.owner.equals(p.getName())) {
 						new BukkitRunnable() {
 							public void run() {
-								if (p.getVehicle().equals(horse)) {
-									HorseRPG.pCurrentHorse.put(p, rpg);
-								}
+								if (p.getVehicle() != null)
+									if (p.getVehicle().equals(horse)) {
+										HorseRPG.pCurrentHorse.put(p, rpg);
+									}
 							}
 						}.runTaskLater(HorseRPG.instance, 2);
 					}

@@ -1,3 +1,12 @@
+Version 4.3.39
+	Added ability to change horse speeds or jumping height
+	Added ability to see horse speed and jumping stats in the stats menu
+	Fixed tab for set commands
+
+Version 4.3.38
+	Fixed NPE on log-out
+	Fixed NPE when dismounting the horse instantaneously
+
 Version 4.3.37
 	Added ability to disable the 'database saved' message
 	Moved all global variables to the default config, as it should have been from the beginning.
