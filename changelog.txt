@@ -1,3 +1,6 @@
+Version 4.3.40
+	Fixed issue where players can buy horses, even if they don't own any
+
 Version 4.3.39
 	Added ability to change horse speeds or jumping height
 	Added ability to see horse speed and jumping stats in the stats menu

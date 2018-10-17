@@ -2,6 +2,7 @@ package com.blueskullgames.horserpg.utils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.TreeSet;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
@@ -85,6 +86,8 @@ public class ShopManager implements Listener {
 									e.getWhoClicked().getName(), getColorInLore(e.getCurrentItem()), Style.NONE, v,
 									false, 0, 0, 0, 0, UUID.randomUUID(), 2.25, 2.25,Math.random()<0.5);
 							horse.hasSaddle = true;
+							if (!HorseRPG.ownedHorses.containsKey(e.getWhoClicked().getName()))
+								HorseRPG.ownedHorses.put(e.getWhoClicked().getName(), new TreeSet<RPGHorse>());
 							HorseRPG.ownedHorses.get(e.getWhoClicked().getName()).add(horse);
 							HorseRPG.horses.add(horse);
 							if (!HorseRPG.pCurrentHorse.containsKey(e.getWhoClicked())) {
