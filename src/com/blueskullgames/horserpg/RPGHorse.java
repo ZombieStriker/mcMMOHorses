@@ -77,8 +77,12 @@ public class RPGHorse implements Comparable<RPGHorse> {
 	public boolean isMale;
 	public boolean allowBreeding = false;
 
-	public double generic_speed = 2.25f;
-	public double generic_jump = 2.25f;
+	
+	public static double s_generic_speed = 0.25f;
+	public static double s_generic_jump = 0.7f;
+	
+	public double generic_speed = 0.25f;
+	public double generic_jump = 0.7f;
 
 	public static BaseAtributeUtil attributeUtil = null;
 	static {
@@ -144,7 +148,7 @@ public class RPGHorse implements Comparable<RPGHorse> {
 	 */
 	public RPGHorse(Player owner) {
 		this(randomName(owner), owner.getName(), randomColor(), randomStyle(), Variant.HORSE, false, 0, 0, 0, 0, null,
-				2.25, 2.25, Math.random() > 0.5);
+				s_generic_jump, s_generic_speed, Math.random() > 0.5);
 	}
 
 	/**
@@ -403,6 +407,8 @@ public class RPGHorse implements Comparable<RPGHorse> {
 				inventory[0] = new ItemStack(Material.SADDLE);
 		}
 		if (horse instanceof org.bukkit.entity.ChestedHorse) {
+			if(hasChest)
+				((org.bukkit.entity.ChestedHorse) horse).setCarryingChest(true);
 			((org.bukkit.entity.ChestedHorse) horse).getInventory().setContents(inventory);
 		} else {
 			try {

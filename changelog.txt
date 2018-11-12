@@ -1,3 +1,12 @@
+Version 4.3.42
+	Fixed horse speeds when generating a new horse.
+	Fixed ChnestedHorse inventory
+	Fixed /h set command messages
+	Fixed possible corruption if one horse cannot be saved.
+	
+Version 4.3.41
+	Fixed horse speeds
+
 Version 4.3.40
 	Fixed issue where players can buy horses, even if they don't own any
 

@@ -1038,6 +1038,7 @@ public class HorseRPG extends JavaPlugin {
 		// "&aHorse %oldname% has been changed to %newname%"
 		msg(p, RenameHorse.replace("%oldname%", oldname).replace("%newname%", h.name));
 	}
+
 	/**
 	 * Changes the currently spawned horse's name
 	 * 
@@ -1060,17 +1061,18 @@ public class HorseRPG extends JavaPlugin {
 			msg(p, NO_HORSE_SUMMONED);
 			return;
 		}
-		double speed = 2.25;
-		//String oldname = h.name;
+		double speed = RPGHorse.s_generic_speed;
+		// String oldname = h.name;
 
 		if (args[2].equalsIgnoreCase("random"))
-			h.generic_speed = Math.random()*speed;
+			h.generic_speed = Math.random() * speed;
 		else {
 			h.generic_speed = Double.parseDouble(args[2]);
 		}
 		// "&aHorse %oldname% has been changed to %newname%"
-		msg(p, ChangeSpeedHorse.replace("%oldname%", h.name).replace("%speed%", ""+h.generic_speed));
+		msg(p, ChangeSpeedHorse.replace("%oldname%", h.name).replace("%speed%", "" + h.generic_speed));
 	}
+
 	/**
 	 * Changes the currently spawned horse's name
 	 * 
@@ -1093,18 +1095,17 @@ public class HorseRPG extends JavaPlugin {
 			msg(p, NO_HORSE_SUMMONED);
 			return;
 		}
-		double speed = 2.25;
-		//String oldname = h.name;
+		double jump = RPGHorse.s_generic_jump;
+		// String oldname = h.name;
 
 		if (args[2].equalsIgnoreCase("random"))
-			h.generic_jump = Math.random()*speed;
+			h.generic_jump = Math.random() * jump;
 		else {
 			h.generic_jump = Double.parseDouble(args[2]);
 		}
 		// "&aHorse %oldname% has been changed to %newname%"
-		msg(p, ChangeJumpHorse.replace("%oldname%", h.name).replace("%jump%", ""+h.generic_jump));
+		msg(p, ChangeJumpHorse.replace("%oldname%", h.name).replace("%jump%", "" + h.generic_jump));
 	}
-
 
 	/**
 	 * Changes the current spawned horse's color
@@ -1684,6 +1685,8 @@ public class HorseRPG extends JavaPlugin {
 		setHelp.put(H_SET_NAME, "&b/h set name &a<name|random>");
 		setHelp.put(H_SET_COLOR, "&b/h set color &a<color|random>");
 		setHelp.put(H_SET_STYLE, "&b/h set style &a<style|random>");
+		setHelp.put(H_SET_STYLE, "&b/h set speed &a<<0.1 - 0.3>|random>");
+		setHelp.put(H_SET_STYLE, "&b/h set jump &a<<0.7>|random>");
 		setHelp.put(H_SET_TYPE, "&b/h set type &a<donkey|horse|mule|skele|zombie|rand>");
 
 	}
@@ -1726,9 +1729,16 @@ public class HorseRPG extends JavaPlugin {
 					Style style = Style.valueOf(rs.getString("style"));
 					Variant variant = Variant.valueOf(rs.getString("variant"));
 
+					double speed = rs.getDouble("defaultSpeed");
+					double jump = rs.getDouble("defaultJump");
+					if (jump <= 0)
+						jump = RPGHorse.s_generic_jump;
+					if (speed <= 0)
+						speed = RPGHorse.s_generic_speed;
+
 					RPGHorse h = new RPGHorse(rs.getString("name"), owner, color, style, variant,
 							rs.getInt("godmode") == 1, rs.getInt("swiftnessXP"), rs.getInt("agilityXP"),
-							rs.getInt("vitalityXP"), rs.getInt("wrathXP"), null, 2.25, 2.25, rs.getInt("sex") == 0);
+							rs.getInt("vitalityXP"), rs.getInt("wrathXP"), null, speed, jump, rs.getInt("sex") == 0);
 					// TODO:Tempfix. Since I don't want users to use the sql, just set the dfefault
 					// value to 2.25
 
@@ -1761,7 +1771,11 @@ public class HorseRPG extends JavaPlugin {
 			if (savetype == 2) {
 				for (TreeSet<RPGHorse> horseSet : ownedHorses.values()) {
 					for (RPGHorse h : horseSet) {
-						h_config.saveHorse(h, false);
+						try {
+							h_config.saveHorse(h, false);
+						} catch (Error | Exception ed4) {
+							ed4.printStackTrace();
+						}
 					}
 				}
 				h_config.save();
@@ -1773,14 +1787,18 @@ public class HorseRPG extends JavaPlugin {
 				statement.executeUpdate("drop table if exists horses");
 				statement.executeUpdate("create table horses (	name string, " + "owner string, " + "color string, "
 						+ "style string, " + "variant string, " + "godmode integer, " + "swiftnessXP integer, "
-						+ "agilityXP integer, " + "vitalityXP integer, " + "wrathXP integer, sex integer)");
+						+ "agilityXP integer, " + "vitalityXP integer, " + "wrathXP integer, sex integer, defaultSpeed integer, defaultJump integer)");
 
 				for (TreeSet<RPGHorse> horseSet : ownedHorses.values()) {
 					for (RPGHorse h : horseSet)
-						statement.executeUpdate("insert into horses values('" + h.name + "', '" + h.owner + "', '"
-								+ h.color + "', '" + h.style + "', '" + h.variant + "', " + (h.godmode ? 1 : 0) + ", "
-								+ h.swiftness.xp + ", " + h.agility.xp + ", " + h.vitality.xp + ", " + h.wrath.xp + ", "
-								+ (h.isMale ? 0 : 1) + ")");
+						try {
+							statement.executeUpdate("insert into horses values('" + h.name + "', '" + h.owner + "', '"
+									+ h.color + "', '" + h.style + "', '" + h.variant + "', " + (h.godmode ? 1 : 0)
+									+ ", " + h.swiftness.xp + ", " + h.agility.xp + ", " + h.vitality.xp + ", "
+									+ h.wrath.xp + ", " + (h.isMale ? 0 : 1) + ", "+h.generic_speed+", "+h.generic_jump+")");
+						} catch (Error | Exception ed4) {
+							ed4.printStackTrace();
+						}
 				}
 			}
 
@@ -1835,7 +1853,7 @@ public class HorseRPG extends JavaPlugin {
 			a(r, "reload", args[0]);
 			a(r, "gift", args[0]);
 		} else {
-			if(args[0].equalsIgnoreCase("set")) {
+			if (args[0].equalsIgnoreCase("set")) {
 				a(r, "name", args[1]);
 				a(r, "speed", args[1]);
 				a(r, "jump", args[1]);

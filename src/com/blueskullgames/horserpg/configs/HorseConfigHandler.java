@@ -178,10 +178,10 @@ public class HorseConfigHandler {
 
 					double jumpPow = config.contains("Horses." + owner + "." + rpguuids + Keys.jump)
 							? config.getDouble("Horses." + owner + "." + rpguuids + Keys.jump)
-							: -1;
+							: RPGHorse.s_generic_jump;
 					double sprintPow = config.contains("Horses." + owner + "." + rpguuids + Keys.sprint)
 							? config.getDouble("Horses." + owner + "." + rpguuids + Keys.sprint)
-							: -1;
+							: RPGHorse.s_generic_speed;
 
 					boolean sex = config.contains("Horses." + owner + "." + rpguuids + Keys.sex)
 							? config.getBoolean("Horses." + owner + "." + rpguuids + Keys.sex)
