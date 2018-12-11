@@ -7,6 +7,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.World;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -114,7 +115,7 @@ public class HorseConfigHandler {
 					config.set("Horses." + horse.owner + "." + horse.rpgUUID.toString() + Keys.jump,
 							RPGHorse.attributeUtil.getJumpHeight(horse.horse));
 			} else {
-			config.set("Horses." + horse.owner + "." + horse.rpgUUID.toString() + Keys.jump, horse.generic_jump);
+				config.set("Horses." + horse.owner + "." + horse.rpgUUID.toString() + Keys.jump, horse.generic_jump);
 			}
 			try {
 				config.set("Horses." + horse.owner + "." + horse.rpgUUID.toString() + Keys.inventory,
@@ -173,15 +174,20 @@ public class HorseConfigHandler {
 					int sagil = config.getInt("Horses." + owner + "." + rpguuids + Keys.agility);
 					int svit = config.getInt("Horses." + owner + "." + rpguuids + Keys.vitality);
 					int swrath = config.getInt("Horses." + owner + "." + rpguuids + Keys.wrath);
-					String horsename = config.getString("Horses." + owner + "." + rpguuids + Keys.name);
+					final String horsename = config.getString("Horses." + owner + "." + rpguuids + Keys.name);
 					UUID uuid = UUID.fromString(rpguuids);
 
 					double jumpPow = config.contains("Horses." + owner + "." + rpguuids + Keys.jump)
 							? config.getDouble("Horses." + owner + "." + rpguuids + Keys.jump)
-							: RPGHorse.s_generic_jump;
+							: RPGHorse.getRandomJump();
 					double sprintPow = config.contains("Horses." + owner + "." + rpguuids + Keys.sprint)
 							? config.getDouble("Horses." + owner + "." + rpguuids + Keys.sprint)
-							: RPGHorse.s_generic_speed;
+							: RPGHorse.getRandomSpeed();
+
+					if (jumpPow >= 2.25)
+						jumpPow = 0.7;
+					if (sprintPow > 1)
+						sprintPow = 0.25;
 
 					boolean sex = config.contains("Horses." + owner + "." + rpguuids + Keys.sex)
 							? config.getBoolean("Horses." + owner + "." + rpguuids + Keys.sex)
@@ -217,28 +223,37 @@ public class HorseConfigHandler {
 
 							@Override
 							public void run() {
-								World world = Bukkit.getWorld(
-										config.getString("Horses." + owner + "." + rpguuids + Keys.entityslastWorld));
-								for (Entity e : world.getEntities()) {
-									if (e.getUniqueId().equals(uuid2)) {
-										rpgHorse.horse = e;
-										break;
+								String sss = config
+										.getString("Horses." + owner + "." + rpguuids + Keys.entityslastWorld);
+								World world = Bukkit.getWorld(sss);
+								if (world != null)
+									for (Entity e : world.getEntities()) {
+										if (e.getUniqueId().equals(uuid2)) {
+											rpgHorse.horse = e;
+											break;
+										}
 									}
+								if (rpgHorse.horse != null) {
+									HorseRPG.hSpawnedHorses.put(rpgHorse.horse, rpgHorse);
+									if (Bukkit.getPlayer(owner) != null)
+										HorseRPG.pCurrentHorse.put(Bukkit.getPlayer(owner), rpgHorse);
+								} else {
+									HorseRPG.instance.getLogger()
+											.warning(ChatColor.RED + " The horse " + horsename + " for player " + owner
+													+ " is registered as being active in the world " + sss
+													+ ", but could not be found.");
 								}
-								HorseRPG.hSpawnedHorses.put(rpgHorse.horse, rpgHorse);
-								if (Bukkit.getPlayer(owner) != null)
-									HorseRPG.pCurrentHorse.put(Bukkit.getPlayer(owner), rpgHorse);
 							}
 						}.runTaskLater(HorseRPG.instance, 2);
 					}
 					rpgHorse.hasSaddle = config.getBoolean("Horses." + owner + "." + rpguuids + Keys.hassaddle);
-					System.out.println("Loading " + rpgHorse.name);
+					HorseRPG.instance.getLogger().info("Loading " + rpgHorse.name);
 					return rpgHorse;
 				}
 			} catch (Error | Exception e45) {
 			}
 		}
-		System.out.println("Could not load horse " + horseUUID);
+		HorseRPG.instance.getLogger().warning("Could not load horse " + horseUUID);
 		return null;
 	}
 

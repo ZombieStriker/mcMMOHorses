@@ -1,6 +1,6 @@
 ######################################################
 #                                                    #
-#              mcMMO Horses Config 4.3.37            #
+#              mcMMO Horses Config 4.3.45            #
 #                                                    #
 ######################################################
 
@@ -94,3 +94,6 @@ RequirePermissionToRide: false
 
 # Disables base game taming. This makes sure that horses can only by purchased.
 disable_basegame_taming: false
+
+disable_StatsInChat: false
+disable_StatsInScoreboard: false

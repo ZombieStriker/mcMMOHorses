@@ -77,12 +77,17 @@ public class RPGHorse implements Comparable<RPGHorse> {
 	public boolean isMale;
 	public boolean allowBreeding = false;
 
-	
-	public static double s_generic_speed = 0.25f;
-	public static double s_generic_jump = 0.7f;
-	
 	public double generic_speed = 0.25f;
 	public double generic_jump = 0.7f;
+	
+	
+	public static double getRandomSpeed() {
+		return ((0.3375-0.1125)*Math.random())+0.1125;
+	}
+	public static double getRandomJump() {
+		return ((1.0-0.4)*Math.random())+0.4;
+	}
+	
 
 	public static BaseAtributeUtil attributeUtil = null;
 	static {
@@ -148,7 +153,7 @@ public class RPGHorse implements Comparable<RPGHorse> {
 	 */
 	public RPGHorse(Player owner) {
 		this(randomName(owner), owner.getName(), randomColor(), randomStyle(), Variant.HORSE, false, 0, 0, 0, 0, null,
-				s_generic_jump, s_generic_speed, Math.random() > 0.5);
+				getRandomJump(), getRandomSpeed(), Math.random() > 0.5);
 	}
 
 	/**
@@ -211,7 +216,7 @@ public class RPGHorse implements Comparable<RPGHorse> {
 			int swiftnessXP, int agilityXP, int vitalityXP, int wrathXP, UUID id, double jumpPow, double sprintPow,
 			boolean isMale) {
 
-		this.name = name;
+		setName(name);
 		this.owner = owner;
 		this.color = color;
 		this.style = style;
@@ -247,7 +252,22 @@ public class RPGHorse implements Comparable<RPGHorse> {
 	 *            is the new name
 	 */
 	public void setName(String newName) {
-		name = newName;
+		int add = 0;
+		String testName = newName;
+		if(newName.length() == 0)
+			return;
+		if (HorseRPG.ownedHorses.containsKey(owner))
+			whileloop: while (true) {
+				for (RPGHorse h : HorseRPG.ownedHorses.get(owner)) {
+					if (h.name.equals(testName) && h != this) {
+						add++;
+						testName = newName + "(" + add + ")";
+						continue whileloop;
+					}
+				}
+				break;
+			}
+		name = testName;
 		if (horse != null)
 			horse.setCustomName(ChatColor.translateAlternateColorCodes('&', name));
 	}
@@ -407,7 +427,7 @@ public class RPGHorse implements Comparable<RPGHorse> {
 				inventory[0] = new ItemStack(Material.SADDLE);
 		}
 		if (horse instanceof org.bukkit.entity.ChestedHorse) {
-			if(hasChest)
+			if (hasChest)
 				((org.bukkit.entity.ChestedHorse) horse).setCarryingChest(true);
 			((org.bukkit.entity.ChestedHorse) horse).getInventory().setContents(inventory);
 		} else {

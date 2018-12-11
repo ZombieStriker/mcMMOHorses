@@ -54,6 +54,7 @@ public class HorseRPG extends JavaPlugin {
 	public static final String H_DELETE = "mcmmohorses.kill";
 	public static final String H_PROTECT = "mcmmohorses.admin.protect";
 	public static final String H_UNPROTECT = "mcmmohorses.admin.unprotect";
+	public static final String H_BANISH_FOR_PLAYER = "mcmmohorses.admin.banishforplayer";
 	public static final String H_ADDXP = "mcmmohorses.admin.addxp";
 	public static final String H_DELXP = "mcmmohorses.admin.delxp";
 	public static final String H_SET = "mcmmohorses.admin.set";
@@ -121,6 +122,7 @@ public class HorseRPG extends JavaPlugin {
 	// your horse to banish them!";
 
 	public static String BANISH_LOADED_CHUNK = "&a The chunk your horse is in must be loaded before bansishement!";
+	public static String BANISH_OTHER_NOT_ONLINE = "&a That player does not exist!";
 
 	public static BukkitTask saveTask, cooldownTask;
 	public static ConfigAccessor config;
@@ -166,6 +168,9 @@ public class HorseRPG extends JavaPlugin {
 	public static boolean forceClaimOnTaim = false;
 	public static boolean forcePermToRideUnclaimed = false;
 
+	public static boolean DisableshowStatsInChat = false;
+	public static boolean DisableshowStatsinInScoreboard = false;
+
 	public static HashMap<Variant, Double> costForHorse = new HashMap<>();
 	public static ShopManager shop;// = new ShopManager();
 
@@ -208,6 +213,13 @@ public class HorseRPG extends JavaPlugin {
 		return false;
 	}
 
+	public static boolean hasHorses(Player p) {
+		if (ownedHorses.containsKey(p.getName()) && ownedHorses.get(p.getName()).size() > 0) {
+			return true;
+		}
+		return false;
+	}
+
 	/**
 	 * Returns the sender's horse THAT IS NOT CURRENTLY SPAWNED
 	 * 
@@ -238,6 +250,40 @@ public class HorseRPG extends JavaPlugin {
 				if (h.name.equalsIgnoreCase(hName))
 					return h;
 
+		msg(p, HORSE_DOES_NOT_EXIST.replace("%name%", hName));
+		return null;
+	}
+
+	/**
+	 * Returns the sender's horse THAT IS SPAWNED
+	 * 
+	 * @param p
+	 * @param args
+	 * @param offset
+	 * @return
+	 */
+	public static RPGHorse getHorseSpawned(Player p, String[] args, int offset) {
+		if (args.length <= offset) {
+			if (ownedHorses.containsKey(p.getName()) && ownedHorses.get(p.getName()).size() > 0) {
+				for (RPGHorse h : ownedHorses.get(p.getName())) {
+					if (hSpawnedHorses.containsKey(h.horse)) {
+						return h;
+					}
+				}
+			}
+			return null;
+		}
+
+		String hName = args[offset];
+		for (int i = offset + 1; i < args.length; i++)
+			hName += " " + args[i];
+		hName = hName.replaceAll("_", " ");
+
+		if (ownedHorses.containsKey(p.getName()))
+			for (RPGHorse h : ownedHorses.get(p.getName()))
+				if (hSpawnedHorses.containsKey(h.horse))
+					if (h.name.equalsIgnoreCase(hName))
+						return h;
 		msg(p, HORSE_DOES_NOT_EXIST.replace("%name%", hName));
 		return null;
 	}
@@ -425,87 +471,93 @@ public class HorseRPG extends JavaPlugin {
 			return;
 		}
 
-		ScoreboardManager manager = Bukkit.getScoreboardManager();
-		Scoreboard board = manager.getNewScoreboard();
-
-		Objective obj = board.registerNewObjective("horsestats", "dummy");
-		obj.setDisplaySlot(DisplaySlot.SIDEBAR);
-		obj.setDisplayName(ChatColor.YELLOW + "\"" + h.name + "\" Stats");
-
-		p.sendMessage(ChatColor.YELLOW + "\"" + h.name + "\" Stats");
-		p.sendMessage((ChatColor.GREEN + "Swiftness") + ChatColor.WHITE + "  " + h.swiftness.level);
-		p.sendMessage((ChatColor.DARK_GRAY + "Sprint: ") + ChatColor.GRAY + "= " + ((int) (h.swiftness.amplitude))
-				+ (ChatColor.DARK_GRAY + "Time: ") + ChatColor.GRAY + "= " + ((int) (h.swiftness.duration / 20)) + "s");
-		p.sendMessage((ChatColor.GREEN + "Agility") + ChatColor.WHITE + "  " + h.agility.level);
-		p.sendMessage((ChatColor.DARK_GRAY + "Dodge:") + ChatColor.GRAY + "= " + ((int) (h.agility.dodgeChance * 100))
-				+ "%" + (ChatColor.DARK_GRAY + "Roll:") + ChatColor.GRAY + "= " + ((int) (h.agility.rollChance * 100))
-				+ "%");
-		p.sendMessage((ChatColor.GREEN + "Vitality") + ChatColor.WHITE + "  " + h.vitality.level);
-		// TODO: Check if correct: 44 (22 hears) is the base health for all horses
-		p.sendMessage((ChatColor.DARK_GRAY + "Base") + ChatColor.GRAY + "= " + ((44 - h.vitality.healthBonus)) / 2
-				+ (ChatColor.DARK_GRAY + "  Bonus") + ChatColor.GRAY + "= " + ((int) (h.vitality.healthBonus / 2)));
-		p.sendMessage((ChatColor.GREEN + "Wrath") + ChatColor.WHITE + "  " + h.wrath.level);
-		p.sendMessage((ChatColor.DARK_GRAY + "Infuriate: ") + ChatColor.GRAY + "= "
-				+ ((int) (h.wrath.infuriateChance * 100)) + "%");
-		p.sendMessage((ChatColor.GOLD + "Power Level") + ChatColor.WHITE + "  " + h.powerLevel);
-		p.sendMessage((ChatColor.GOLD + "Sex") + ChatColor.WHITE + "  " + (h.isMale ? "Male" : "Female")
-				+ (h.variant == Variant.DONKEY || h.variant == Variant.MULE ? "(Gelding)" : ""));
-		p.sendMessage((ChatColor.GREEN + "Base-Speed") + ChatColor.WHITE + "  " + h.generic_speed);
-		p.sendMessage((ChatColor.GREEN + "Base-Jump") + ChatColor.WHITE + "  " + h.generic_jump);
-		try {
-			obj.getScore((ChatColor.GREEN + "Swiftness") + ChatColor.WHITE + "  " + h.swiftness.level).setScore(8);
-			obj.getScore((ChatColor.DARK_GRAY + "Sprint: ") + ChatColor.GRAY + "= " + ((int) (h.swiftness.amplitude))
+		if (!DisableshowStatsInChat) {
+			p.sendMessage(ChatColor.YELLOW + "\"" + h.name + "\" Stats");
+			p.sendMessage((ChatColor.GREEN + "Swiftness") + ChatColor.WHITE + "  " + h.swiftness.level);
+			p.sendMessage((ChatColor.DARK_GRAY + "Sprint: ") + ChatColor.GRAY + "= " + ((int) (h.swiftness.amplitude))
 					+ (ChatColor.DARK_GRAY + "Time: ") + ChatColor.GRAY + "= " + ((int) (h.swiftness.duration / 20))
-					+ "s").setScore(7);
-			obj.getScore((ChatColor.GREEN + "Agility") + ChatColor.WHITE + "  " + h.agility.level).setScore(6);
-			obj.getScore((ChatColor.DARK_GRAY + "Dodge:") + ChatColor.GRAY + "= "
+					+ "s");
+			p.sendMessage((ChatColor.GREEN + "Agility") + ChatColor.WHITE + "  " + h.agility.level);
+			p.sendMessage((ChatColor.DARK_GRAY + "Dodge:") + ChatColor.GRAY + "= "
 					+ ((int) (h.agility.dodgeChance * 100)) + "%" + (ChatColor.DARK_GRAY + "Roll:") + ChatColor.GRAY
-					+ "= " + ((int) (h.agility.rollChance * 100)) + "%").setScore(5);
-			obj.getScore((ChatColor.GREEN + "Vitality") + ChatColor.WHITE + "  " + h.vitality.level).setScore(4);
+					+ "= " + ((int) (h.agility.rollChance * 100)) + "%");
+			p.sendMessage((ChatColor.GREEN + "Vitality") + ChatColor.WHITE + "  " + h.vitality.level);
 			// TODO: Check if correct: 44 (22 hears) is the base health for all horses
-			obj.getScore((ChatColor.DARK_GRAY + "Base") + ChatColor.GRAY + "= " + ((44 - h.vitality.healthBonus)) / 2
-					+ (ChatColor.DARK_GRAY + "  Bonus") + ChatColor.GRAY + "= " + ((int) (h.vitality.healthBonus / 2)))
-					.setScore(3);
-			obj.getScore((ChatColor.GREEN + "Wrath") + ChatColor.WHITE + "  " + h.wrath.level).setScore(2);
-			obj.getScore((ChatColor.DARK_GRAY + "Infuriate: ") + ChatColor.GRAY + "= "
-					+ ((int) (h.wrath.infuriateChance * 100)) + "%").setScore(1);
-			obj.getScore((ChatColor.GOLD + "Power Level") + ChatColor.WHITE + "  " + h.powerLevel).setScore(0);
-
-			obj.getScore((ChatColor.GOLD + "Sex") + ChatColor.WHITE + "  " + (h.isMale ? "Male" : "Female")
-					+ (h.variant == Variant.DONKEY || h.variant == Variant.MULE ? "(Gelding)" : "")).setScore(-1);
-			obj.getScore((ChatColor.GREEN + "Base-Speed") + ChatColor.WHITE + "  " + h.generic_speed).setScore(-2);
-			obj.getScore((ChatColor.GREEN + "Base-Jump") + ChatColor.WHITE + "  " + h.generic_jump).setScore(-3);
-
-		} catch (Exception e) {
-			obj.getScore(Bukkit.getOfflinePlayer(ChatColor.GREEN + "Swiftness")).setScore(h.swiftness.level);
-			obj.getScore(Bukkit.getOfflinePlayer(ChatColor.GREEN + "Agility")).setScore(h.agility.level);
-			obj.getScore(Bukkit.getOfflinePlayer(ChatColor.GREEN + "Vitality")).setScore(h.vitality.level);
-			obj.getScore(Bukkit.getOfflinePlayer(ChatColor.GREEN + "Wrath")).setScore(h.wrath.level);
-			obj.getScore(Bukkit.getOfflinePlayer(ChatColor.GOLD + "Power Level")).setScore(h.powerLevel);
-
-			obj.getScore(Bukkit.getOfflinePlayer((ChatColor.DARK_GRAY + "Sprint: ") + ChatColor.GRAY + "= "
-					+ ((int) (h.swiftness.amplitude)) + (ChatColor.DARK_GRAY + "Time: ") + ChatColor.GRAY + "= "
-					+ ((int) (h.swiftness.duration / 20)) + "s")).setScore(7);
-
-			obj.getScore(Bukkit.getOfflinePlayer((ChatColor.DARK_GRAY + "Dodge:") + ChatColor.GRAY + "= "
-					+ ((int) (h.agility.dodgeChance * 100)) + "%" + (ChatColor.DARK_GRAY + "Roll:") + ChatColor.GRAY
-					+ "= " + ((int) (h.agility.rollChance * 100)) + "%")).setScore(5);
-			// TODO: Check if correct: 44 (22 hears) is the base health for all horses
-			obj.getScore(Bukkit.getOfflinePlayer((ChatColor.DARK_GRAY + "Base") + ChatColor.GRAY + "= "
-					+ (((44 - h.vitality.healthBonus) / 2)) + ChatColor.DARK_GRAY + "  Bonus" + ChatColor.GRAY + "= "
-					+ ((int) (h.vitality.healthBonus / 2)))).setScore(3);
-
-			obj.getScore(Bukkit.getOfflinePlayer((ChatColor.DARK_GRAY + "Infuriate: ") + ChatColor.GRAY + "= "
-					+ ((int) (h.wrath.infuriateChance * 100)) + "%")).setScore(1);
-			obj.getScore(Bukkit.getOfflinePlayer(ChatColor.GREEN + "Base-Speed")).setScore((int) h.generic_speed);
-			obj.getScore(Bukkit.getOfflinePlayer(ChatColor.GREEN + "Base-Jump")).setScore((int) h.generic_jump);
-
+			p.sendMessage((ChatColor.DARK_GRAY + "Base") + ChatColor.GRAY + "= " + ((44 - h.vitality.healthBonus)) / 2
+					+ (ChatColor.DARK_GRAY + "  Bonus") + ChatColor.GRAY + "= " + ((int) (h.vitality.healthBonus / 2)));
+			p.sendMessage((ChatColor.GREEN + "Wrath") + ChatColor.WHITE + "  " + h.wrath.level);
+			p.sendMessage((ChatColor.DARK_GRAY + "Infuriate: ") + ChatColor.GRAY + "= "
+					+ ((int) (h.wrath.infuriateChance * 100)) + "%");
+			p.sendMessage((ChatColor.GOLD + "Power Level") + ChatColor.WHITE + "  " + h.powerLevel);
+			p.sendMessage((ChatColor.GOLD + "Sex") + ChatColor.WHITE + "  " + (h.isMale ? "Male" : "Female")
+					+ (h.variant == Variant.DONKEY || h.variant == Variant.MULE ? "(Gelding)" : ""));
+			p.sendMessage((ChatColor.GREEN + "Base-Speed") + ChatColor.WHITE + "  " + h.generic_speed);
+			p.sendMessage((ChatColor.GREEN + "Base-Jump") + ChatColor.WHITE + "  " + h.generic_jump);
 		}
-		Scoreboard oldsb = p.getScoreboard();
-		p.setScoreboard(board);
-		playersWithScoreboards.add(p.getName());
+		if (!DisableshowStatsinInScoreboard) {
 
-		Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(instance, new ScoreboardTask(p, oldsb), 200);
+			ScoreboardManager manager = Bukkit.getScoreboardManager();
+			Scoreboard board = manager.getNewScoreboard();
+
+			Objective obj = board.registerNewObjective("horsestats", "dummy");
+			obj.setDisplaySlot(DisplaySlot.SIDEBAR);
+			obj.setDisplayName(ChatColor.YELLOW + "\"" + h.name + "\" Stats");
+			try {
+				obj.getScore((ChatColor.GREEN + "Swiftness") + ChatColor.WHITE + "  " + h.swiftness.level).setScore(8);
+				obj.getScore((ChatColor.DARK_GRAY + "Sprint: ") + ChatColor.GRAY + "= "
+						+ ((int) (h.swiftness.amplitude)) + (ChatColor.DARK_GRAY + "Time: ") + ChatColor.GRAY + "= "
+						+ ((int) (h.swiftness.duration / 20)) + "s").setScore(7);
+				obj.getScore((ChatColor.GREEN + "Agility") + ChatColor.WHITE + "  " + h.agility.level).setScore(6);
+				obj.getScore((ChatColor.DARK_GRAY + "Dodge:") + ChatColor.GRAY + "= "
+						+ ((int) (h.agility.dodgeChance * 100)) + "%" + (ChatColor.DARK_GRAY + "Roll:") + ChatColor.GRAY
+						+ "= " + ((int) (h.agility.rollChance * 100)) + "%").setScore(5);
+				obj.getScore((ChatColor.GREEN + "Vitality") + ChatColor.WHITE + "  " + h.vitality.level).setScore(4);
+				// TODO: Check if correct: 44 (22 hears) is the base health for all horses
+				obj.getScore((ChatColor.DARK_GRAY + "Base") + ChatColor.GRAY + "= "
+						+ ((44 - h.vitality.healthBonus)) / 2 + (ChatColor.DARK_GRAY + "  Bonus") + ChatColor.GRAY
+						+ "= " + ((int) (h.vitality.healthBonus / 2))).setScore(3);
+				obj.getScore((ChatColor.GREEN + "Wrath") + ChatColor.WHITE + "  " + h.wrath.level).setScore(2);
+				obj.getScore((ChatColor.DARK_GRAY + "Infuriate: ") + ChatColor.GRAY + "= "
+						+ ((int) (h.wrath.infuriateChance * 100)) + "%").setScore(1);
+				obj.getScore((ChatColor.GOLD + "Power Level") + ChatColor.WHITE + "  " + h.powerLevel).setScore(0);
+
+				obj.getScore((ChatColor.GOLD + "Sex") + ChatColor.WHITE + "  " + (h.isMale ? "Male" : "Female")
+						+ (h.variant == Variant.DONKEY || h.variant == Variant.MULE ? "(Gelding)" : "")).setScore(-1);
+				obj.getScore((ChatColor.GREEN + "Base-Speed") + ChatColor.WHITE + "  " + h.generic_speed).setScore(-2);
+				obj.getScore((ChatColor.GREEN + "Base-Jump") + ChatColor.WHITE + "  " + h.generic_jump).setScore(-3);
+
+			} catch (Exception e) {
+				obj.getScore(Bukkit.getOfflinePlayer(ChatColor.GREEN + "Swiftness")).setScore(h.swiftness.level);
+				obj.getScore(Bukkit.getOfflinePlayer(ChatColor.GREEN + "Agility")).setScore(h.agility.level);
+				obj.getScore(Bukkit.getOfflinePlayer(ChatColor.GREEN + "Vitality")).setScore(h.vitality.level);
+				obj.getScore(Bukkit.getOfflinePlayer(ChatColor.GREEN + "Wrath")).setScore(h.wrath.level);
+				obj.getScore(Bukkit.getOfflinePlayer(ChatColor.GOLD + "Power Level")).setScore(h.powerLevel);
+
+				obj.getScore(Bukkit.getOfflinePlayer((ChatColor.DARK_GRAY + "Sprint: ") + ChatColor.GRAY + "= "
+						+ ((int) (h.swiftness.amplitude)) + (ChatColor.DARK_GRAY + "Time: ") + ChatColor.GRAY + "= "
+						+ ((int) (h.swiftness.duration / 20)) + "s")).setScore(7);
+
+				obj.getScore(Bukkit.getOfflinePlayer((ChatColor.DARK_GRAY + "Dodge:") + ChatColor.GRAY + "= "
+						+ ((int) (h.agility.dodgeChance * 100)) + "%" + (ChatColor.DARK_GRAY + "Roll:") + ChatColor.GRAY
+						+ "= " + ((int) (h.agility.rollChance * 100)) + "%")).setScore(5);
+				// TODO: Check if correct: 44 (22 hears) is the base health for all horses
+				obj.getScore(Bukkit.getOfflinePlayer((ChatColor.DARK_GRAY + "Base") + ChatColor.GRAY + "= "
+						+ (((44 - h.vitality.healthBonus) / 2)) + ChatColor.DARK_GRAY + "  Bonus" + ChatColor.GRAY
+						+ "= " + ((int) (h.vitality.healthBonus / 2)))).setScore(3);
+
+				obj.getScore(Bukkit.getOfflinePlayer((ChatColor.DARK_GRAY + "Infuriate: ") + ChatColor.GRAY + "= "
+						+ ((int) (h.wrath.infuriateChance * 100)) + "%")).setScore(1);
+				obj.getScore(Bukkit.getOfflinePlayer(ChatColor.GREEN + "Base-Speed")).setScore((int) h.generic_speed);
+				obj.getScore(Bukkit.getOfflinePlayer(ChatColor.GREEN + "Base-Jump")).setScore((int) h.generic_jump);
+
+			}
+
+			Scoreboard oldsb = p.getScoreboard();
+			p.setScoreboard(board);
+			playersWithScoreboards.add(p.getName());
+
+			Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(instance, new ScoreboardTask(p, oldsb), 200);
+		}
 	}
 
 	/**
@@ -800,7 +852,8 @@ public class HorseRPG extends JavaPlugin {
 		 */
 
 		RPGHorse h = getHorseNotSpawned(p, args, 1);
-		if (h == null && args.length == 1) {
+		if (!hasHorses(p)) {
+			h = null;
 			if (freeHorse) {
 				msg(p, "&aHere's one for free...");
 				h = new RPGHorse(p);
@@ -854,50 +907,85 @@ public class HorseRPG extends JavaPlugin {
 	 * @param sender
 	 *            is the sender to message
 	 */
-	public static void banishHorse(CommandSender sender) {
-		if (notAllowed(sender, H_BANISH, true))
-			return;
-		Player p = (Player) sender;
+	public static void banishHorse(CommandSender sender, String[] args, boolean forced) {
+		if (forced) {
+			if (notAllowed(sender, H_BANISH_FOR_PLAYER, true))
+				return;
+		} else {
+			if (notAllowed(sender, H_BANISH, true))
+				return;
+		}
+		Player p = null;
+		if (forced) {
+			if (args.length < 2)
+				return;
+			p = Bukkit.getPlayer(args[1]);
+			if (p == null) {
+				msg(sender, BANISH_OTHER_NOT_ONLINE);
+				return;
+			}
+		} else {
+			p = (Player) sender;
+		}
 
 		if (!pCurrentHorse.containsKey(p)) {
 			msg(sender, NO_HORSE_SUMMONED);
 			return;
 		}
-		RPGHorse horse = pCurrentHorse.get(p);
+		RPGHorse horse = (forced ? args.length > 2 : args.length > 1) ? getHorseSpawned(p, args, forced ? 2 : 1)
+				: pCurrentHorse.get(p);
+		if (horse == null) {
+			msg(sender, NO_HORSE_SUMMONED);
+			return;
+		}
 		if (horse.horse == null || !horse.horse.getLocation().getChunk().isLoaded()) {
 			msg(sender, BANISH_LOADED_CHUNK);
 			return;
 		}
-		if (horse.horse.getLocation().getWorld() != ((Player) sender).getWorld()) {
+		if ((sender instanceof Player && horse.horse.getLocation().getWorld() != ((Player) sender).getWorld())) {
 			msg(sender, BANISH_LOADED_CHUNK);
 			return;
 		}
-		if (p.getLocation().distanceSquared(horse.horse.getLocation()) >= 10000) {
-			horse.horse.teleport(p.getLocation());
-			// Hopefully teleporting the horse will allow it to be banished correctly.
-		}
-
-		if (useEconomy && banishCost > 0) {
-			boolean b = false;
-			try {
-				b = econ.withdrawPlayer(p, banishCost).transactionSuccess();
-			} catch (Exception e) {
-				b = econ.withdrawPlayer(p.getName(), banishCost).transactionSuccess();
+		if (forced) {
+			if (p.getWorld() == horse.horse.getWorld()) {
+				if (p.getLocation().distanceSquared(horse.horse.getLocation()) >= 10000) {
+					horse.horse.teleport(p.getLocation());
+				}
 			}
-
-			if (b)
-				msg(p, "&aHorse banished for &e" + econ.format(banishCost));
-			else {
-				msg(p, "&aYou need &e" + econ.format(summonCost) + "&a to banish your horse.");
-				return;
+			if (((Player) sender).getWorld() == horse.horse.getWorld()) {
+				if (((Player) sender).getLocation().distanceSquared(horse.horse.getLocation()) >= 10000) {
+					horse.horse.teleport(((Player) sender).getLocation());
+				}
+			}
+		} else {
+			if (p.getLocation().distanceSquared(horse.horse.getLocation()) >= 10000) {
+				horse.horse.teleport(p.getLocation());
 			}
 		}
-		pCurrentHorse.remove(p);
+		if (!forced)
+			if (useEconomy && banishCost > 0) {
+				boolean b = false;
+				try {
+					b = econ.withdrawPlayer(p, banishCost).transactionSuccess();
+				} catch (Exception e) {
+					b = econ.withdrawPlayer(p.getName(), banishCost).transactionSuccess();
+				}
+
+				if (b)
+					msg(p, "&aHorse banished for &e" + econ.format(banishCost));
+				else {
+					msg(p, "&aYou need &e" + econ.format(summonCost) + "&a to banish your horse.");
+					return;
+				}
+			}
 		horse.banish();
-		for (RPGHorse others : ownedHorses.get(p.getName())) {
-			if (hSpawnedHorses.containsKey(others.horse)) {
-				pCurrentHorse.put(p, others);
-				break;
+		if (pCurrentHorse.get(p) == horse) {
+			pCurrentHorse.remove(p);
+			for (RPGHorse others : ownedHorses.get(p.getName())) {
+				if (hSpawnedHorses.containsKey(others.horse)) {
+					pCurrentHorse.put(p, others);
+					break;
+				}
 			}
 		}
 		msg(p, "&a" + horse.name + " banished.");
@@ -1061,13 +1149,17 @@ public class HorseRPG extends JavaPlugin {
 			msg(p, NO_HORSE_SUMMONED);
 			return;
 		}
-		double speed = RPGHorse.s_generic_speed;
+		double speed = RPGHorse.getRandomSpeed();
 		// String oldname = h.name;
 
 		if (args[2].equalsIgnoreCase("random"))
 			h.generic_speed = Math.random() * speed;
 		else {
 			h.generic_speed = Double.parseDouble(args[2]);
+		}
+		if (h.horse != null) {
+			if (h.generic_speed > 0)
+				RPGHorse.attributeUtil.setSpeed(h.horse, h.generic_speed);
 		}
 		// "&aHorse %oldname% has been changed to %newname%"
 		msg(p, ChangeSpeedHorse.replace("%oldname%", h.name).replace("%speed%", "" + h.generic_speed));
@@ -1095,7 +1187,7 @@ public class HorseRPG extends JavaPlugin {
 			msg(p, NO_HORSE_SUMMONED);
 			return;
 		}
-		double jump = RPGHorse.s_generic_jump;
+		double jump = RPGHorse.getRandomJump();
 		// String oldname = h.name;
 
 		if (args[2].equalsIgnoreCase("random"))
@@ -1103,6 +1195,12 @@ public class HorseRPG extends JavaPlugin {
 		else {
 			h.generic_jump = Double.parseDouble(args[2]);
 		}
+
+		if (h.horse != null) {
+			if (h.generic_jump > 0)
+				RPGHorse.attributeUtil.setJumpHeight(h.horse, h.generic_jump);
+		}
+
 		// "&aHorse %oldname% has been changed to %newname%"
 		msg(p, ChangeJumpHorse.replace("%oldname%", h.name).replace("%jump%", "" + h.generic_jump));
 	}
@@ -1586,6 +1684,11 @@ public class HorseRPG extends JavaPlugin {
 			summonCost = fc.getInt("summon-cost");
 			banishCost = fc.getInt("banish-cost");
 
+			if (fc.contains("disable_StatsInScoreboard"))
+				DisableshowStatsinInScoreboard = fc.getBoolean("disable_StatsInScoreboard");
+			if (fc.contains("disable_StatsInChat"))
+				DisableshowStatsInChat = fc.getBoolean("disable_StatsInChat");
+
 			/*
 			 * if (!h_config.containsGlobalVariable(Keys.G_nobanish.toString())) {
 			 * h_config.setGlobalVar(Keys.G_nobanish.toString(), false); }else {
@@ -1732,9 +1835,9 @@ public class HorseRPG extends JavaPlugin {
 					double speed = rs.getDouble("defaultSpeed");
 					double jump = rs.getDouble("defaultJump");
 					if (jump <= 0)
-						jump = RPGHorse.s_generic_jump;
+						jump = RPGHorse.getRandomJump();
 					if (speed <= 0)
-						speed = RPGHorse.s_generic_speed;
+						speed = RPGHorse.getRandomSpeed();
 
 					RPGHorse h = new RPGHorse(rs.getString("name"), owner, color, style, variant,
 							rs.getInt("godmode") == 1, rs.getInt("swiftnessXP"), rs.getInt("agilityXP"),
@@ -1787,7 +1890,8 @@ public class HorseRPG extends JavaPlugin {
 				statement.executeUpdate("drop table if exists horses");
 				statement.executeUpdate("create table horses (	name string, " + "owner string, " + "color string, "
 						+ "style string, " + "variant string, " + "godmode integer, " + "swiftnessXP integer, "
-						+ "agilityXP integer, " + "vitalityXP integer, " + "wrathXP integer, sex integer, defaultSpeed integer, defaultJump integer)");
+						+ "agilityXP integer, " + "vitalityXP integer, "
+						+ "wrathXP integer, sex integer, defaultSpeed integer, defaultJump integer)");
 
 				for (TreeSet<RPGHorse> horseSet : ownedHorses.values()) {
 					for (RPGHorse h : horseSet)
@@ -1795,7 +1899,8 @@ public class HorseRPG extends JavaPlugin {
 							statement.executeUpdate("insert into horses values('" + h.name + "', '" + h.owner + "', '"
 									+ h.color + "', '" + h.style + "', '" + h.variant + "', " + (h.godmode ? 1 : 0)
 									+ ", " + h.swiftness.xp + ", " + h.agility.xp + ", " + h.vitality.xp + ", "
-									+ h.wrath.xp + ", " + (h.isMale ? 0 : 1) + ", "+h.generic_speed+", "+h.generic_jump+")");
+									+ h.wrath.xp + ", " + (h.isMale ? 0 : 1) + ", " + h.generic_speed + ", "
+									+ h.generic_jump + ")");
 						} catch (Error | Exception ed4) {
 							ed4.printStackTrace();
 						}
@@ -1835,6 +1940,7 @@ public class HorseRPG extends JavaPlugin {
 			a(r, "stats", args[0]);
 			a(r, "summon", args[0]);
 			a(r, "banish", args[0]);
+			a(r, "banishFor", args[0]);
 			a(r, "kill", args[0]);
 			a(r, "buy", args[0]);
 			a(r, "sell", args[0]);
@@ -1861,12 +1967,25 @@ public class HorseRPG extends JavaPlugin {
 				a(r, "color", args[1]);
 				a(r, "style", args[1]);
 			}
+			if (args[0].equalsIgnoreCase("banishFor")) {
+				if (args.length == 2) {
+					for (Player player : pCurrentHorse.keySet()) {
+						a(r, player.getName(), args[1]);
+					}
+				} else {
+					if (ownedHorses.containsKey(sender.getName()))
+						for (RPGHorse h : ownedHorses.get(sender.getName())) {
+							a(r, h.name, args[2]);
+						}
+				}
+			}
 			if (args[0].equalsIgnoreCase("stats") || args[0].equalsIgnoreCase("breed")
 					|| args[0].equalsIgnoreCase("summon") || args[0].equalsIgnoreCase("allowbreeding")
-					|| args[0].equalsIgnoreCase("kill")) {
-				for (RPGHorse h : ownedHorses.get(sender.getName())) {
-					a(r, h.name, args[1]);
-				}
+					|| args[0].equalsIgnoreCase("kill") || args[0].equalsIgnoreCase("banish")) {
+				if (ownedHorses.containsKey(sender.getName()))
+					for (RPGHorse h : ownedHorses.get(sender.getName())) {
+						a(r, h.name, args[1]);
+					}
 			}
 			if (args[0].equalsIgnoreCase("addxp") || args[0].equalsIgnoreCase("delxp")) {
 				if (args.length == 2) {
@@ -1879,9 +1998,10 @@ public class HorseRPG extends JavaPlugin {
 					a(r, "1", args[2]);
 				}
 				if (args.length == 4) {
-					for (RPGHorse h : ownedHorses.get(sender.getName())) {
-						a(r, h.name, args[3]);
-					}
+					if (ownedHorses.containsKey(sender.getName()))
+						for (RPGHorse h : ownedHorses.get(sender.getName())) {
+							a(r, h.name, args[3]);
+						}
 				}
 
 			}
@@ -1958,7 +2078,10 @@ public class HorseRPG extends JavaPlugin {
 		case "b":
 		case "banish":
 		case "stable":
-			banishHorse(sender);
+			banishHorse(sender, args, false);
+			return true;
+		case "banishfor":
+			banishHorse(sender, args, true);
 			return true;
 		case "addxp":
 		case "delxp":
@@ -2068,34 +2191,43 @@ public class HorseRPG extends JavaPlugin {
 		}
 
 		ScoreboardManager manager = Bukkit.getScoreboardManager();
-		Scoreboard board = manager.getNewScoreboard();
+		Scoreboard board = null;
+		Objective obj = null;
+		if (!DisableshowStatsinInScoreboard) {
+			board = manager.getNewScoreboard();
 
-		Objective obj = board.registerNewObjective("leaderboard", "dummy");
-		obj.setDisplaySlot(DisplaySlot.SIDEBAR);
-		obj.setDisplayName(ChatColor.YELLOW + "Leaderboard");
-		sender.sendMessage(ChatColor.YELLOW + "Leaderboard");
+			obj = board.registerNewObjective("leaderboard", "dummy");
+			obj.setDisplaySlot(DisplaySlot.SIDEBAR);
+			obj.setDisplayName(ChatColor.YELLOW + "Leaderboard");
+			sender.sendMessage(ChatColor.YELLOW + "Leaderboard");
+		}
 
 		int index = 0;
 		for (RPGHorse h : map.descendingKeySet()) {
 			String k = ChatColor.GREEN + "#" + index + "  " + h.name.substring(0, Math.min(h.name.length(), 16));
 			String plaeyerName = h.owner.substring(0, Math.min(29 - k.length(), h.owner.length()));
 			k = k + ChatColor.WHITE + " " + plaeyerName;
-			try {
-				obj.getScore(k).setScore(20 - index);
-			} catch (Exception e) {
-				obj.getScore(Bukkit.getOfflinePlayer(k)).setScore(20 - index);
-			}
-			sender.sendMessage(k + " = " + (h.agility.level + h.wrath.level + h.vitality.level + h.swiftness.level));
+			if (!DisableshowStatsinInScoreboard)
+				try {
+					obj.getScore(k).setScore(20 - index);
+				} catch (Exception e) {
+					obj.getScore(Bukkit.getOfflinePlayer(k)).setScore(20 - index);
+				}
+			if (!DisableshowStatsInChat)
+				sender.sendMessage(
+						k + " = " + (h.agility.level + h.wrath.level + h.vitality.level + h.swiftness.level));
 			index++;
 			if (index >= 20)
 				break;
 		}
 
-		Scoreboard oldsb = p.getScoreboard();
-		p.setScoreboard(board);
-		playersWithScoreboards.add(p.getName());
+		if (!DisableshowStatsinInScoreboard) {
+			Scoreboard oldsb = p.getScoreboard();
+			p.setScoreboard(board);
+			playersWithScoreboards.add(p.getName());
 
-		Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(instance, new ScoreboardTask(p, oldsb), 200);
+			Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(instance, new ScoreboardTask(p, oldsb), 200);
+		}
 	}
 
 }

@@ -1,3 +1,19 @@
+Version 4.3.45
+	Added ability to disable scoreboard messages for chat or for scoreboard.
+	Added /h banishfor
+
+Version 4.3.44
+	Made horse generation use base-minecraft's number generation for jump and speed
+
+Version 4.3.43B
+	Quick fix: fixed FreeHorse not checking summoned horses.
+
+version 4.3.43
+	Added system so two horses can't be named the same thing
+	Added more warnings in case horse cannot be loaded.
+	Fixed issue where horse name can be empty.
+	Reduced speed cap to 1.
+
 Version 4.3.42
 	Fixed horse speeds when generating a new horse.
 	Fixed ChnestedHorse inventory

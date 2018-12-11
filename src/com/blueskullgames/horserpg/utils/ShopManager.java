@@ -84,7 +84,7 @@ public class ShopManager implements Listener {
 								.getBalance((OfflinePlayer) e.getWhoClicked()) >= HorseRPG.costForHorse.get(v)) {
 							RPGHorse horse = new RPGHorse(RPGHorse.randomName((Player) e.getWhoClicked()),
 									e.getWhoClicked().getName(), getColorInLore(e.getCurrentItem()), Style.NONE, v,
-									false, 0, 0, 0, 0, UUID.randomUUID(), 2.25, 2.25,Math.random()<0.5);
+									false, 0, 0, 0, 0, UUID.randomUUID(), RPGHorse.getRandomJump(), RPGHorse.getRandomSpeed(),Math.random()<0.5);
 							horse.hasSaddle = true;
 							if (!HorseRPG.ownedHorses.containsKey(e.getWhoClicked().getName()))
 								HorseRPG.ownedHorses.put(e.getWhoClicked().getName(), new TreeSet<RPGHorse>());
