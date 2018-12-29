@@ -80,12 +80,18 @@ public class RPGHorse implements Comparable<RPGHorse> {
 	public double generic_speed = 0.25f;
 	public double generic_jump = 0.7f;
 	
+	public static double minSpeed = 0.1125;
+	public static double maxSpeed = 0.33;
+	public static double minJump = 0.4;
+	public static double maxJump = 1.0;
+	
+	
 	
 	public static double getRandomSpeed() {
-		return ((0.3375-0.1125)*Math.random())+0.1125;
+		return ((maxSpeed-minSpeed)*Math.random())+minSpeed;
 	}
 	public static double getRandomJump() {
-		return ((1.0-0.4)*Math.random())+0.4;
+		return ((maxJump-minJump)*Math.random())+minJump;
 	}
 	
 
@@ -253,7 +259,7 @@ public class RPGHorse implements Comparable<RPGHorse> {
 	 */
 	public void setName(String newName) {
 		int add = 0;
-		String testName = newName;
+		String testName = newName.replaceAll("\u00a7", "&");
 		if(newName.length() == 0)
 			return;
 		if (HorseRPG.ownedHorses.containsKey(owner))

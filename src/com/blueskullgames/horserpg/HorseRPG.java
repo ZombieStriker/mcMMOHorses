@@ -128,8 +128,8 @@ public class HorseRPG extends JavaPlugin {
 	public static ConfigAccessor config;
 	public static Economy econ;
 	public static HashMap<Entity, RPGHorse> hSpawnedHorses;
-	public static HashMap<Player, RPGHorse> pCurrentHorse;
-	public static HashMap<Player, RPGHorse> offers;
+	public static HashMap<UUID, RPGHorse> pCurrentHorse;
+	public static HashMap<UUID, RPGHorse> offers;
 	public static HashMap<String, TreeSet<RPGHorse>> ownedHorses;
 	public static HashSet<RPGHorse> horses;
 	public static HorseRPG instance;
@@ -300,8 +300,8 @@ public class HorseRPG extends JavaPlugin {
 	 */
 	public static RPGHorse currentHorse(Player p, String[] args, int offset) {
 		if (args.length <= offset) {
-			if (pCurrentHorse.containsKey(p)) {
-				return pCurrentHorse.get(p);
+			if (pCurrentHorse.containsKey(p.getUniqueId())) {
+				return pCurrentHorse.get(p.getUniqueId());
 			} else if (ownedHorses.containsKey(p.getName()) && ownedHorses.get(p.getName()).size() > 0)
 				return ownedHorses.get(p.getName()).first();
 
@@ -699,7 +699,7 @@ public class HorseRPG extends JavaPlugin {
 		h.horse = horse;
 		h.setName(h.name);
 
-		pCurrentHorse.put(p, h);
+		pCurrentHorse.put(p.getUniqueId(), h);
 		hSpawnedHorses.put(horse, h);
 		if (!ownedHorses.containsKey(p.getName()))
 			ownedHorses.put(p.getName(), new TreeSet<RPGHorse>());
@@ -724,21 +724,21 @@ public class HorseRPG extends JavaPlugin {
 		}
 		Player p = (Player) sender;
 
-		if (!offers.containsKey(p)) {
+		if (!offers.containsKey(p.getUniqueId())) {
 			msg(p, NO_OFFER_PENDING);
 			return;
 		}
 		if (!buy) {
-			offers.remove(p);
+			offers.remove(p.getUniqueId());
 			msg(p, OFFER_DECLINED);
 			return;
 		}
-		if (pCurrentHorse.containsKey(p)) {
+		if (pCurrentHorse.containsKey(p.getUniqueId())) {
 			msg(p, BANISH_HORSE);
 			return;
 		}
 
-		RPGHorse h = offers.get(p);
+		RPGHorse h = offers.get(p.getUniqueId());
 		EconomyResponse er1;
 		try {
 			er1 = econ.withdrawPlayer(p, h.price);
@@ -762,7 +762,7 @@ public class HorseRPG extends JavaPlugin {
 
 		for (Player seller : instance.getServer().getOnlinePlayers()) {
 			if (seller.getName().equalsIgnoreCase(h.owner)) {
-				pCurrentHorse.remove(seller);
+				pCurrentHorse.remove(seller.getUniqueId());
 				msg(seller, "&b" + h.name + "&a sold to &b" + p.getName() + "&a for &b" + econ.format(h.price));
 				break;
 			}
@@ -770,7 +770,7 @@ public class HorseRPG extends JavaPlugin {
 		h.banish();
 		msg(p, "&b" + h.name + "&a bought from &b" + h.owner + "&a for &b" + econ.format(h.price));
 		h.owner = p.getName();
-		offers.remove(p);
+		offers.remove(p.getUniqueId());
 	}
 
 	/**
@@ -789,7 +789,7 @@ public class HorseRPG extends JavaPlugin {
 			return;
 		}
 		Player p = (Player) sender;
-		if (!pCurrentHorse.containsKey(p)) {
+		if (!pCurrentHorse.containsKey(p.getUniqueId())) {
 			msg(p, "&aPlease summon the horse first.");
 			return;
 		}
@@ -823,9 +823,9 @@ public class HorseRPG extends JavaPlugin {
 			return;
 		}
 
-		RPGHorse h = pCurrentHorse.get(p);
+		RPGHorse h = pCurrentHorse.get(p.getUniqueId());
 		h.price = cost;
-		offers.put(buyer, h);
+		offers.put(buyer.getUniqueId(), h);
 		Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(instance, new OfferTask(p), 1200);
 
 		msg(p, "&aOffering &b" + h.name + "&a at &b" + econ.format(cost) + "&a for &b60 seconds.");
@@ -851,7 +851,7 @@ public class HorseRPG extends JavaPlugin {
 		 * "&a is already summoned."); return; }
 		 */
 
-		RPGHorse h = getHorseNotSpawned(p, args, 1);
+		RPGHorse h = null;// getHorseNotSpawned(p, args, 1);
 		if (!hasHorses(p)) {
 			h = null;
 			if (freeHorse) {
@@ -872,6 +872,8 @@ public class HorseRPG extends JavaPlugin {
 					msg(p, NO_HORSES);
 				}
 			}
+		} else {
+			h = getHorseNotSpawned(p, args, 1);
 		}
 		if (h != null) {
 			if (hSpawnedHorses.containsKey(h.horse)) {
@@ -896,7 +898,7 @@ public class HorseRPG extends JavaPlugin {
 					}
 				}
 				h.summon(p);
-				pCurrentHorse.put(p, h);
+				pCurrentHorse.put(p.getUniqueId(), h);
 			}
 		}
 	}
@@ -928,21 +930,17 @@ public class HorseRPG extends JavaPlugin {
 			p = (Player) sender;
 		}
 
-		if (!pCurrentHorse.containsKey(p)) {
+		if (!pCurrentHorse.containsKey(p.getUniqueId())) {
 			msg(sender, NO_HORSE_SUMMONED);
 			return;
 		}
 		RPGHorse horse = (forced ? args.length > 2 : args.length > 1) ? getHorseSpawned(p, args, forced ? 2 : 1)
-				: pCurrentHorse.get(p);
+				: pCurrentHorse.get(p.getUniqueId());
 		if (horse == null) {
 			msg(sender, NO_HORSE_SUMMONED);
 			return;
 		}
 		if (horse.horse == null || !horse.horse.getLocation().getChunk().isLoaded()) {
-			msg(sender, BANISH_LOADED_CHUNK);
-			return;
-		}
-		if ((sender instanceof Player && horse.horse.getLocation().getWorld() != ((Player) sender).getWorld())) {
 			msg(sender, BANISH_LOADED_CHUNK);
 			return;
 		}
@@ -979,11 +977,11 @@ public class HorseRPG extends JavaPlugin {
 				}
 			}
 		horse.banish();
-		if (pCurrentHorse.get(p) == horse) {
-			pCurrentHorse.remove(p);
+		if (pCurrentHorse.get(p.getUniqueId()) == horse) {
+			pCurrentHorse.remove(p.getUniqueId());
 			for (RPGHorse others : ownedHorses.get(p.getName())) {
 				if (hSpawnedHorses.containsKey(others.horse)) {
-					pCurrentHorse.put(p, others);
+					pCurrentHorse.put(p.getUniqueId(), others);
 					break;
 				}
 			}
@@ -1107,7 +1105,7 @@ public class HorseRPG extends JavaPlugin {
 			return;
 		}
 
-		RPGHorse h = pCurrentHorse.get(p);
+		RPGHorse h = pCurrentHorse.get(p.getUniqueId());
 		if (h == null) {
 			msg(p, NO_HORSE_SUMMONED);
 			return;
@@ -1144,7 +1142,7 @@ public class HorseRPG extends JavaPlugin {
 			return;
 		}
 
-		RPGHorse h = pCurrentHorse.get(p);
+		RPGHorse h = pCurrentHorse.get(p.getUniqueId());
 		if (h == null) {
 			msg(p, NO_HORSE_SUMMONED);
 			return;
@@ -1153,13 +1151,12 @@ public class HorseRPG extends JavaPlugin {
 		// String oldname = h.name;
 
 		if (args[2].equalsIgnoreCase("random"))
-			h.generic_speed = Math.random() * speed;
+			h.generic_speed = speed;
 		else {
 			h.generic_speed = Double.parseDouble(args[2]);
 		}
 		if (h.horse != null) {
-			if (h.generic_speed > 0)
-				RPGHorse.attributeUtil.setSpeed(h.horse, h.generic_speed);
+			RPGHorse.attributeUtil.setSpeed(h.horse, h.generic_speed);
 		}
 		// "&aHorse %oldname% has been changed to %newname%"
 		msg(p, ChangeSpeedHorse.replace("%oldname%", h.name).replace("%speed%", "" + h.generic_speed));
@@ -1182,7 +1179,7 @@ public class HorseRPG extends JavaPlugin {
 			return;
 		}
 
-		RPGHorse h = pCurrentHorse.get(p);
+		RPGHorse h = pCurrentHorse.get(p.getUniqueId());
 		if (h == null) {
 			msg(p, NO_HORSE_SUMMONED);
 			return;
@@ -1191,14 +1188,13 @@ public class HorseRPG extends JavaPlugin {
 		// String oldname = h.name;
 
 		if (args[2].equalsIgnoreCase("random"))
-			h.generic_jump = Math.random() * jump;
+			h.generic_jump = jump;
 		else {
 			h.generic_jump = Double.parseDouble(args[2]);
 		}
 
 		if (h.horse != null) {
-			if (h.generic_jump > 0)
-				RPGHorse.attributeUtil.setJumpHeight(h.horse, h.generic_jump);
+			RPGHorse.attributeUtil.setJumpHeight(h.horse, h.generic_jump);
 		}
 
 		// "&aHorse %oldname% has been changed to %newname%"
@@ -1222,7 +1218,7 @@ public class HorseRPG extends JavaPlugin {
 			return;
 		}
 
-		RPGHorse h = pCurrentHorse.get(p);
+		RPGHorse h = pCurrentHorse.get(p.getUniqueId());
 		if (h == null) {
 			msg(p, NO_HORSE_SUMMONED);
 			return;
@@ -1262,7 +1258,7 @@ public class HorseRPG extends JavaPlugin {
 			return;
 		}
 
-		RPGHorse h = pCurrentHorse.get(p);
+		RPGHorse h = pCurrentHorse.get(p.getUniqueId());
 		if (h == null) {
 			msg(p, NO_HORSE_SUMMONED);
 			return;
@@ -1303,7 +1299,7 @@ public class HorseRPG extends JavaPlugin {
 			return;
 		}
 
-		RPGHorse h = pCurrentHorse.get(p);
+		RPGHorse h = pCurrentHorse.get(p.getUniqueId());
 		if (h == null) {
 			msg(p, NO_HORSE_SUMMONED);
 			return;
@@ -1405,9 +1401,9 @@ public class HorseRPG extends JavaPlugin {
 				hName += " " + args[i];
 			h.setName(hName);
 		}
-		if (!pCurrentHorse.containsKey(p)) {
+		if (!pCurrentHorse.containsKey(p.getUniqueId())) {
 			h.summon(p);
-			pCurrentHorse.put(p, h);
+			pCurrentHorse.put(p.getUniqueId(), h);
 		}
 		msg(p, HORSE_BRED);
 	}
@@ -1432,12 +1428,16 @@ public class HorseRPG extends JavaPlugin {
 		if (h == null)
 			return;
 
-		pCurrentHorse.remove(p);
+		pCurrentHorse.remove(p.getUniqueId());
 		h.banish();
 		ownedHorses.get(p.getName()).remove(h);
 		horses.remove(h);
 		// Test if this removes horses.
 		h_config.removeHorse(h);
+		if (hSpawnedHorses.containsKey(h.horse)) {
+			h.horse.remove();
+			hSpawnedHorses.remove(h.horse);
+		}
 
 		msg(p, "&b" + h.name + "&a won't be bothering you anymore.");
 	}
@@ -1591,9 +1591,9 @@ public class HorseRPG extends JavaPlugin {
 		if (!config.getConfig().contains("enable-economy"))
 			config.overwriteConfig();
 
-		offers = new HashMap<Player, RPGHorse>();
+		offers = new HashMap<UUID, RPGHorse>();
 		ownedHorses = new HashMap<String, TreeSet<RPGHorse>>();
-		pCurrentHorse = new HashMap<Player, RPGHorse>();
+		pCurrentHorse = new HashMap<UUID, RPGHorse>();
 		hSpawnedHorses = new HashMap<Entity, RPGHorse>();
 		horses = new HashSet<RPGHorse>();
 	}
@@ -1688,6 +1688,15 @@ public class HorseRPG extends JavaPlugin {
 				DisableshowStatsinInScoreboard = fc.getBoolean("disable_StatsInScoreboard");
 			if (fc.contains("disable_StatsInChat"))
 				DisableshowStatsInChat = fc.getBoolean("disable_StatsInChat");
+
+			if (fc.contains("horsestats.default_min_speed"))
+				RPGHorse.minSpeed = fc.getDouble("horsestats.default_min_speed");
+			if (fc.contains("horsestats.default_max_speed"))
+				RPGHorse.maxSpeed = fc.getDouble("horsestats.default_max_speed");
+			if (fc.contains("horsestats.default_min_jump"))
+				RPGHorse.minJump = fc.getDouble("horsestats.default_min_jump");
+			if (fc.contains("horsestats.default_max_jump"))
+				RPGHorse.maxJump = fc.getDouble("horsestats.default_max_jump");
 
 			/*
 			 * if (!h_config.containsGlobalVariable(Keys.G_nobanish.toString())) {
@@ -1834,14 +1843,14 @@ public class HorseRPG extends JavaPlugin {
 
 					double speed = rs.getDouble("defaultSpeed");
 					double jump = rs.getDouble("defaultJump");
-					if (jump <= 0)
+					if (jump <= 0 || jump > RPGHorse.maxJump)
 						jump = RPGHorse.getRandomJump();
-					if (speed <= 0)
+					if (speed <= 0 || speed > RPGHorse.maxSpeed)
 						speed = RPGHorse.getRandomSpeed();
 
 					RPGHorse h = new RPGHorse(rs.getString("name"), owner, color, style, variant,
 							rs.getInt("godmode") == 1, rs.getInt("swiftnessXP"), rs.getInt("agilityXP"),
-							rs.getInt("vitalityXP"), rs.getInt("wrathXP"), null, speed, jump, rs.getInt("sex") == 0);
+							rs.getInt("vitalityXP"), rs.getInt("wrathXP"), null, jump, speed, rs.getInt("sex") == 0);
 					// TODO:Tempfix. Since I don't want users to use the sql, just set the dfefault
 					// value to 2.25
 
@@ -1969,8 +1978,8 @@ public class HorseRPG extends JavaPlugin {
 			}
 			if (args[0].equalsIgnoreCase("banishFor")) {
 				if (args.length == 2) {
-					for (Player player : pCurrentHorse.keySet()) {
-						a(r, player.getName(), args[1]);
+					for (UUID player : pCurrentHorse.keySet()) {
+						a(r, Bukkit.getPlayer(player).getName(), args[1]);
 					}
 				} else {
 					if (ownedHorses.containsKey(sender.getName()))
@@ -2229,5 +2238,4 @@ public class HorseRPG extends JavaPlugin {
 			Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(instance, new ScoreboardTask(p, oldsb), 200);
 		}
 	}
-
 }

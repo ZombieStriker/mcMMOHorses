@@ -90,8 +90,8 @@ public class ShopManager implements Listener {
 								HorseRPG.ownedHorses.put(e.getWhoClicked().getName(), new TreeSet<RPGHorse>());
 							HorseRPG.ownedHorses.get(e.getWhoClicked().getName()).add(horse);
 							HorseRPG.horses.add(horse);
-							if (!HorseRPG.pCurrentHorse.containsKey(e.getWhoClicked())) {
-								HorseRPG.pCurrentHorse.put((Player) e.getWhoClicked(), horse);
+							if (!HorseRPG.pCurrentHorse.containsKey(e.getWhoClicked().getUniqueId())) {
+								HorseRPG.pCurrentHorse.put(((Player) e.getWhoClicked()).getUniqueId(), horse);
 							}
 							HorseRPG.msg(e.getWhoClicked(), HorseRPG.BOUGHT_HORSE + horse.name + "!");
 							HorseRPG.msg(e.getWhoClicked(), HorseRPG.BOUGHT_HORSE_EXP1);

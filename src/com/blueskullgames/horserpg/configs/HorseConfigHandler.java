@@ -184,10 +184,10 @@ public class HorseConfigHandler {
 							? config.getDouble("Horses." + owner + "." + rpguuids + Keys.sprint)
 							: RPGHorse.getRandomSpeed();
 
-					if (jumpPow >= 2.25)
-						jumpPow = 0.7;
-					if (sprintPow > 1)
-						sprintPow = 0.25;
+					if (jumpPow > RPGHorse.maxJump)
+						jumpPow = RPGHorse.getRandomJump();
+					if (sprintPow > RPGHorse.maxSpeed)
+						sprintPow = RPGHorse.getRandomSpeed();
 
 					boolean sex = config.contains("Horses." + owner + "." + rpguuids + Keys.sex)
 							? config.getBoolean("Horses." + owner + "." + rpguuids + Keys.sex)
@@ -236,7 +236,7 @@ public class HorseConfigHandler {
 								if (rpgHorse.horse != null) {
 									HorseRPG.hSpawnedHorses.put(rpgHorse.horse, rpgHorse);
 									if (Bukkit.getPlayer(owner) != null)
-										HorseRPG.pCurrentHorse.put(Bukkit.getPlayer(owner), rpgHorse);
+										HorseRPG.pCurrentHorse.put(Bukkit.getPlayer(owner).getUniqueId(), rpgHorse);
 								} else {
 									HorseRPG.instance.getLogger()
 											.warning(ChatColor.RED + " The horse " + horsename + " for player " + owner

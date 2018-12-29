@@ -17,6 +17,6 @@ public class OfferTask implements Runnable {
 	
 	@Override
 	public void run() {
-		HorseRPG.offers.remove(p);
+		HorseRPG.offers.remove(p.getUniqueId());
 	}
 }

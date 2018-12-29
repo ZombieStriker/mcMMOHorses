@@ -97,3 +97,9 @@ disable_basegame_taming: false
 
 disable_StatsInChat: false
 disable_StatsInScoreboard: false
+
+horsestats:
+  default_min_speed: 0.1125
+  default_max_speed: 0.3375
+  default_min_jump: 0.4
+  default_max_jump: 1.0

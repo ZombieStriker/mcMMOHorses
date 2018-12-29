@@ -1,6 +1,8 @@
 package com.blueskullgames.horserpg.listeners;
 
-import org.bukkit.Material;
+import java.util.UUID;
+
+import org.bukkit.*;
 import org.bukkit.entity.AbstractHorse;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Horse;
@@ -22,16 +24,35 @@ import com.blueskullgames.horserpg.utils.NewHorseUtil;
 public class PlayerListener implements Listener {
 
 	@EventHandler
-	public void onJoin(PlayerJoinEvent event) {
+	public void onJoin(final PlayerJoinEvent event) {
 		// if(HorseRPG.banishonquit)
 		// return;
 
-		for (Player p : HorseRPG.pCurrentHorse.keySet()) {
-			if (p.getUniqueId().equals(event.getPlayer().getUniqueId())) {
-				HorseRPG.pCurrentHorse.put(event.getPlayer(), HorseRPG.pCurrentHorse.get(p));
+		for (UUID p : HorseRPG.pCurrentHorse.keySet()) {
+			if (p.equals(event.getPlayer().getUniqueId())) {
+				// HorseRPG.pCurrentHorse.put(event.getPlayer(), HorseRPG.pCurrentHorse.get(p));
 				break;
 			}
 		}
+		// if (HorseRPG.banishonquit) {
+		new BukkitRunnable() {
+			public void run() {
+				for (RPGHorse rpg : HorseRPG.ownedHorses.get(event.getPlayer().getName())) {
+					if (rpg.horse != null && !rpg.horse.isValid()) {
+						for (Entity e : rpg.horse.getNearbyEntities(30, 30, 30)) {
+							if (e.getType() == rpg.horse.getType() && e.getUniqueId().equals(rpg.horse.getUniqueId())) {
+								HorseRPG.hSpawnedHorses.put(e, HorseRPG.hSpawnedHorses.remove(rpg.horse));
+								rpg.horse.remove();
+								rpg.horse = e;
+								break;
+							}
+						}
+					}
+				}
+			}
+		}.runTaskLater(HorseRPG.instance, 2);
+
+		// }
 	}
 
 	/**
@@ -55,7 +76,7 @@ public class PlayerListener implements Listener {
 			if (!p.getLocation().getWorld().equals(event.getTo().getWorld()))
 				return;
 
-			RPGHorse h = HorseRPG.pCurrentHorse.get(p);
+			RPGHorse h = HorseRPG.pCurrentHorse.get(p.getUniqueId());
 			if (h != null)
 				h.travel(distance);
 		}
@@ -66,18 +87,14 @@ public class PlayerListener implements Listener {
 	 **/
 	@EventHandler
 	public void onPlayerQuit(PlayerQuitEvent evt) {
-		if (/* !HorseRPG.nobanishment || */HorseRPG.banishonquit) {
+		if (HorseRPG.banishonquit) {
 			if (HorseRPG.ownedHorses.containsKey(evt.getPlayer().getName()))
 				for (RPGHorse h : HorseRPG.ownedHorses.get(evt.getPlayer().getName())) {
-					if (h != null && h.horse != null && HorseRPG.hSpawnedHorses.containsKey(h.horse))
+					if (h != null && h.horse != null && HorseRPG.hSpawnedHorses.containsKey(h.horse)) {
 						HorseRPG.hSpawnedHorses.remove(h.horse).banish();
+					}
 				}
 		}
-	}
-
-	@EventHandler(priority = EventPriority.LOW)
-	public void onMountHorseEventHorse(PlayerInteractEntityEvent event) {
-
 	}
 
 	/**
@@ -123,7 +140,7 @@ public class PlayerListener implements Listener {
 							public void run() {
 								if (p.getVehicle() != null)
 									if (p.getVehicle().equals(horse)) {
-										HorseRPG.pCurrentHorse.put(p, rpg);
+										HorseRPG.pCurrentHorse.put(p.getUniqueId(), rpg);
 									}
 							}
 						}.runTaskLater(HorseRPG.instance, 2);

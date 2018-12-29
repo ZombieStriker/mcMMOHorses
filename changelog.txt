@@ -1,3 +1,13 @@
+Version 4.3.47
+	Fixed horse location verification
+	Fixed issue where horses would become unregistered on player quit/chuck despawn.
+
+Version 4.3.46
+	Made max horse speeds customizable
+
+Version 4.3.45b
+	Quickfix: Fixed autotaming util and permadeath systems
+
 Version 4.3.45
 	Added ability to disable scoreboard messages for chat or for scoreboard.
 	Added /h banishfor

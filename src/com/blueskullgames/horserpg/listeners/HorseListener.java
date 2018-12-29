@@ -159,7 +159,11 @@ public class HorseListener implements Listener {
 		}
 		
 		if (HorseRPG.permanentDeath) {
-			HorseRPG.horses.remove(h);
+			if(HorseRPG.hSpawnedHorses.containsKey(h.horse)) {
+				//h.horse.remove();
+				HorseRPG.hSpawnedHorses.remove(h.horse);
+			}
+			HorseRPG.horses.remove(h);		
 			//Remove the horse from the list of all horses
 		}else {
 			evt.getDrops().clear();
@@ -191,7 +195,7 @@ public class HorseListener implements Listener {
 			} catch (Exception | Error e) {
 				p = (Player) horse.getPassenger();
 			}
-			RPGHorse h = HorseRPG.pCurrentHorse.get(p);
+			RPGHorse h = HorseRPG.pCurrentHorse.get(p.getUniqueId());
 			if (h != null) {
 				if (evt.getPower() < 0.45) {
 					Swiftness swiftness = h.swiftness;

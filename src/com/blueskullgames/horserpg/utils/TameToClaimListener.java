@@ -48,6 +48,10 @@ public class TameToClaimListener implements Listener {
 			return;
 		}
 
+		if (HorseRPG.hSpawnedHorses.containsKey(e.getRightClicked())) {
+			return;
+		}
+		
 		new BukkitRunnable() {
 			int i = 0;
 
@@ -58,10 +62,12 @@ public class TameToClaimListener implements Listener {
 					cancel();
 				}
 				try {
+
 					if (((org.bukkit.entity.AbstractHorse) e.getRightClicked()).getPassenger() == null) {
 						cancel();
 						return;
 					}
+
 					if (((org.bukkit.entity.AbstractHorse) e.getRightClicked()).isTamed()) {
 						if (((org.bukkit.entity.AbstractHorse) e.getRightClicked()).getInventory()
 								.getSaddle() == null) {
@@ -82,7 +88,7 @@ public class TameToClaimListener implements Listener {
 								takenfrom = e.getPlayer().getInventory().first(Material.SADDLE);
 								if (takenfrom > -1) {
 									used = e.getPlayer().getInventory().getItem(takenfrom);
-									slot=takenfrom;
+									slot = takenfrom;
 								}
 							}
 							if (used != null) {
