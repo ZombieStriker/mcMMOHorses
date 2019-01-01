@@ -98,6 +98,9 @@ disable_basegame_taming: false
 disable_StatsInChat: false
 disable_StatsInScoreboard: false
 
+#If claimed horses breed, the offspring will be claimed too.
+claimFoalOnBreed: true
+
 horsestats:
   default_min_speed: 0.1125
   default_max_speed: 0.3375

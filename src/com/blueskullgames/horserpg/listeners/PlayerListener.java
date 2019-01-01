@@ -35,22 +35,23 @@ public class PlayerListener implements Listener {
 			}
 		}
 		// if (HorseRPG.banishonquit) {
-		new BukkitRunnable() {
-			public void run() {
-				for (RPGHorse rpg : HorseRPG.ownedHorses.get(event.getPlayer().getName())) {
-					if (rpg.horse != null && !rpg.horse.isValid()) {
-						for (Entity e : rpg.horse.getNearbyEntities(30, 30, 30)) {
-							if (e.getType() == rpg.horse.getType() && e.getUniqueId().equals(rpg.horse.getUniqueId())) {
-								HorseRPG.hSpawnedHorses.put(e, HorseRPG.hSpawnedHorses.remove(rpg.horse));
-								rpg.horse.remove();
-								rpg.horse = e;
-								break;
+		if (HorseRPG.ownedHorses.containsKey(event.getPlayer().getName()))
+			new BukkitRunnable() {
+				public void run() {
+					for (RPGHorse rpg : HorseRPG.ownedHorses.get(event.getPlayer().getName())) {
+						if (rpg.getHorse() != null)
+							for (Entity e : rpg.getHorse().getNearbyEntities(60, 30, 60)) {
+								if (e.getType() == rpg.getHorse().getType()
+										&& e.getUniqueId().equals(rpg.getHorse().getUniqueId())) {
+									HorseRPG.hSpawnedHorses.put(e, HorseRPG.hSpawnedHorses.remove(rpg.getHorse()));
+									rpg.getHorse().remove();
+									rpg.setHorse( e);
+									break;
+								}
 							}
-						}
 					}
 				}
-			}
-		}.runTaskLater(HorseRPG.instance, 2);
+			}.runTaskLater(HorseRPG.instance, 2);
 
 		// }
 	}
@@ -90,8 +91,8 @@ public class PlayerListener implements Listener {
 		if (HorseRPG.banishonquit) {
 			if (HorseRPG.ownedHorses.containsKey(evt.getPlayer().getName()))
 				for (RPGHorse h : HorseRPG.ownedHorses.get(evt.getPlayer().getName())) {
-					if (h != null && h.horse != null && HorseRPG.hSpawnedHorses.containsKey(h.horse)) {
-						HorseRPG.hSpawnedHorses.remove(h.horse).banish();
+					if (h != null && h.getHorse() != null && HorseRPG.hSpawnedHorses.containsKey(h.getHorse())) {
+						HorseRPG.hSpawnedHorses.remove(h.getHorse()).banish();
 					}
 				}
 		}
@@ -123,7 +124,7 @@ public class PlayerListener implements Listener {
 				Material m = null;
 				if (item != null && ((m = item.getType()) == Material.GOLDEN_APPLE || m == Material.GOLDEN_CARROT)) {
 					RPGHorse h = HorseRPG.hSpawnedHorses.get(horse);
-					if (h != null && h.owner.equalsIgnoreCase(p.getName())) {
+					if (h != null && h.owners_name.equalsIgnoreCase(p.getName())) {
 						h.vitality.addXP(m == Material.GOLDEN_APPLE ? 5 : 4, p);
 						ItemStack is = event.getPlayer().getItemInHand();
 						if (is.getAmount() == 1) {
@@ -135,7 +136,7 @@ public class PlayerListener implements Listener {
 					}
 				} else {
 					final RPGHorse rpg = HorseRPG.hSpawnedHorses.get(horse);
-					if (rpg.owner.equals(p.getName())) {
+					if (rpg.owners_name.equals(p.getName())) {
 						new BukkitRunnable() {
 							public void run() {
 								if (p.getVehicle() != null)

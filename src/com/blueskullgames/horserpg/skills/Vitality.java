@@ -29,13 +29,13 @@ public class Vitality extends Skill {
 
 	@SuppressWarnings("deprecation")
 	public void heal(boolean rapid) {
-		if (h.horse != null) {
-			((LivingEntity) h.horse).addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, duration, rapid ? 3 : 6, true));
+		if (h.getHorse() != null) {
+			((LivingEntity) h.getHorse()).addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, duration, rapid ? 3 : 6, true));
 			Player p ;
 			try{
-				p = !h.horse.getPassengers().isEmpty()? (Player)h.horse.getPassengers().get(0) : null;			
+				p = !h.getHorse().getPassengers().isEmpty()? (Player)h.getHorse().getPassengers().get(0) : null;			
 			}catch(Exception|Error e){
-			p = h.horse.getPassenger() != null ? (Player)h.horse.getPassenger() : null;
+			p = h.getHorse().getPassenger() != null ? (Player)h.getHorse().getPassenger() : null;
 			}
 			addXP(5, p);
 			if (p != null)

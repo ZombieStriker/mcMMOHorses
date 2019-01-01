@@ -3,6 +3,7 @@ package com.blueskullgames.horserpg.utils.atributeutils;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Horse;
+import org.bukkit.inventory.Inventory;
 
 public class AtributeUtilHorse implements BaseAtributeUtil {
 
@@ -24,6 +25,11 @@ public class AtributeUtilHorse implements BaseAtributeUtil {
 	@Override
 	public void setSpeed(Entity e, double f) {
 		((Horse) e).getAttribute(Attribute.GENERIC_MOVEMENT_SPEED).setBaseValue(f);
+	}
+
+	@Override
+	public Inventory getInventory(Entity e) {
+		return ((Horse) e).getInventory();
 	}
 
 }

@@ -1,3 +1,11 @@
+Version 4.3.49
+	Rewrote entity handling system. If the horse is no longer valid, the system will look through the world again to try and find it.
+	
+Version 4.3.48
+	Added ability to claim foals when claimed horses are breed.
+	Fixed error for claiming horses.
+	Fixed issue where player cannot pickup saddle on claimed horse.
+
 Version 4.3.47
 	Fixed horse location verification
 	Fixed issue where horses would become unregistered on player quit/chuck despawn.

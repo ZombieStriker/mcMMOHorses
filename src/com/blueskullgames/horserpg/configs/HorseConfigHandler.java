@@ -7,16 +7,14 @@ import java.util.Set;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.World;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.AbstractHorse;
+import org.bukkit.entity.Ageable;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Horse;
-import org.bukkit.entity.Horse.Color;
-import org.bukkit.entity.Horse.Style;
-import org.bukkit.entity.Horse.Variant;
+import org.bukkit.entity.Horse.*;
 import org.bukkit.inventory.HorseInventory;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -58,7 +56,7 @@ public class HorseConfigHandler {
 	 */
 
 	public void setVariable(RPGHorse horse, String path, Object var) {
-		config.set("Horses." + horse.owner + "." + horse.rpgUUID.toString() + path, var);
+		config.set("Horses." + horse.owners_name + "." + horse.rpgUUID.toString() + path, var);
 		try {
 			config.save(file);
 		} catch (IOException e) {
@@ -67,7 +65,7 @@ public class HorseConfigHandler {
 	}
 
 	public Object getVariable(RPGHorse horse, String path) {
-		return config.get("Horses." + horse.owner + "." + horse.rpgUUID.toString() + path);
+		return config.get("Horses." + horse.owners_name + "." + horse.rpgUUID.toString() + path);
 	}
 
 	public boolean anyOwners() {
@@ -83,56 +81,66 @@ public class HorseConfigHandler {
 	}
 
 	public void saveHorse(RPGHorse horse, boolean save) {
-		config.set("Horses." + horse.owner + "." + horse.rpgUUID.toString() + Keys.name, horse.name);
-		config.set("Horses." + horse.owner + "." + horse.rpgUUID.toString() + Keys.wrath, horse.wrath.xp);
-		config.set("Horses." + horse.owner + "." + horse.rpgUUID.toString() + Keys.agility, horse.agility.xp);
-		config.set("Horses." + horse.owner + "." + horse.rpgUUID.toString() + Keys.swiftness, horse.swiftness.xp);
-		config.set("Horses." + horse.owner + "." + horse.rpgUUID.toString() + Keys.vitality, horse.vitality.xp);
-		config.set("Horses." + horse.owner + "." + horse.rpgUUID.toString() + Keys.color, horse.color.name());
-		config.set("Horses." + horse.owner + "." + horse.rpgUUID.toString() + Keys.isdead, horse.isDead);
-		config.set("Horses." + horse.owner + "." + horse.rpgUUID.toString() + Keys.godmode, horse.godmode);
-		config.set("Horses." + horse.owner + "." + horse.rpgUUID.toString() + Keys.powerlevel, horse.powerLevel);
-		config.set("Horses." + horse.owner + "." + horse.rpgUUID.toString() + Keys.style, horse.style.name());
-		config.set("Horses." + horse.owner + "." + horse.rpgUUID.toString() + Keys.variant, horse.variant.name());
-		config.set("Horses." + horse.owner + "." + horse.rpgUUID.toString() + Keys.hassaddle, horse.hasSaddle);
-		config.set("Horses." + horse.owner + "." + horse.rpgUUID.toString() + Keys.sex, horse.isMale);
+		config.set("Horses." + horse.owners_name + "." + horse.rpgUUID.toString() + Keys.name, horse.name);
+		config.set("Horses." + horse.owners_name + "." + horse.rpgUUID.toString() + Keys.wrath, horse.wrath.xp);
+		config.set("Horses." + horse.owners_name + "." + horse.rpgUUID.toString() + Keys.agility, horse.agility.xp);
+		config.set("Horses." + horse.owners_name + "." + horse.rpgUUID.toString() + Keys.swiftness, horse.swiftness.xp);
+		config.set("Horses." + horse.owners_name + "." + horse.rpgUUID.toString() + Keys.vitality, horse.vitality.xp);
+		config.set("Horses." + horse.owners_name + "." + horse.rpgUUID.toString() + Keys.color, horse.color.name());
+		config.set("Horses." + horse.owners_name + "." + horse.rpgUUID.toString() + Keys.isdead, horse.isDead);
+		config.set("Horses." + horse.owners_name + "." + horse.rpgUUID.toString() + Keys.godmode, horse.godmode);
+		config.set("Horses." + horse.owners_name + "." + horse.rpgUUID.toString() + Keys.powerlevel, horse.powerLevel);
+		config.set("Horses." + horse.owners_name + "." + horse.rpgUUID.toString() + Keys.style, horse.style.name());
+		config.set("Horses." + horse.owners_name + "." + horse.rpgUUID.toString() + Keys.variant, horse.variant.name());
+		config.set("Horses." + horse.owners_name + "." + horse.rpgUUID.toString() + Keys.hassaddle, horse.hasSaddle);
+		config.set("Horses." + horse.owners_name + "." + horse.rpgUUID.toString() + Keys.sex, horse.isMale);
+		if ((horse.getHorse() != null && !((Ageable) horse.getHorse()).isAdult()) || horse.isBaby) {
+			config.set("Horses." + horse.owners_name + "." + horse.rpgUUID.toString() + Keys.isBaby,
+					(horse.getHorse() != null ? !((Ageable) horse.getHorse()).isAdult() : horse.isBaby));
+			config.set("Horses." + horse.owners_name + "." + horse.rpgUUID.toString() + Keys.AGE, horse.babyAge);
+		} else {
+			config.set("Horses." + horse.owners_name + "." + horse.rpgUUID.toString() + Keys.isBaby, null);
+			config.set("Horses." + horse.owners_name + "." + horse.rpgUUID.toString() + Keys.AGE, null);
+		}
 		if (horse.hasChest)
-			config.set("Horses." + horse.owner + "." + horse.rpgUUID.toString() + Keys.hasChest, horse.hasChest);
-		if (horse.horse != null && !horse.isDead && !horse.isBanished) {
-			config.set("Horses." + horse.owner + "." + horse.rpgUUID.toString() + Keys.entityslastUUID,
-					horse.horse.getUniqueId().toString());
-			config.set("Horses." + horse.owner + "." + horse.rpgUUID.toString() + Keys.entityslastWorld,
-					horse.horse.getWorld().getName());
+			config.set("Horses." + horse.owners_name + "." + horse.rpgUUID.toString() + Keys.hasChest, horse.hasChest);
+		if (horse.getHorse() != null && !horse.isDead && !horse.isBanished) {
+			config.set("Horses." + horse.owners_name + "." + horse.rpgUUID.toString() + Keys.entityslastUUID,
+					horse.getHorse().getUniqueId().toString());
+			config.set("Horses." + horse.owners_name + "." + horse.rpgUUID.toString() + Keys.entityslastWorld,
+					horse.getHorse().getWorld().getName());
 			if (horse.generic_speed < 0) {
-				if (horse.horse != null)
-					config.set("Horses." + horse.owner + "." + horse.rpgUUID.toString() + Keys.sprint,
-							RPGHorse.attributeUtil.getSpeed(horse.horse));
+				if (horse.getHorse() != null)
+					config.set("Horses." + horse.owners_name + "." + horse.rpgUUID.toString() + Keys.sprint,
+							RPGHorse.attributeUtil.getSpeed(horse.getHorse()));
 			} else {
-				config.set("Horses." + horse.owner + "." + horse.rpgUUID.toString() + Keys.sprint, horse.generic_speed);
+				config.set("Horses." + horse.owners_name + "." + horse.rpgUUID.toString() + Keys.sprint,
+						horse.generic_speed);
 			}
 			if (horse.generic_speed <= 0) {
-				if (horse.horse != null)
-					config.set("Horses." + horse.owner + "." + horse.rpgUUID.toString() + Keys.jump,
-							RPGHorse.attributeUtil.getJumpHeight(horse.horse));
+				if (horse.getHorse() != null)
+					config.set("Horses." + horse.owners_name + "." + horse.rpgUUID.toString() + Keys.jump,
+							RPGHorse.attributeUtil.getJumpHeight(horse.getHorse()));
 			} else {
-				config.set("Horses." + horse.owner + "." + horse.rpgUUID.toString() + Keys.jump, horse.generic_jump);
+				config.set("Horses." + horse.owners_name + "." + horse.rpgUUID.toString() + Keys.jump,
+						horse.generic_jump);
 			}
 			try {
-				config.set("Horses." + horse.owner + "." + horse.rpgUUID.toString() + Keys.inventory,
-						((HorseInventory) ((AbstractHorse) horse.horse).getInventory()).getContents());
+				config.set("Horses." + horse.owners_name + "." + horse.rpgUUID.toString() + Keys.inventory,
+						((HorseInventory) ((AbstractHorse) horse.getHorse()).getInventory()).getContents());
 			} catch (Exception | Error e) {
 				try {
-					config.set("Horses." + horse.owner + "." + horse.rpgUUID.toString() + Keys.inventory,
-							((HorseInventory) ((Horse) horse.horse).getInventory()).getContents());
+					config.set("Horses." + horse.owners_name + "." + horse.rpgUUID.toString() + Keys.inventory,
+							((HorseInventory) ((Horse) horse.getHorse()).getInventory()).getContents());
 				} catch (Exception | Error e2) {
-					config.set("Horses." + horse.owner + "." + horse.rpgUUID.toString() + Keys.inventory,
-							((Inventory) ((AbstractHorse) horse.horse).getInventory()).getContents());
+					config.set("Horses." + horse.owners_name + "." + horse.rpgUUID.toString() + Keys.inventory,
+							((Inventory) ((AbstractHorse) horse.getHorse()).getInventory()).getContents());
 				}
 			}
 
 		} else {
-			config.set("Horses." + horse.owner + "." + horse.rpgUUID.toString() + Keys.entityslastUUID, null);
-			config.set("Horses." + horse.owner + "." + horse.rpgUUID.toString() + Keys.entityslastWorld, null);
+			config.set("Horses." + horse.owners_name + "." + horse.rpgUUID.toString() + Keys.entityslastUUID, null);
+			config.set("Horses." + horse.owners_name + "." + horse.rpgUUID.toString() + Keys.entityslastWorld, null);
 		}
 		if (save)
 			save();
@@ -195,6 +203,13 @@ public class HorseConfigHandler {
 
 					final RPGHorse rpgHorse = new RPGHorse(horsename, owner, c, s, v, gm, sswift, sagil, svit, swrath,
 							uuid, jumpPow, sprintPow, sex);
+					if (config.contains("Horses." + owner + "." + rpguuids + Keys.isBaby)) {
+						rpgHorse.isBaby = true;
+					}
+					if (config.contains("Horses." + owner + "." + rpguuids + Keys.AGE)) {
+						rpgHorse.babyAge = config.getInt("Horses." + owner + "." + rpguuids + Keys.AGE);
+					}
+
 					if (config.contains("Horses." + owner + "." + rpguuids + Keys.hasChest)) {
 						rpgHorse.setHasChest(config.getBoolean("Horses." + owner + "." + rpguuids + Keys.hasChest));
 					}
@@ -215,38 +230,38 @@ public class HorseConfigHandler {
 						}
 						rpgHorse.inventory = dymbtemp2;
 					}
+					rpgHorse.hasSaddle = config.getBoolean("Horses." + owner + "." + rpguuids + Keys.hassaddle);
 					if (config.contains("Horses." + owner + "." + rpguuids + Keys.entityslastUUID.toString())) {
 						final UUID uuid2 = UUID.fromString(
 								config.getString("Horses." + owner + "." + rpguuids + Keys.entityslastUUID));
+						final String sss = config.getString("Horses." + owner + "." + rpguuids + Keys.entityslastWorld);
+						final World world2 = Bukkit.getWorld(sss);
 						rpgHorse.isBanished = false;
 						new BukkitRunnable() {
+							World world = world2;
 
 							@Override
 							public void run() {
-								String sss = config
-										.getString("Horses." + owner + "." + rpguuids + Keys.entityslastWorld);
-								World world = Bukkit.getWorld(sss);
-								if (world != null)
-									for (Entity e : world.getEntities()) {
-										if (e.getUniqueId().equals(uuid2)) {
-											rpgHorse.horse = e;
-											break;
-										}
+								if (world == null) {
+									world = Bukkit.getWorld(sss);
+									if (world == null)
+										return;
+								}
+								for (Entity e : world.getEntities()) {
+									if (e.getUniqueId().equals(uuid2)) {
+										rpgHorse.setHorse(e);
+										break;
 									}
-								if (rpgHorse.horse != null) {
-									HorseRPG.hSpawnedHorses.put(rpgHorse.horse, rpgHorse);
+								}
+								if (rpgHorse.getHorse() != null) {
+									HorseRPG.hSpawnedHorses.put(rpgHorse.getHorse(), rpgHorse);
 									if (Bukkit.getPlayer(owner) != null)
 										HorseRPG.pCurrentHorse.put(Bukkit.getPlayer(owner).getUniqueId(), rpgHorse);
-								} else {
-									HorseRPG.instance.getLogger()
-											.warning(ChatColor.RED + " The horse " + horsename + " for player " + owner
-													+ " is registered as being active in the world " + sss
-													+ ", but could not be found.");
+									cancel();
 								}
 							}
-						}.runTaskLater(HorseRPG.instance, 2);
+						}.runTaskTimer(HorseRPG.instance, 2, 5 * 20);
 					}
-					rpgHorse.hasSaddle = config.getBoolean("Horses." + owner + "." + rpguuids + Keys.hassaddle);
 					HorseRPG.instance.getLogger().info("Loading " + rpgHorse.name);
 					return rpgHorse;
 				}
@@ -262,7 +277,8 @@ public class HorseConfigHandler {
 				".godmode"), inventory(".inventory"), hassaddle(".hassaddle"), wrath(".wrath"), agility(
 						".agility"), swiftness(".swiftness"), vitality(".vitality"), color(".color"), isdead(
 								".isdead"), powerlevel(".powerlevel"), style(".style"), variant(".variant"), jump(
-										".defaultJump"), sprint(".defaultSpeed"), sex(".sex"), hasChest(".hasChest");
+										".defaultJump"), sprint(".defaultSpeed"), sex(
+												".sex"), hasChest(".hasChest"), isBaby(".isBaby"), AGE(".age");
 		private String n;
 
 		private Keys(String name) {

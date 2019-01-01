@@ -34,13 +34,13 @@ public class Swiftness extends Skill {
 
 	@SuppressWarnings("deprecation")
 	public void sprint() {
-		if (h.horse != null) {
-			((LivingEntity) h.horse).addPotionEffect(new PotionEffect(PotionEffectType.SPEED, duration, amplitude, true));
+		if (h.getHorse() != null) {
+			((LivingEntity) h.getHorse()).addPotionEffect(new PotionEffect(PotionEffectType.SPEED, duration, amplitude, true));
 			refreshed = false;
 			try{
-				addXP(5, !h.horse.getPassengers().isEmpty() ? (Player)h.horse.getPassengers().get(0) : null);				
+				addXP(5, !h.getHorse().getPassengers().isEmpty() ? (Player)h.getHorse().getPassengers().get(0) : null);				
 			}catch(Exception|Error e){			
-			addXP(5, h.horse.getPassenger() != null ? (Player)h.horse.getPassenger() : null);
+			addXP(5, h.getHorse().getPassenger() != null ? (Player)h.getHorse().getPassenger() : null);
 			}
 		}
 	}
@@ -53,11 +53,11 @@ public class Swiftness extends Skill {
 			refreshed = true;
 
 			try{
-				if (h.horse != null && !h.horse.getPassengers().isEmpty())
-					HorseRPG.msg((Player)h.horse.getPassengers().get(0), HorseRPG.SKILL_REFRESH.replaceAll("%ability%",ABILITY));		
+				if (h.getHorse() != null && !h.getHorse().getPassengers().isEmpty())
+					HorseRPG.msg((Player)h.getHorse().getPassengers().get(0), HorseRPG.SKILL_REFRESH.replaceAll("%ability%",ABILITY));		
 			}catch(Exception|Error e){			
-			if (h.horse != null && h.horse.getPassenger() != null)
-				HorseRPG.msg((Player)h.horse.getPassenger(), HorseRPG.SKILL_REFRESH.replaceAll("%ability%",ABILITY));
+			if (h.getHorse() != null && h.getHorse().getPassenger() != null)
+				HorseRPG.msg((Player)h.getHorse().getPassenger(), HorseRPG.SKILL_REFRESH.replaceAll("%ability%",ABILITY));
 			}
 		}
 	}

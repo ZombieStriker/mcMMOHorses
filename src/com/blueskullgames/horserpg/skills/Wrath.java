@@ -35,14 +35,14 @@ public class Wrath extends Skill {
 	@SuppressWarnings("deprecation")
 	public void infuriate() {
 		h.godmode = true;
-		h.horse.setFireTicks(duration);
-		h.horse.getWorld().strikeLightningEffect(h.horse.getLocation());
-		((LivingEntity) h.horse).addPotionEffect(new PotionEffect(PotionEffectType.SPEED, duration, 2, true));
+		h.getHorse().setFireTicks(duration);
+		h.getHorse().getWorld().strikeLightningEffect(h.getHorse().getLocation());
+		((LivingEntity) h.getHorse()).addPotionEffect(new PotionEffect(PotionEffectType.SPEED, duration, 2, true));
 		refreshed = false;
 		try{
-			addXP(10, !h.horse.getPassengers().isEmpty() ? (Player)h.horse.getPassengers().get(0) : null);			
+			addXP(10, !h.getHorse().getPassengers().isEmpty() ? (Player)h.getHorse().getPassengers().get(0) : null);			
 		}catch(Exception|Error e){
-		addXP(10, h.horse.getPassenger() != null ? (Player)h.horse.getPassenger() : null);
+		addXP(10, h.getHorse().getPassenger() != null ? (Player)h.getHorse().getPassenger() : null);
 		}
 	}
 
@@ -57,11 +57,11 @@ public class Wrath extends Skill {
 			refreshed = true;
 			
 			try{
-				if (h.horse != null && !h.horse.getPassengers().isEmpty())
-					HorseRPG.msg((Player)h.horse.getPassengers().get(0), HorseRPG.SKILL_REFRESH.replaceAll("%ability%",PASSIVE_2));				
+				if (h.getHorse() != null && !h.getHorse().getPassengers().isEmpty())
+					HorseRPG.msg((Player)h.getHorse().getPassengers().get(0), HorseRPG.SKILL_REFRESH.replaceAll("%ability%",PASSIVE_2));				
 			}catch(Exception|Error e){
-			if (h.horse != null && h.horse.getPassenger() != null)
-				HorseRPG.msg((Player)h.horse.getPassenger(),HorseRPG.SKILL_REFRESH.replaceAll("%ability%",PASSIVE_2));
+			if (h.getHorse() != null && h.getHorse().getPassenger() != null)
+				HorseRPG.msg((Player)h.getHorse().getPassenger(),HorseRPG.SKILL_REFRESH.replaceAll("%ability%",PASSIVE_2));
 			}
 		}
 	}

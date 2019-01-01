@@ -4,6 +4,7 @@ import java.util.UUID;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.AbstractHorse;
@@ -58,9 +59,9 @@ public class RPGHorse implements Comparable<RPGHorse> {
 	public Wrath wrath;
 
 	public String name;
-	public String owner;
+	public String owners_name;
 
-	public Entity horse;
+	private Entity horse;
 
 	public Color color;
 	public Style style;
@@ -76,24 +77,24 @@ public class RPGHorse implements Comparable<RPGHorse> {
 
 	public boolean isMale;
 	public boolean allowBreeding = false;
+	public boolean isBaby = false;
+	public int babyAge = 0;
 
 	public double generic_speed = 0.25f;
 	public double generic_jump = 0.7f;
-	
+
 	public static double minSpeed = 0.1125;
 	public static double maxSpeed = 0.33;
 	public static double minJump = 0.4;
 	public static double maxJump = 1.0;
-	
-	
-	
+
 	public static double getRandomSpeed() {
-		return ((maxSpeed-minSpeed)*Math.random())+minSpeed;
+		return ((maxSpeed - minSpeed) * Math.random()) + minSpeed;
 	}
+
 	public static double getRandomJump() {
-		return ((maxJump-minJump)*Math.random())+minJump;
+		return ((maxJump - minJump) * Math.random()) + minJump;
 	}
-	
 
 	public static BaseAtributeUtil attributeUtil = null;
 	static {
@@ -174,6 +175,8 @@ public class RPGHorse implements Comparable<RPGHorse> {
 		this((horse.getCustomName() != null && horse.getCustomName() != "" ? horse.getCustomName() : randomName(owner)),
 				owner.getName(), horse.getColor(), horse.getStyle(), Variant.HORSE, false, 0, 0, 0, 0, null,
 				attributeUtil.getJumpHeight(horse), attributeUtil.getSpeed(horse), Math.random() > 0.5);
+		this.isBaby = !((Ageable) horse).isAdult();
+		this.babyAge = ((Ageable) horse).getAge();
 	}
 
 	/**
@@ -190,6 +193,8 @@ public class RPGHorse implements Comparable<RPGHorse> {
 		this((horse.getCustomName() != null && horse.getCustomName() != "" ? horse.getCustomName() : randomName(owner)),
 				owner.getName(), Color.BROWN, Style.NONE, Variant.HORSE, false, 0, 0, 0, 0, null,
 				attributeUtil.getJumpHeight(horse), attributeUtil.getSpeed(horse), Math.random() > 0.5);
+		this.isBaby = !((Ageable) horse).isAdult();
+		this.babyAge = ((Ageable) horse).getAge();
 	}
 
 	/**
@@ -223,7 +228,7 @@ public class RPGHorse implements Comparable<RPGHorse> {
 			boolean isMale) {
 
 		setName(name);
-		this.owner = owner;
+		this.owners_name = owner;
 		this.color = color;
 		this.style = style;
 		this.variant = variant;
@@ -260,11 +265,11 @@ public class RPGHorse implements Comparable<RPGHorse> {
 	public void setName(String newName) {
 		int add = 0;
 		String testName = newName.replaceAll("\u00a7", "&");
-		if(newName.length() == 0)
+		if (newName.length() == 0)
 			return;
-		if (HorseRPG.ownedHorses.containsKey(owner))
+		if (HorseRPG.ownedHorses.containsKey(owners_name))
 			whileloop: while (true) {
-				for (RPGHorse h : HorseRPG.ownedHorses.get(owner)) {
+				for (RPGHorse h : HorseRPG.ownedHorses.get(owners_name)) {
 					if (h.name.equals(testName) && h != this) {
 						add++;
 						testName = newName + "(" + add + ")";
@@ -320,6 +325,24 @@ public class RPGHorse implements Comparable<RPGHorse> {
 			}
 	}
 
+	public Entity getHorse() {
+		if (horse == null)
+			return null;
+		if (horse.isValid()) {
+			return horse;
+		}
+		for (Entity e : horse.getWorld().getEntities()) {
+			if (e.getUniqueId().equals(horse.getUniqueId())) {
+				return horse = e;
+			}
+		}
+		return horse;
+	}
+
+	public void setHorse(Entity horse) {
+		this.horse = horse;
+	}
+
 	/**
 	 * Sets a new variant for the horse
 	 * 
@@ -334,7 +357,7 @@ public class RPGHorse implements Comparable<RPGHorse> {
 					if (!isBanished && !isDead) {
 						banish(false);
 						isBanished = false;
-						summon(Bukkit.getPlayer(this.owner));
+						summon(Bukkit.getPlayer(this.owners_name));
 					}
 					return;
 				} catch (Exception e) {
@@ -362,7 +385,7 @@ public class RPGHorse implements Comparable<RPGHorse> {
 		if (respawnTimer <= 0) {
 			if ((isBanished && HorseRPG.banishTimer >= 10) || (isDead && HorseRPG.deathTimer >= 10)) {
 				for (Player p : HorseRPG.instance.getServer().getOnlinePlayers()) {
-					if (p.getName().equalsIgnoreCase(owner)) {
+					if (p.getName().equalsIgnoreCase(owners_name)) {
 						HorseRPG.msg(p, "&a**" + name + " is fully recharged**");
 						break;
 					}
@@ -399,10 +422,20 @@ public class RPGHorse implements Comparable<RPGHorse> {
 	 *            is the horse owner
 	 */
 	public Entity summon(Player p) {
+		return summon(p, p.getLocation());
+	}
+
+	/**
+	 * Summons a player's horse
+	 * 
+	 * @param p
+	 *            is the horse owner
+	 */
+	public Entity summon(Player p, Location loc) {
 		try {
-			horse = p.getWorld().spawnEntity(p.getLocation(), NewHorseVarientUtil.getHorseByType(variant));
+			horse = loc.getWorld().spawnEntity(loc, NewHorseVarientUtil.getHorseByType(variant));
 		} catch (Exception | Error e) {
-			horse = p.getWorld().spawnEntity(p.getLocation(), EntityType.HORSE);
+			horse = loc.getWorld().spawnEntity(loc, EntityType.HORSE);
 			setVariant(variant);
 		}
 		try {
@@ -424,7 +457,14 @@ public class RPGHorse implements Comparable<RPGHorse> {
 			}
 		} catch (Exception e) {
 		}
-		((Ageable) horse).setAdult();
+
+		if (!isBaby) {
+			((Ageable) horse).setAdult();
+		} else {
+			((Ageable) horse).setBaby();
+			((Ageable) horse).setAgeLock(false);
+			((Ageable) horse).setAge(babyAge);
+		}
 		((Tameable) horse).setTamed(true);
 		horse.setCustomName(ChatColor.translateAlternateColorCodes('&', name));
 		if (inventory == null) {
@@ -447,16 +487,18 @@ public class RPGHorse implements Comparable<RPGHorse> {
 					// .setSaddle(new ItemStack(Material.SADDLE));
 					((Horse) horse).getInventory().setContents(inventory);
 				} catch (Exception | Error e2) {
-					HorseRPG.msg(p,
-							" Something went wrong with the horse's inventory. Contact the server owner and tell them to report the error message in the console");
-					HorseRPG.msg(p,
-							"The contents of the horse's inventory has been given to you (or dropped on the floor if your inventory is full)");
+					if (p != null) {
+						HorseRPG.msg(p,
+								" Something went wrong with the horse's inventory. Contact the server owner and tell them to report the error message in the console");
+						HorseRPG.msg(p,
+								"The contents of the horse's inventory has been given to you (or dropped on the floor if your inventory is full)");
+					}
 					e.printStackTrace();
 					e2.printStackTrace();
 					for (ItemStack is : inventory) {
 						if (is != null) {
-							if (p.getInventory().firstEmpty() == -1) {
-								p.getWorld().dropItem(p.getLocation(), is);
+							if (p == null || p.getInventory().firstEmpty() == -1) {
+								loc.getWorld().dropItem(loc, is);
 							} else {
 								p.getInventory().addItem(is);
 							}
@@ -521,17 +563,18 @@ public class RPGHorse implements Comparable<RPGHorse> {
 			} catch (Exception e) {
 			}
 
-			HorseRPG.h_config.saveHorse(this, true);
-
+			isBaby = !((Ageable) horse).isAdult();
+			babyAge = ((Ageable) horse).getAge();
 			horse.eject();
 			horse.remove();
 			horse = null;
-			isBanished = true;
-			if (timer)
-				respawnTimer = HorseRPG.banishTimer;
-
 		}
 
+		HorseRPG.h_config.saveHorse(this, true);
+
+		isBanished = true;
+		if (timer)
+			respawnTimer = HorseRPG.banishTimer;
 	}
 
 	/**

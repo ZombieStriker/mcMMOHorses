@@ -124,6 +124,8 @@ public class HorseRPG extends JavaPlugin {
 	public static String BANISH_LOADED_CHUNK = "&a The chunk your horse is in must be loaded before bansishement!";
 	public static String BANISH_OTHER_NOT_ONLINE = "&a That player does not exist!";
 
+	public static String FOALBREED = "&a The foal &e%name%&a has been born.*";
+
 	public static BukkitTask saveTask, cooldownTask;
 	public static ConfigAccessor config;
 	public static Economy econ;
@@ -144,6 +146,7 @@ public class HorseRPG extends JavaPlugin {
 	public static boolean banishondisable = true;
 	public static boolean banishonquit = true;
 	public static boolean disableBreeding = false;
+	public static boolean claimBreeding = true;
 
 	public static boolean disableTamedHorses = false;
 
@@ -232,7 +235,7 @@ public class HorseRPG extends JavaPlugin {
 		if (args.length <= offset) {
 			if (ownedHorses.containsKey(p.getName()) && ownedHorses.get(p.getName()).size() > 0) {
 				for (RPGHorse h : ownedHorses.get(p.getName())) {
-					if (!hSpawnedHorses.containsKey(h.horse)) {
+					if (!hSpawnedHorses.containsKey(h.getHorse())) {
 						return h;
 					}
 				}
@@ -266,7 +269,7 @@ public class HorseRPG extends JavaPlugin {
 		if (args.length <= offset) {
 			if (ownedHorses.containsKey(p.getName()) && ownedHorses.get(p.getName()).size() > 0) {
 				for (RPGHorse h : ownedHorses.get(p.getName())) {
-					if (hSpawnedHorses.containsKey(h.horse)) {
+					if (hSpawnedHorses.containsKey(h.getHorse())) {
 						return h;
 					}
 				}
@@ -281,7 +284,7 @@ public class HorseRPG extends JavaPlugin {
 
 		if (ownedHorses.containsKey(p.getName()))
 			for (RPGHorse h : ownedHorses.get(p.getName()))
-				if (hSpawnedHorses.containsKey(h.horse))
+				if (hSpawnedHorses.containsKey(h.getHorse()))
 					if (h.name.equalsIgnoreCase(hName))
 						return h;
 		msg(p, HORSE_DOES_NOT_EXIST.replace("%name%", hName));
@@ -628,8 +631,20 @@ public class HorseRPG extends JavaPlugin {
 		}
 
 		Entity horse = p.getVehicle();
+
+		for (RPGHorse rpg : horses) {
+			if (rpg.getHorse() != null && !rpg.getHorse().isValid()) {
+				if (horse.getUniqueId().equals(rpg.getHorse().getUniqueId())) {
+					HorseRPG.hSpawnedHorses.put(horse, HorseRPG.hSpawnedHorses.remove(rpg.getHorse()));
+					rpg.getHorse().remove();
+					rpg.setHorse(horse);
+					break;
+				}
+			}
+		}
+
 		if (hSpawnedHorses.containsKey(horse)) {
-			if (hSpawnedHorses.get(horse).owner.equals(sender.getName())) {
+			if (hSpawnedHorses.get(horse).owners_name.equals(sender.getName())) {
 				msg(p, "&aYou already own this horse!");
 			} else {
 				msg(p, "&aThis horse is already owned!");
@@ -696,7 +711,7 @@ public class HorseRPG extends JavaPlugin {
 		} catch (Error | Exception e) {
 		}
 
-		h.horse = horse;
+		h.setHorse(horse);
 		h.setName(h.name);
 
 		pCurrentHorse.put(p.getUniqueId(), h);
@@ -751,9 +766,9 @@ public class HorseRPG extends JavaPlugin {
 		}
 		EconomyResponse er2;
 		try {
-			er2 = econ.depositPlayer(Bukkit.getOfflinePlayer(h.owner), h.price);
+			er2 = econ.depositPlayer(Bukkit.getOfflinePlayer(h.owners_name), h.price);
 		} catch (Exception e) {
-			er2 = econ.depositPlayer(h.owner, h.price);
+			er2 = econ.depositPlayer(h.owners_name, h.price);
 		}
 		if (!er2.transactionSuccess()) {
 			econ.depositPlayer(p.getName(), h.price);
@@ -761,15 +776,15 @@ public class HorseRPG extends JavaPlugin {
 		}
 
 		for (Player seller : instance.getServer().getOnlinePlayers()) {
-			if (seller.getName().equalsIgnoreCase(h.owner)) {
+			if (seller.getName().equalsIgnoreCase(h.owners_name)) {
 				pCurrentHorse.remove(seller.getUniqueId());
 				msg(seller, "&b" + h.name + "&a sold to &b" + p.getName() + "&a for &b" + econ.format(h.price));
 				break;
 			}
 		}
 		h.banish();
-		msg(p, "&b" + h.name + "&a bought from &b" + h.owner + "&a for &b" + econ.format(h.price));
-		h.owner = p.getName();
+		msg(p, "&b" + h.name + "&a bought from &b" + h.owners_name + "&a for &b" + econ.format(h.price));
+		h.owners_name = p.getName();
 		offers.remove(p.getUniqueId());
 	}
 
@@ -876,7 +891,7 @@ public class HorseRPG extends JavaPlugin {
 			h = getHorseNotSpawned(p, args, 1);
 		}
 		if (h != null) {
-			if (hSpawnedHorses.containsKey(h.horse)) {
+			if (hSpawnedHorses.containsKey(h.getHorse())) {
 				msg(p, "&e" + h.name + "&a has already been summoned.");
 				return;
 			}
@@ -940,24 +955,40 @@ public class HorseRPG extends JavaPlugin {
 			msg(sender, NO_HORSE_SUMMONED);
 			return;
 		}
-		if (horse.horse == null || !horse.horse.getLocation().getChunk().isLoaded()) {
+
+		if (!horse.getHorse().isValid()) {
+			for (RPGHorse rpg : horses) {
+				if (rpg.getHorse() != null && !rpg.getHorse().isValid()) {
+					for (Entity e : rpg.getHorse().getNearbyEntities(60, 30, 60)) {
+						if (e.getUniqueId().equals(rpg.getHorse().getUniqueId())) {
+							HorseRPG.hSpawnedHorses.put(e, HorseRPG.hSpawnedHorses.remove(rpg.getHorse()));
+							rpg.getHorse().remove();
+							rpg.setHorse(e);
+							break;
+						}
+					}
+				}
+			}
+		}
+
+		if (horse.getHorse() == null || !horse.getHorse().getLocation().getChunk().isLoaded()) {
 			msg(sender, BANISH_LOADED_CHUNK);
 			return;
 		}
 		if (forced) {
-			if (p.getWorld() == horse.horse.getWorld()) {
-				if (p.getLocation().distanceSquared(horse.horse.getLocation()) >= 10000) {
-					horse.horse.teleport(p.getLocation());
+			if (p.getWorld() == horse.getHorse().getWorld()) {
+				if (p.getLocation().distanceSquared(horse.getHorse().getLocation()) >= 10000) {
+					horse.getHorse().teleport(p.getLocation());
 				}
 			}
-			if (((Player) sender).getWorld() == horse.horse.getWorld()) {
-				if (((Player) sender).getLocation().distanceSquared(horse.horse.getLocation()) >= 10000) {
-					horse.horse.teleport(((Player) sender).getLocation());
+			if (((Player) sender).getWorld() == horse.getHorse().getWorld()) {
+				if (((Player) sender).getLocation().distanceSquared(horse.getHorse().getLocation()) >= 10000) {
+					horse.getHorse().teleport(((Player) sender).getLocation());
 				}
 			}
 		} else {
-			if (p.getLocation().distanceSquared(horse.horse.getLocation()) >= 10000) {
-				horse.horse.teleport(p.getLocation());
+			if (p.getLocation().distanceSquared(horse.getHorse().getLocation()) >= 10000) {
+				horse.getHorse().teleport(p.getLocation());
 			}
 		}
 		if (!forced)
@@ -980,7 +1011,7 @@ public class HorseRPG extends JavaPlugin {
 		if (pCurrentHorse.get(p.getUniqueId()) == horse) {
 			pCurrentHorse.remove(p.getUniqueId());
 			for (RPGHorse others : ownedHorses.get(p.getName())) {
-				if (hSpawnedHorses.containsKey(others.horse)) {
+				if (hSpawnedHorses.containsKey(others.getHorse())) {
 					pCurrentHorse.put(p.getUniqueId(), others);
 					break;
 				}
@@ -1155,8 +1186,8 @@ public class HorseRPG extends JavaPlugin {
 		else {
 			h.generic_speed = Double.parseDouble(args[2]);
 		}
-		if (h.horse != null) {
-			RPGHorse.attributeUtil.setSpeed(h.horse, h.generic_speed);
+		if (h.getHorse() != null) {
+			RPGHorse.attributeUtil.setSpeed(h.getHorse(), h.generic_speed);
 		}
 		// "&aHorse %oldname% has been changed to %newname%"
 		msg(p, ChangeSpeedHorse.replace("%oldname%", h.name).replace("%speed%", "" + h.generic_speed));
@@ -1193,8 +1224,8 @@ public class HorseRPG extends JavaPlugin {
 			h.generic_jump = Double.parseDouble(args[2]);
 		}
 
-		if (h.horse != null) {
-			RPGHorse.attributeUtil.setJumpHeight(h.horse, h.generic_jump);
+		if (h.getHorse() != null) {
+			RPGHorse.attributeUtil.setJumpHeight(h.getHorse(), h.generic_jump);
 		}
 
 		// "&aHorse %oldname% has been changed to %newname%"
@@ -1434,9 +1465,9 @@ public class HorseRPG extends JavaPlugin {
 		horses.remove(h);
 		// Test if this removes horses.
 		h_config.removeHorse(h);
-		if (hSpawnedHorses.containsKey(h.horse)) {
-			h.horse.remove();
-			hSpawnedHorses.remove(h.horse);
+		if (hSpawnedHorses.containsKey(h.getHorse())) {
+			h.getHorse().remove();
+			hSpawnedHorses.remove(h.getHorse());
 		}
 
 		msg(p, "&b" + h.name + "&a won't be bothering you anymore.");
@@ -1620,6 +1651,8 @@ public class HorseRPG extends JavaPlugin {
 		PAGE_DOES_NOT_EXIST = messages.a("Page_does_not_exist", PAGE_DOES_NOT_EXIST);
 		PLAYER_ONLY = messages.a("Player_only", PLAYER_ONLY);
 
+		FOALBREED = messages.a("Breed_New_Foal", FOALBREED);
+
 		NO_WILD_HORSES = messages.a("No_wild_horses", NO_WILD_HORSES);
 		NO_BREED_HORSES = messages.a("No_breeding_horses", NO_BREED_HORSES);
 		ALLOW_BREEDING = messages.a("Allow_breeding", ALLOW_BREEDING);
@@ -1697,6 +1730,9 @@ public class HorseRPG extends JavaPlugin {
 				RPGHorse.minJump = fc.getDouble("horsestats.default_min_jump");
 			if (fc.contains("horsestats.default_max_jump"))
 				RPGHorse.maxJump = fc.getDouble("horsestats.default_max_jump");
+
+			if (fc.contains("claimFoalOnBreed"))
+				HorseRPG.claimBreeding = fc.getBoolean("claimFoalOnBreed");
 
 			/*
 			 * if (!h_config.containsGlobalVariable(Keys.G_nobanish.toString())) {
@@ -1905,11 +1941,11 @@ public class HorseRPG extends JavaPlugin {
 				for (TreeSet<RPGHorse> horseSet : ownedHorses.values()) {
 					for (RPGHorse h : horseSet)
 						try {
-							statement.executeUpdate("insert into horses values('" + h.name + "', '" + h.owner + "', '"
-									+ h.color + "', '" + h.style + "', '" + h.variant + "', " + (h.godmode ? 1 : 0)
-									+ ", " + h.swiftness.xp + ", " + h.agility.xp + ", " + h.vitality.xp + ", "
-									+ h.wrath.xp + ", " + (h.isMale ? 0 : 1) + ", " + h.generic_speed + ", "
-									+ h.generic_jump + ")");
+							statement.executeUpdate("insert into horses values('" + h.name + "', '" + h.owners_name
+									+ "', '" + h.color + "', '" + h.style + "', '" + h.variant + "', "
+									+ (h.godmode ? 1 : 0) + ", " + h.swiftness.xp + ", " + h.agility.xp + ", "
+									+ h.vitality.xp + ", " + h.wrath.xp + ", " + (h.isMale ? 0 : 1) + ", "
+									+ h.generic_speed + ", " + h.generic_jump + ")");
 						} catch (Error | Exception ed4) {
 							ed4.printStackTrace();
 						}
@@ -2159,15 +2195,18 @@ public class HorseRPG extends JavaPlugin {
 
 	@Override
 	public void onDisable() {
+		if (banishondisable)
+			for (Entry<Entity, RPGHorse> horse : hSpawnedHorses.entrySet()) {
+				horse.getValue().banish();
+				if (horse.getKey() != null && horse.getKey().isValid()) {
+					horse.getKey().remove();
+				}
+			}
+
 		// Force save all spawned horses.
 		for (RPGHorse h : hSpawnedHorses.values())
 			h_config.saveHorse(h, false);
 		h_config.save();
-
-		if (banishondisable)
-			for (Entity horse : new ArrayList<>(hSpawnedHorses.keySet())) {
-				hSpawnedHorses.remove(horse).banish();
-			}
 
 		HandlerList.unregisterAll(this);
 		saveHorses(null);
@@ -2214,7 +2253,7 @@ public class HorseRPG extends JavaPlugin {
 		int index = 0;
 		for (RPGHorse h : map.descendingKeySet()) {
 			String k = ChatColor.GREEN + "#" + index + "  " + h.name.substring(0, Math.min(h.name.length(), 16));
-			String plaeyerName = h.owner.substring(0, Math.min(29 - k.length(), h.owner.length()));
+			String plaeyerName = h.owners_name.substring(0, Math.min(29 - k.length(), h.owners_name.length()));
 			k = k + ChatColor.WHITE + " " + plaeyerName;
 			if (!DisableshowStatsinInScoreboard)
 				try {
