@@ -1,10 +1,7 @@
 package com.blueskullgames.horserpg;
 
 import java.io.File;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.*;
 import java.util.Map.Entry;
 
@@ -1929,7 +1926,6 @@ public class HorseRPG extends JavaPlugin {
 	public static void saveHorses(CommandSender sender) {
 		if (sender != null && !notAllowed(sender, H_SAVE, false))
 			return;
-		Connection connect = null;
 		try {
 			if (savetype == 2) {
 				for (TreeSet<RPGHorse> horseSet : ownedHorses.values()) {
@@ -1943,27 +1939,50 @@ public class HorseRPG extends JavaPlugin {
 				}
 				h_config.save();
 			} else {
-				connect = DriverManager.getConnection("jdbc:sqlite:horses.db");
-				Statement statement = connect.createStatement();
-				statement.setQueryTimeout(30);
+				try (Connection connect = DriverManager.getConnection("jdbc:sqlite:horses.db")) {
+					try (Statement statement = connect.createStatement()) {
+						statement.setQueryTimeout(30);
+						statement.executeUpdate("drop table if exists horses");
+					}
 
-				statement.executeUpdate("drop table if exists horses");
-				statement.executeUpdate("create table horses (	name string, " + "owner string, " + "color string, "
-						+ "style string, " + "variant string, " + "godmode integer, " + "swiftnessXP integer, "
-						+ "agilityXP integer, " + "vitalityXP integer, "
-						+ "wrathXP integer, sex integer, defaultSpeed integer, defaultJump integer)");
+					try (Statement statement = connect.createStatement()) {
+						statement.setQueryTimeout(30);
+						statement.executeUpdate("create table horses (	name string, " + "owner string, " + "color string, "
+								+ "style string, " + "variant string, " + "godmode integer, " + "swiftnessXP integer, "
+								+ "agilityXP integer, " + "vitalityXP integer, "
+								+ "wrathXP integer, sex integer, defaultSpeed integer, defaultJump integer)");
+					}
 
-				for (TreeSet<RPGHorse> horseSet : ownedHorses.values()) {
-					for (RPGHorse h : horseSet)
-						try {
-							statement.executeUpdate("insert into horses values('" + h.name + "', '" + h.owners_name
-									+ "', '" + h.color + "', '" + h.style + "', '" + h.variant + "', "
-									+ (h.godmode ? 1 : 0) + ", " + h.swiftness.xp + ", " + h.agility.xp + ", "
-									+ h.vitality.xp + ", " + h.wrath.xp + ", " + (h.isMale ? 0 : 1) + ", "
-									+ h.generic_speed + ", " + h.generic_jump + ")");
-						} catch (Error | Exception ed4) {
-							ed4.printStackTrace();
+					try (PreparedStatement statement = connect.prepareStatement("insert into horses values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);")) {
+						statement.setQueryTimeout(30);
+						for (TreeSet<RPGHorse> horseSet : ownedHorses.values()) {
+							for (RPGHorse h : horseSet)
+								try {
+									statement.setString(1, h.name);
+									statement.setString(1, h.owners_name);
+									statement.setString(1, h.color.toString());
+									statement.setString(1, h.style.toString());
+									statement.setString(1, h.variant.toString());
+									statement.setInt(1, h.godmode ? 1 : 0);
+									statement.setInt(1, h.swiftness.xp);
+									statement.setInt(1, h.agility.xp);
+									statement.setInt(1, h.vitality.xp);
+									statement.setInt(1, h.wrath.xp);
+									statement.setInt(1, h.isMale ? 0 : 1);
+									statement.setInt(1, (int) h.generic_speed);
+									statement.setInt(1, (int) h.generic_jump);
+									statement.addBatch();
+								} catch (Error | Exception ed4) {
+									ed4.printStackTrace();
+								}
 						}
+
+						statement.executeBatch();
+					}
+
+					if (!connect.getAutoCommit()) {
+						connect.commit();
+					}
 				}
 			}
 
@@ -1977,16 +1996,6 @@ public class HorseRPG extends JavaPlugin {
 			msg(sender,
 					"&a A problem has occured. Report the error message in the console to Zombie_Striker on spigot:");
 			sender.sendMessage("https://www.spigotmc.org/resources/mcmmohorses.46301/");
-		} finally {
-			try {
-				if (connect != null)
-					connect.close();
-			} catch (Exception e) {
-				System.err.println(e);
-				msg(sender,
-						"&a A problem has occured. Report the error message in the console to Zombie_Striker on spigot:");
-				sender.sendMessage("https://www.spigotmc.org/resources/mcmmohorses.46301/");
-			}
 		}
 	}
 
