@@ -1959,18 +1959,18 @@ public class HorseRPG extends JavaPlugin {
 							for (RPGHorse h : horseSet)
 								try {
 									statement.setString(1, h.name);
-									statement.setString(1, h.owners_name);
-									statement.setString(1, h.color.toString());
-									statement.setString(1, h.style.toString());
-									statement.setString(1, h.variant.toString());
-									statement.setInt(1, h.godmode ? 1 : 0);
-									statement.setInt(1, h.swiftness.xp);
-									statement.setInt(1, h.agility.xp);
-									statement.setInt(1, h.vitality.xp);
-									statement.setInt(1, h.wrath.xp);
-									statement.setInt(1, h.isMale ? 0 : 1);
-									statement.setInt(1, (int) h.generic_speed);
-									statement.setInt(1, (int) h.generic_jump);
+									statement.setString(2, h.owners_name);
+									statement.setString(3, h.color.toString());
+									statement.setString(4, h.style.toString());
+									statement.setString(5, h.variant.toString());
+									statement.setInt(6, h.godmode ? 1 : 0);
+									statement.setInt(7, h.swiftness.xp);
+									statement.setInt(8, h.agility.xp);
+									statement.setInt(9, h.vitality.xp);
+									statement.setInt(10, h.wrath.xp);
+									statement.setInt(11, h.isMale ? 0 : 1);
+									statement.setInt(12, (int) h.generic_speed);
+									statement.setInt(13, (int) h.generic_jump);
 									statement.addBatch();
 								} catch (Error | Exception ed4) {
 									ed4.printStackTrace();
