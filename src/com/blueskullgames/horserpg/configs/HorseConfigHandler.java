@@ -94,6 +94,7 @@ public class HorseConfigHandler {
 		config.set("Horses." + horse.owners_name + "." + horse.rpgUUID.toString() + Keys.variant, horse.variant.name());
 		config.set("Horses." + horse.owners_name + "." + horse.rpgUUID.toString() + Keys.hassaddle, horse.hasSaddle);
 		config.set("Horses." + horse.owners_name + "." + horse.rpgUUID.toString() + Keys.sex, horse.isMale);
+		config.set("Horses." + horse.owners_name + "." + horse.rpgUUID.toString() + Keys.SPAWNED, horse.spawned);
 		if ((horse.getHorse() != null && !((Ageable) horse.getHorse()).isAdult()) || horse.isBaby) {
 			config.set("Horses." + horse.owners_name + "." + horse.rpgUUID.toString() + Keys.isBaby,
 					(horse.getHorse() != null ? !((Ageable) horse.getHorse()).isAdult() : horse.isBaby));
@@ -139,7 +140,8 @@ public class HorseConfigHandler {
 			}
 
 		} else {
-			config.set("Horses." + horse.owners_name + "." + horse.rpgUUID.toString() + Keys.entityslastUUID, null);
+			config.set("Horses." + horse.owners_name + "." + horse.rpgUUID.toString() + Keys.entityslastUUID,
+					horse.holderOverUUID == null ? null : horse.holderOverUUID.toString());
 			config.set("Horses." + horse.owners_name + "." + horse.rpgUUID.toString() + Keys.entityslastWorld, null);
 		}
 		if (save)
@@ -203,6 +205,9 @@ public class HorseConfigHandler {
 
 					final RPGHorse rpgHorse = new RPGHorse(horsename, owner, c, s, v, gm, sswift, sagil, svit, swrath,
 							uuid, jumpPow, sprintPow, sex);
+					if (config.contains("Horses." + owner + "." + rpguuids + Keys.SPAWNED)) {
+						rpgHorse.spawned = config.getBoolean("Horses." + owner + "." + rpguuids + Keys.SPAWNED);
+					}
 					if (config.contains("Horses." + owner + "." + rpguuids + Keys.isBaby)) {
 						rpgHorse.isBaby = true;
 					}
@@ -242,6 +247,10 @@ public class HorseConfigHandler {
 
 							@Override
 							public void run() {
+								if (rpgHorse.getHorse() != null) {
+									cancel();
+									return;
+								}
 								if (world == null) {
 									world = Bukkit.getWorld(sss);
 									if (world == null)
@@ -262,7 +271,7 @@ public class HorseConfigHandler {
 							}
 						}.runTaskTimer(HorseRPG.instance, 2, 5 * 20);
 					}
-					HorseRPG.instance.getLogger().info("Loading " + rpgHorse.name);
+					//HorseRPG.instance.getLogger().info("Loading " + rpgHorse.name);
 					return rpgHorse;
 				}
 			} catch (Error | Exception e45) {
@@ -277,8 +286,8 @@ public class HorseConfigHandler {
 				".godmode"), inventory(".inventory"), hassaddle(".hassaddle"), wrath(".wrath"), agility(
 						".agility"), swiftness(".swiftness"), vitality(".vitality"), color(".color"), isdead(
 								".isdead"), powerlevel(".powerlevel"), style(".style"), variant(".variant"), jump(
-										".defaultJump"), sprint(".defaultSpeed"), sex(
-												".sex"), hasChest(".hasChest"), isBaby(".isBaby"), AGE(".age");
+										".defaultJump"), sprint(".defaultSpeed"), sex(".sex"), hasChest(
+												".hasChest"), isBaby(".isBaby"), AGE(".age"), SPAWNED(".spawned");
 		private String n;
 
 		private Keys(String name) {

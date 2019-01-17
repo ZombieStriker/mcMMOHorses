@@ -1,3 +1,10 @@
+Version 4.3.51
+	Edited logging system so it shows the amount of horses loaded, and not just print out all of the names
+	Fixed perma-death system so you can no longer check stats for horses that have died
+
+Version 4.3.50
+	Added constant UUID checking for getting horses and a 'spawned' variable to keep track of spawned entities. Just make sure another plugin doesn't despawn horses without killing them.
+
 Version 4.3.49
 	Rewrote entity handling system. If the horse is no longer valid, the system will look through the world again to try and find it.
 	

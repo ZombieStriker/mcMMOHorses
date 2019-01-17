@@ -634,12 +634,17 @@ public class HorseRPG extends JavaPlugin {
 
 		for (RPGHorse rpg : horses) {
 			if (rpg.getHorse() != null && !rpg.getHorse().isValid()) {
-				if (horse.getUniqueId().equals(rpg.getHorse().getUniqueId())) {
+				if (horse.getUniqueId().equals(rpg.getHorse().getUniqueId())
+						|| horse.getUniqueId().equals(rpg.holderOverUUID)) {
 					HorseRPG.hSpawnedHorses.put(horse, HorseRPG.hSpawnedHorses.remove(rpg.getHorse()));
 					rpg.getHorse().remove();
 					rpg.setHorse(horse);
 					break;
 				}
+			}
+			if (rpg.spawned && ChatColor.translateAlternateColorCodes('&', rpg.name).equals(horse.getCustomName())) {
+				msg(p, "&aHorses name is the same as an already spawned horse. Canceling.");
+				return;
 			}
 		}
 
@@ -895,6 +900,10 @@ public class HorseRPG extends JavaPlugin {
 				msg(p, "&e" + h.name + "&a has already been summoned.");
 				return;
 			}
+			if (h.spawned) {
+				msg(p, "&e" + h.name + "&a has already been spawned.");
+				return;
+			}
 			if (h.isBanished || h.isDead) {
 				HorseRPG.msg(p, NEED_TIME_TO_RECHARGE.replaceAll("%name%", h.name));
 			} else {
@@ -944,13 +953,16 @@ public class HorseRPG extends JavaPlugin {
 		} else {
 			p = (Player) sender;
 		}
-
+		RPGHorse horse = null;
 		if (!pCurrentHorse.containsKey(p.getUniqueId())) {
-			msg(sender, NO_HORSE_SUMMONED);
-			return;
+			if (horse == null) {
+				msg(sender, NO_HORSE_SUMMONED);
+				return;
+			}
 		}
-		RPGHorse horse = (forced ? args.length > 2 : args.length > 1) ? getHorseSpawned(p, args, forced ? 2 : 1)
+		horse = (forced ? args.length > 2 : args.length > 1) ? getHorseSpawned(p, args, forced ? 2 : 1)
 				: pCurrentHorse.get(p.getUniqueId());
+
 		if (horse == null) {
 			msg(sender, NO_HORSE_SUMMONED);
 			return;
@@ -1845,6 +1857,7 @@ public class HorseRPG extends JavaPlugin {
 	private void initHorses() {
 		if (savetype == 2) {
 			if (h_config.anyOwners()) {
+				int amount = 0;
 				for (String owner : h_config.getOwners()) {
 					for (String name : h_config.getHorses(owner)) {
 						RPGHorse h = h_config.getHorse(owner, name);
@@ -1854,8 +1867,10 @@ public class HorseRPG extends JavaPlugin {
 							ownedHorses.put(owner, new TreeSet<RPGHorse>());
 						ownedHorses.get(owner).add(h);
 						horses.add(h);
+						amount++;
 					}
 				}
+				HorseRPG.instance.getLogger().info("Finished loading "+amount+" horses.");
 			}
 		} else {
 			try {

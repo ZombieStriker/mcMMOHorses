@@ -62,6 +62,7 @@ public class RPGHorse implements Comparable<RPGHorse> {
 	public String owners_name;
 
 	private Entity horse;
+	public UUID holderOverUUID = null;
 
 	public Color color;
 	public Style style;
@@ -87,6 +88,8 @@ public class RPGHorse implements Comparable<RPGHorse> {
 	public static double maxSpeed = 0.33;
 	public static double minJump = 0.4;
 	public static double maxJump = 1.0;
+	
+	public boolean spawned = false;
 
 	public static double getRandomSpeed() {
 		return ((maxSpeed - minSpeed) * Math.random()) + minSpeed;
@@ -177,6 +180,8 @@ public class RPGHorse implements Comparable<RPGHorse> {
 				attributeUtil.getJumpHeight(horse), attributeUtil.getSpeed(horse), Math.random() > 0.5);
 		this.isBaby = !((Ageable) horse).isAdult();
 		this.babyAge = ((Ageable) horse).getAge();
+		this.holderOverUUID = horse.getUniqueId();
+		spawned = true;
 	}
 
 	/**
@@ -195,6 +200,8 @@ public class RPGHorse implements Comparable<RPGHorse> {
 				attributeUtil.getJumpHeight(horse), attributeUtil.getSpeed(horse), Math.random() > 0.5);
 		this.isBaby = !((Ageable) horse).isAdult();
 		this.babyAge = ((Ageable) horse).getAge();
+		this.holderOverUUID = horse.getUniqueId();
+		spawned = true;
 	}
 
 	/**
@@ -328,11 +335,12 @@ public class RPGHorse implements Comparable<RPGHorse> {
 	public Entity getHorse() {
 		if (horse == null)
 			return null;
-		if (horse.isValid()) {
+		if (horse.isValid())
 			return horse;
-		}
 		for (Entity e : horse.getWorld().getEntities()) {
-			if (e.getUniqueId().equals(horse.getUniqueId())) {
+			if (e.getUniqueId().equals(horse.getUniqueId()) || e.getUniqueId().equals(holderOverUUID)) {
+				holderOverUUID = e.getUniqueId();
+				HorseRPG.hSpawnedHorses.put(e, this);
 				return horse = e;
 			}
 		}
@@ -340,7 +348,10 @@ public class RPGHorse implements Comparable<RPGHorse> {
 	}
 
 	public void setHorse(Entity horse) {
+		HorseRPG.hSpawnedHorses.put(horse, HorseRPG.hSpawnedHorses.remove(this.horse));
 		this.horse = horse;
+		this.holderOverUUID = horse.getUniqueId();
+		spawned = true;
 	}
 
 	/**
@@ -366,14 +377,13 @@ public class RPGHorse implements Comparable<RPGHorse> {
 			Entity temp = horse;
 			this.horse = this.horse.getWorld().spawnEntity(horse.getLocation(),
 					NewHorseVarientUtil.getHorseByType(variant));
-			// attributeUtil.setJumpHeight(horse, generic_jump);
-			// TODO: attributeUtil.setSpeed(horse,generic_speed);
 			if (!ReflectionUtil.isVersionHigherThan(1, 10)) {
 				((Horse) this.horse).setVariant(newVariant);
 			}
+			this.holderOverUUID = horse.getUniqueId();
+			spawned = true;
 			temp.remove();
-			HorseRPG.hSpawnedHorses.put(this.horse, HorseRPG.hSpawnedHorses.get(temp));
-			HorseRPG.hSpawnedHorses.remove(temp);
+			HorseRPG.hSpawnedHorses.put(this.horse, HorseRPG.hSpawnedHorses.remove(temp));
 		}
 	}
 
@@ -404,7 +414,6 @@ public class RPGHorse implements Comparable<RPGHorse> {
 	 */
 	public void travel(double dist) {
 		distance += dist;
-
 		if (distance > 100) {
 			distance -= 100;
 			try {
@@ -465,6 +474,10 @@ public class RPGHorse implements Comparable<RPGHorse> {
 			((Ageable) horse).setAgeLock(false);
 			((Ageable) horse).setAge(babyAge);
 		}
+		
+		holderOverUUID = horse.getUniqueId();
+		HorseRPG.hSpawnedHorses.put(horse, HorseRPG.hSpawnedHorses.remove(this.horse));
+		
 		((Tameable) horse).setTamed(true);
 		horse.setCustomName(ChatColor.translateAlternateColorCodes('&', name));
 		if (inventory == null) {
@@ -509,6 +522,7 @@ public class RPGHorse implements Comparable<RPGHorse> {
 		}
 
 		isBanished = false;
+		spawned = true;
 		try {
 			((LivingEntity) horse).getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(44 + vitality.healthBonus);
 			((Damageable) horse)
@@ -567,12 +581,15 @@ public class RPGHorse implements Comparable<RPGHorse> {
 			babyAge = ((Ageable) horse).getAge();
 			horse.eject();
 			horse.remove();
+			HorseRPG.hSpawnedHorses.remove(horse, this);
 			horse = null;
+			holderOverUUID = null;
 		}
 
 		HorseRPG.h_config.saveHorse(this, true);
 
 		isBanished = true;
+		spawned = false;
 		if (timer)
 			respawnTimer = HorseRPG.banishTimer;
 	}

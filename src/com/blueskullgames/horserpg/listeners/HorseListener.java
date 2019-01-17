@@ -152,7 +152,9 @@ public class HorseListener implements Listener {
 			return;
 
 		h.isDead = true;
+		h.holderOverUUID = null;
 		h.respawnTimer = HorseRPG.deathTimer;
+		h.spawned = false;
 
 		Player owner = Bukkit.getPlayer(h.owners_name);
 
@@ -169,6 +171,19 @@ public class HorseListener implements Listener {
 				HorseRPG.hSpawnedHorses.remove(h.getHorse());
 			}
 			HorseRPG.horses.remove(h);
+			HorseRPG.ownedHorses.get(h.owners_name).remove(h);
+			RPGHorse horseCur = null;
+			if(HorseRPG.ownedHorses.get(h.owners_name).size() > 0) {
+				for(RPGHorse g : HorseRPG.ownedHorses.get(h.owners_name)) {
+					if(g.getHorse()!=null) {
+						horseCur = g;
+						break;
+					}
+				}
+			}
+			HorseRPG.pCurrentHorse.put(owner.getUniqueId(), horseCur);
+			HorseRPG.h_config.removeHorse(h);
+			HorseRPG.h_config.save();
 			// Remove the horse from the list of all horses
 		} else {
 			evt.getDrops().clear();

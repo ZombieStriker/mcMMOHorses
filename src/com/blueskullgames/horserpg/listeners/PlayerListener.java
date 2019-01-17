@@ -45,7 +45,7 @@ public class PlayerListener implements Listener {
 										&& e.getUniqueId().equals(rpg.getHorse().getUniqueId())) {
 									HorseRPG.hSpawnedHorses.put(e, HorseRPG.hSpawnedHorses.remove(rpg.getHorse()));
 									rpg.getHorse().remove();
-									rpg.setHorse( e);
+									rpg.setHorse(e);
 									break;
 								}
 							}
