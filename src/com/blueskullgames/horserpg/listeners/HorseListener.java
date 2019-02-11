@@ -43,7 +43,7 @@ public class HorseListener implements Listener {
 	public void onInventoryClick(InventoryClickEvent e) {
 		if (e.getSlot() == 0 && ((e.getCurrentItem() != null && e.getCurrentItem().getType() == Material.SADDLE)
 				|| (e.getCursor() != null && e.getCursor().getType() == Material.SADDLE))) {
-			for (Entry<Entity, RPGHorse> horse : HorseRPG.hSpawnedHorses.entrySet()) {
+			for (Entry<Entity, RPGHorse> horse : HorseRPG.getRPGHorseEntrys()) {
 				if (e.getInventory().equals(RPGHorse.attributeUtil.getInventory(horse.getKey()))) {
 					horse.getValue().hasSaddle = (e.getCursor() != null && e.getCursor().getType() == Material.SADDLE);
 					break;
@@ -59,7 +59,7 @@ public class HorseListener implements Listener {
 	public void onEntityDamage(EntityDamageEvent evt) {
 		if (evt.getEntityType() == EntityType.HORSE) {
 			Entity horse = evt.getEntity();
-			RPGHorse h = HorseRPG.hSpawnedHorses.get(horse);
+			RPGHorse h = HorseRPG.getHorse(horse);
 			if (h == null)
 				return;
 
@@ -147,7 +147,7 @@ public class HorseListener implements Listener {
 	 **/
 	@EventHandler
 	public void onHorseDeath(EntityDeathEvent evt) {
-		RPGHorse h = HorseRPG.hSpawnedHorses.remove(evt.getEntity());
+		RPGHorse h = HorseRPG.removeHorseInstance(evt.getEntity());
 		if (h == null)
 			return;
 
@@ -166,16 +166,16 @@ public class HorseListener implements Listener {
 		}
 
 		if (HorseRPG.permanentDeath) {
-			if (HorseRPG.hSpawnedHorses.containsKey(h.getHorse())) {
+			if (HorseRPG.isRPGHorse(h.getHorse())) {
 				// h.horse.remove();
-				HorseRPG.hSpawnedHorses.remove(h.getHorse());
+				HorseRPG.removeHorseInstance(h.getHorse());
 			}
 			HorseRPG.horses.remove(h);
 			HorseRPG.ownedHorses.get(h.owners_name).remove(h);
 			RPGHorse horseCur = null;
-			if(HorseRPG.ownedHorses.get(h.owners_name).size() > 0) {
-				for(RPGHorse g : HorseRPG.ownedHorses.get(h.owners_name)) {
-					if(g.getHorse()!=null) {
+			if (HorseRPG.ownedHorses.get(h.owners_name).size() > 0) {
+				for (RPGHorse g : HorseRPG.ownedHorses.get(h.owners_name)) {
+					if (g.getHorse() != null) {
 						horseCur = g;
 						break;
 					}
@@ -257,8 +257,8 @@ public class HorseListener implements Listener {
 				e.setCancelled(true);
 			// Now, for custom breeding
 
-			RPGHorse h1 = HorseRPG.hSpawnedHorses.get(e.getMother());
-			RPGHorse h2 = HorseRPG.hSpawnedHorses.get(e.getFather());
+			RPGHorse h1 = HorseRPG.getHorse(e.getMother());
+			RPGHorse h2 = HorseRPG.getHorse(e.getFather());
 
 			if (h1 != null && h2 != null) {
 				if (h1.variant == Variant.DONKEY || h1.variant == Variant.MULE || h2.variant == Variant.DONKEY
@@ -347,7 +347,7 @@ public class HorseListener implements Listener {
 				RPGHorse.attributeUtil.setJumpHeight(e.getEntity(), jump);
 
 				// pCurrentHorse.put(e.getBreeder().getUniqueId(), h);
-				HorseRPG.hSpawnedHorses.put(e.getEntity(), h);
+				HorseRPG.addSpawnedHorse(e.getEntity(), h);
 				if (!HorseRPG.ownedHorses.containsKey(e.getBreeder().getName()))
 					HorseRPG.ownedHorses.put(e.getBreeder().getName(), new TreeSet<RPGHorse>());
 				HorseRPG.ownedHorses.get(e.getBreeder().getName()).add(h);

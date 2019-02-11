@@ -88,7 +88,7 @@ public class RPGHorse implements Comparable<RPGHorse> {
 	public static double maxSpeed = 0.33;
 	public static double minJump = 0.4;
 	public static double maxJump = 1.0;
-	
+
 	public boolean spawned = false;
 
 	public static double getRandomSpeed() {
@@ -340,7 +340,7 @@ public class RPGHorse implements Comparable<RPGHorse> {
 		for (Entity e : horse.getWorld().getEntities()) {
 			if (e.getUniqueId().equals(horse.getUniqueId()) || e.getUniqueId().equals(holderOverUUID)) {
 				holderOverUUID = e.getUniqueId();
-				HorseRPG.hSpawnedHorses.put(e, this);
+				HorseRPG.addSpawnedHorse(e, this);
 				return horse = e;
 			}
 		}
@@ -348,7 +348,7 @@ public class RPGHorse implements Comparable<RPGHorse> {
 	}
 
 	public void setHorse(Entity horse) {
-		HorseRPG.hSpawnedHorses.put(horse, HorseRPG.hSpawnedHorses.remove(this.horse));
+		HorseRPG.updateHorseInstance(horse, this.horse, this);
 		this.horse = horse;
 		this.holderOverUUID = horse.getUniqueId();
 		spawned = true;
@@ -383,7 +383,7 @@ public class RPGHorse implements Comparable<RPGHorse> {
 			this.holderOverUUID = horse.getUniqueId();
 			spawned = true;
 			temp.remove();
-			HorseRPG.hSpawnedHorses.put(this.horse, HorseRPG.hSpawnedHorses.remove(temp));
+			HorseRPG.updateHorseInstance(this.horse, temp, this);
 		}
 	}
 
@@ -474,10 +474,10 @@ public class RPGHorse implements Comparable<RPGHorse> {
 			((Ageable) horse).setAgeLock(false);
 			((Ageable) horse).setAge(babyAge);
 		}
-		
+
 		holderOverUUID = horse.getUniqueId();
-		HorseRPG.hSpawnedHorses.put(horse, HorseRPG.hSpawnedHorses.remove(this.horse));
-		
+		HorseRPG.updateHorseInstance(horse, this.horse, this);
+
 		((Tameable) horse).setTamed(true);
 		horse.setCustomName(ChatColor.translateAlternateColorCodes('&', name));
 		if (inventory == null) {
@@ -532,7 +532,7 @@ public class RPGHorse implements Comparable<RPGHorse> {
 			((Damageable) horse).setHealth(((Damageable) horse).getMaxHealth());
 		}
 
-		HorseRPG.hSpawnedHorses.put(horse, this);
+		HorseRPG.addSpawnedHorse(horse, this);
 
 		this.vitality.update();
 		this.agility.update();
@@ -566,7 +566,7 @@ public class RPGHorse implements Comparable<RPGHorse> {
 						&& (((Horse) horse).getInventory().getItem(0).getType() == Material.SADDLE));
 				inventory = ((Horse) horse).getInventory().getContents();
 			}
-			HorseRPG.hSpawnedHorses.remove(horse);
+			HorseRPG.removeHorseInstance(horse);
 			try {
 				if (horse instanceof org.bukkit.entity.Donkey) {
 					setHasChest(((org.bukkit.entity.Donkey) horse).isCarryingChest());
@@ -581,7 +581,7 @@ public class RPGHorse implements Comparable<RPGHorse> {
 			babyAge = ((Ageable) horse).getAge();
 			horse.eject();
 			horse.remove();
-			HorseRPG.hSpawnedHorses.remove(horse, this);
+			HorseRPG.removeHorseInstance(horse);
 			horse = null;
 			holderOverUUID = null;
 		}

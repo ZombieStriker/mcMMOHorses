@@ -126,7 +126,7 @@ public class HorseRPG extends JavaPlugin {
 	public static BukkitTask saveTask, cooldownTask;
 	public static ConfigAccessor config;
 	public static Economy econ;
-	public static HashMap<Entity, RPGHorse> hSpawnedHorses;
+	public static HashMap<Entity, RPGHorse> hSpawnedHorsesHashmap;
 	public static HashMap<UUID, RPGHorse> pCurrentHorse;
 	public static HashMap<UUID, RPGHorse> offers;
 	public static HashMap<String, TreeSet<RPGHorse>> ownedHorses;
@@ -232,7 +232,7 @@ public class HorseRPG extends JavaPlugin {
 		if (args.length <= offset) {
 			if (ownedHorses.containsKey(p.getName()) && ownedHorses.get(p.getName()).size() > 0) {
 				for (RPGHorse h : ownedHorses.get(p.getName())) {
-					if (!hSpawnedHorses.containsKey(h.getHorse())) {
+					if (!isRPGHorse(h.getHorse())) {
 						return h;
 					}
 				}
@@ -266,7 +266,7 @@ public class HorseRPG extends JavaPlugin {
 		if (args.length <= offset) {
 			if (ownedHorses.containsKey(p.getName()) && ownedHorses.get(p.getName()).size() > 0) {
 				for (RPGHorse h : ownedHorses.get(p.getName())) {
-					if (hSpawnedHorses.containsKey(h.getHorse())) {
+					if (isRPGHorse(h.getHorse())) {
 						return h;
 					}
 				}
@@ -281,7 +281,7 @@ public class HorseRPG extends JavaPlugin {
 
 		if (ownedHorses.containsKey(p.getName()))
 			for (RPGHorse h : ownedHorses.get(p.getName()))
-				if (hSpawnedHorses.containsKey(h.getHorse()))
+				if (isRPGHorse(h.getHorse()))
 					if (h.name.equalsIgnoreCase(hName))
 						return h;
 		msg(p, HORSE_DOES_NOT_EXIST.replace("%name%", hName));
@@ -633,7 +633,7 @@ public class HorseRPG extends JavaPlugin {
 			if (rpg.getHorse() != null && !rpg.getHorse().isValid()) {
 				if (horse.getUniqueId().equals(rpg.getHorse().getUniqueId())
 						|| horse.getUniqueId().equals(rpg.holderOverUUID)) {
-					HorseRPG.hSpawnedHorses.put(horse, HorseRPG.hSpawnedHorses.remove(rpg.getHorse()));
+					updateHorseInstance(horse, rpg.getHorse(), rpg);
 					rpg.getHorse().remove();
 					rpg.setHorse(horse);
 					break;
@@ -645,8 +645,8 @@ public class HorseRPG extends JavaPlugin {
 			}
 		}
 
-		if (hSpawnedHorses.containsKey(horse)) {
-			if (hSpawnedHorses.get(horse).owners_name.equals(sender.getName())) {
+		if (isRPGHorse(horse)) {
+			if (getHorse(horse).owners_name.equals(sender.getName())) {
 				msg(p, "&aYou already own this horse!");
 			} else {
 				msg(p, "&aThis horse is already owned!");
@@ -717,7 +717,7 @@ public class HorseRPG extends JavaPlugin {
 		h.setName(h.name);
 
 		pCurrentHorse.put(p.getUniqueId(), h);
-		hSpawnedHorses.put(horse, h);
+		addSpawnedHorse(horse, h);
 		if (!ownedHorses.containsKey(p.getName()))
 			ownedHorses.put(p.getName(), new TreeSet<RPGHorse>());
 		ownedHorses.get(p.getName()).add(h);
@@ -893,7 +893,7 @@ public class HorseRPG extends JavaPlugin {
 			h = getHorseNotSpawned(p, args, 1);
 		}
 		if (h != null) {
-			if (hSpawnedHorses.containsKey(h.getHorse())) {
+			if (isRPGHorse(h.getHorse())) {
 				msg(p, "&e" + h.name + "&a has already been summoned.");
 				return;
 			}
@@ -970,7 +970,7 @@ public class HorseRPG extends JavaPlugin {
 				if (rpg.getHorse() != null && !rpg.getHorse().isValid()) {
 					for (Entity e : rpg.getHorse().getNearbyEntities(60, 30, 60)) {
 						if (e.getUniqueId().equals(rpg.getHorse().getUniqueId())) {
-							HorseRPG.hSpawnedHorses.put(e, HorseRPG.hSpawnedHorses.remove(rpg.getHorse()));
+							updateHorseInstance(e, rpg.getHorse(), rpg);
 							rpg.getHorse().remove();
 							rpg.setHorse(e);
 							break;
@@ -1020,7 +1020,7 @@ public class HorseRPG extends JavaPlugin {
 		if (pCurrentHorse.get(p.getUniqueId()) == horse) {
 			pCurrentHorse.remove(p.getUniqueId());
 			for (RPGHorse others : ownedHorses.get(p.getName())) {
-				if (hSpawnedHorses.containsKey(others.getHorse())) {
+				if (isRPGHorse(others.getHorse())) {
 					pCurrentHorse.put(p.getUniqueId(), others);
 					break;
 				}
@@ -1474,9 +1474,9 @@ public class HorseRPG extends JavaPlugin {
 		horses.remove(h);
 		// Test if this removes horses.
 		h_config.removeHorse(h);
-		if (hSpawnedHorses.containsKey(h.getHorse())) {
+		if (isRPGHorse(h.getHorse())) {
 			h.getHorse().remove();
-			hSpawnedHorses.remove(h.getHorse());
+			removeHorseInstance(h.getHorse());
 		}
 
 		msg(p, "&b" + h.name + "&a won't be bothering you anymore.");
@@ -1492,12 +1492,12 @@ public class HorseRPG extends JavaPlugin {
 		if (notAllowed(sender, H_DB, false))
 			return;
 
-		for (RPGHorse h : hSpawnedHorses.values())
+		for (RPGHorse h : getRPGHorseInstances())
 			h.banish();
 
 		ownedHorses.clear();
 		pCurrentHorse.clear();
-		hSpawnedHorses.clear();
+		hSpawnedHorsesHashmap.clear();
 		horses.clear();
 
 		initHorses();
@@ -1546,7 +1546,7 @@ public class HorseRPG extends JavaPlugin {
 		new BukkitRunnable() {
 			@Override
 			public void run() {
-				for (RPGHorse h : hSpawnedHorses.values()) {
+				for (RPGHorse h : getRPGHorseInstances()) {
 					h_config.saveHorse(h, false);
 				}
 				h_config.save();
@@ -1634,7 +1634,7 @@ public class HorseRPG extends JavaPlugin {
 		offers = new HashMap<UUID, RPGHorse>();
 		ownedHorses = new HashMap<String, TreeSet<RPGHorse>>();
 		pCurrentHorse = new HashMap<UUID, RPGHorse>();
-		hSpawnedHorses = new HashMap<Entity, RPGHorse>();
+		hSpawnedHorsesHashmap = new HashMap<Entity, RPGHorse>();
 		horses = new HashSet<RPGHorse>();
 	}
 
@@ -1938,53 +1938,60 @@ public class HorseRPG extends JavaPlugin {
 					}
 				}
 				h_config.save();
-			} else {
-				try (Connection connect = DriverManager.getConnection("jdbc:sqlite:horses.db")) {
-					try (Statement statement = connect.createStatement()) {
-						statement.setQueryTimeout(30);
-						statement.executeUpdate("drop table if exists horses");
-					}
-
-					try (Statement statement = connect.createStatement()) {
-						statement.setQueryTimeout(30);
-						statement.executeUpdate("create table horses (	name string, " + "owner string, " + "color string, "
-								+ "style string, " + "variant string, " + "godmode integer, " + "swiftnessXP integer, "
-								+ "agilityXP integer, " + "vitalityXP integer, "
-								+ "wrathXP integer, sex integer, defaultSpeed integer, defaultJump integer)");
-					}
-
-					try (PreparedStatement statement = connect.prepareStatement("insert into horses values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);")) {
-						statement.setQueryTimeout(30);
-						for (TreeSet<RPGHorse> horseSet : ownedHorses.values()) {
-							for (RPGHorse h : horseSet)
-								try {
-									statement.setString(1, h.name);
-									statement.setString(2, h.owners_name);
-									statement.setString(3, h.color.toString());
-									statement.setString(4, h.style.toString());
-									statement.setString(5, h.variant.toString());
-									statement.setInt(6, h.godmode ? 1 : 0);
-									statement.setInt(7, h.swiftness.xp);
-									statement.setInt(8, h.agility.xp);
-									statement.setInt(9, h.vitality.xp);
-									statement.setInt(10, h.wrath.xp);
-									statement.setInt(11, h.isMale ? 0 : 1);
-									statement.setInt(12, (int) h.generic_speed);
-									statement.setInt(13, (int) h.generic_jump);
-									statement.addBatch();
-								} catch (Error | Exception ed4) {
-									ed4.printStackTrace();
-								}
-						}
-
-						statement.executeBatch();
-					}
-
-					if (!connect.getAutoCommit()) {
-						connect.commit();
-					}
+			} else {try (Connection connect = DriverManager.getConnection("jdbc:sqlite:horses.db")) {
+				try (Statement statement = connect.createStatement()) {
+					statement.setQueryTimeout(30);
+					statement.executeUpdate("drop table if exists horses");
 				}
-			}
+				try (Statement statement = connect.createStatement()) {
+					statement.setQueryTimeout(30);
+					statement.executeUpdate("create table horses (	name string, " + "owner string, " + "color string, "
+							+ "style string, " + "variant string, " + "godmode integer, " + "swiftnessXP integer, "
+							+ "agilityXP integer, " + "vitalityXP integer, "
+							+ "wrathXP integer, sex integer, defaultSpeed integer, defaultJump integer)");
+				}
+				try (PreparedStatement statement = connect.prepareStatement("insert into horses values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);")) {
+					statement.setQueryTimeout(30);
+					for (TreeSet<RPGHorse> horseSet : ownedHorses.values()) {
+						for (RPGHorse h : horseSet)
+							try {
+								statement.setString(1, h.name);
+								statement.setString(2, h.owners_name);
+								statement.setString(3, h.color.toString());
+								statement.setString(4, h.style.toString());
+								statement.setString(5, h.variant.toString());
+								statement.setInt(6, h.godmode ? 1 : 0);
+								statement.setInt(7, h.swiftness.xp);
+								statement.setInt(8, h.agility.xp);
+								statement.setInt(9, h.vitality.xp);
+								statement.setInt(10, h.wrath.xp);
+								statement.setInt(11, h.isMale ? 0 : 1);
+								statement.setInt(12, (int) h.generic_speed);
+								statement.setInt(13, (int) h.generic_jump);
+								statement.addBatch();
+							} catch (Error | Exception ed4) {
+								ed4.printStackTrace();
+							}
+					}
+					statement.executeBatch();
+				}
+
+				if (!connect.getAutoCommit()) {
+					connect.commit();
+				}/*
+				for (TreeSet<RPGHorse> horseSet : ownedHorses.values()) {
+					for (RPGHorse h : horseSet)
+						try {
+							statement.executeUpdate("insert into horses values('" + h.name + "', '" + h.owners_name
+									+ "', '" + h.color + "', '" + h.style + "', '" + h.variant + "', "
+									+ (h.godmode ? 1 : 0) + ", " + h.swiftness.xp + ", " + h.agility.xp + ", "
+									+ h.vitality.xp + ", " + h.wrath.xp + ", " + (h.isMale ? 0 : 1) + ", "
+									+ h.generic_speed + ", " + h.generic_jump + ")");
+						} catch (Error | Exception ed4) {
+							ed4.printStackTrace();
+						}
+				}*/
+			}}
 
 			if (sender != null)
 				msg(sender, HORSES_SAVED);
@@ -2091,7 +2098,7 @@ public class HorseRPG extends JavaPlugin {
 		}
 		if (sender instanceof Player) {
 			Player player = (Player) sender;
-			if (player.getVehicle() != null && hSpawnedHorses.containsKey(player.getVehicle())) {
+			if (player.getVehicle() != null && isRPGHorse(player.getVehicle())) {
 
 			}
 		}
@@ -2220,7 +2227,7 @@ public class HorseRPG extends JavaPlugin {
 	@Override
 	public void onDisable() {
 		if (banishondisable)
-			for (Entry<Entity, RPGHorse> horse : hSpawnedHorses.entrySet()) {
+			for (Entry<Entity, RPGHorse> horse : getRPGHorseEntrys()) {
 				horse.getValue().banish();
 				if (horse.getKey() != null && horse.getKey().isValid()) {
 					horse.getKey().remove();
@@ -2228,7 +2235,7 @@ public class HorseRPG extends JavaPlugin {
 			}
 
 		// Force save all spawned horses.
-		for (RPGHorse h : hSpawnedHorses.values())
+		for (RPGHorse h : getRPGHorseInstances())
 			h_config.saveHorse(h, false);
 		h_config.save();
 
@@ -2301,4 +2308,32 @@ public class HorseRPG extends JavaPlugin {
 			Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(instance, new ScoreboardTask(p, oldsb), 200);
 		}
 	}
+	
+	
+	
+	
+	
+	public static void addSpawnedHorse(Entity horse, RPGHorse instance) {
+		hSpawnedHorsesHashmap.put(horse, instance);
+	}
+	public static RPGHorse getHorse(Entity horse) {
+		return hSpawnedHorsesHashmap.get(horse);
+	}
+	public static RPGHorse removeHorseInstance(Entity horse) {
+		return hSpawnedHorsesHashmap.remove(horse);
+	}
+	public static void updateHorseInstance(Entity newEntity, Entity holdinstance, RPGHorse horse) {
+		hSpawnedHorsesHashmap.remove(holdinstance);
+		hSpawnedHorsesHashmap.put(newEntity, horse);
+	}
+	public static Collection<RPGHorse> getRPGHorseInstances(){
+		return new ArrayList<>(hSpawnedHorsesHashmap.values());
+	}
+	public static Set<Entry<Entity, RPGHorse>> getRPGHorseEntrys(){
+		return hSpawnedHorsesHashmap.entrySet();
+	}
+	public static boolean isRPGHorse(Entity horse) {
+		return hSpawnedHorsesHashmap.containsKey(horse);
+	}
+	
 }

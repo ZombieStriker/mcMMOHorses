@@ -48,7 +48,7 @@ public class TameToClaimListener implements Listener {
 			return;
 		}
 
-		if (HorseRPG.hSpawnedHorses.containsKey(e.getRightClicked())) {
+		if (HorseRPG.isRPGHorse(e.getRightClicked())) {
 			return;
 		}
 		

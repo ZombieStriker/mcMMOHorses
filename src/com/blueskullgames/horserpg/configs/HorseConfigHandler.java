@@ -263,7 +263,7 @@ public class HorseConfigHandler {
 									}
 								}
 								if (rpgHorse.getHorse() != null) {
-									HorseRPG.hSpawnedHorses.put(rpgHorse.getHorse(), rpgHorse);
+									HorseRPG.addSpawnedHorse(rpgHorse.getHorse(), rpgHorse);
 									if (Bukkit.getPlayer(owner) != null)
 										HorseRPG.pCurrentHorse.put(Bukkit.getPlayer(owner).getUniqueId(), rpgHorse);
 									cancel();

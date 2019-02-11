@@ -43,7 +43,7 @@ public class PlayerListener implements Listener {
 							for (Entity e : rpg.getHorse().getNearbyEntities(60, 30, 60)) {
 								if (e.getType() == rpg.getHorse().getType()
 										&& e.getUniqueId().equals(rpg.getHorse().getUniqueId())) {
-									HorseRPG.hSpawnedHorses.put(e, HorseRPG.hSpawnedHorses.remove(rpg.getHorse()));
+									HorseRPG.updateHorseInstance(e, rpg.getHorse(), rpg);
 									rpg.getHorse().remove();
 									rpg.setHorse(e);
 									break;
@@ -91,8 +91,8 @@ public class PlayerListener implements Listener {
 		if (HorseRPG.banishonquit) {
 			if (HorseRPG.ownedHorses.containsKey(evt.getPlayer().getName()))
 				for (RPGHorse h : HorseRPG.ownedHorses.get(evt.getPlayer().getName())) {
-					if (h != null && h.getHorse() != null && HorseRPG.hSpawnedHorses.containsKey(h.getHorse())) {
-						HorseRPG.hSpawnedHorses.remove(h.getHorse()).banish();
+					if (h != null && h.getHorse() != null && HorseRPG.isRPGHorse(h.getHorse())) {
+						HorseRPG.removeHorseInstance(h.getHorse()).banish();
 					}
 				}
 		}
@@ -113,7 +113,7 @@ public class PlayerListener implements Listener {
 		}
 		if (b) {
 			final Entity horse = event.getRightClicked();
-			if (HorseRPG.hSpawnedHorses.containsKey(horse)) {
+			if (HorseRPG.isRPGHorse(horse)) {
 				final Player p = event.getPlayer();
 				ItemStack item;
 				try {
@@ -123,7 +123,7 @@ public class PlayerListener implements Listener {
 				}
 				Material m = null;
 				if (item != null && ((m = item.getType()) == Material.GOLDEN_APPLE || m == Material.GOLDEN_CARROT)) {
-					RPGHorse h = HorseRPG.hSpawnedHorses.get(horse);
+					RPGHorse h = HorseRPG.getHorse(horse);
 					if (h != null && h.owners_name.equalsIgnoreCase(p.getName())) {
 						h.vitality.addXP(m == Material.GOLDEN_APPLE ? 5 : 4, p);
 						ItemStack is = event.getPlayer().getItemInHand();
@@ -135,7 +135,7 @@ public class PlayerListener implements Listener {
 						event.getPlayer().setItemInHand(is);
 					}
 				} else {
-					final RPGHorse rpg = HorseRPG.hSpawnedHorses.get(horse);
+					final RPGHorse rpg = HorseRPG.getHorse(horse);
 					if (rpg.owners_name.equals(p.getName())) {
 						new BukkitRunnable() {
 							public void run() {

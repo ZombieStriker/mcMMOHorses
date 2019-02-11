@@ -1,3 +1,10 @@
+Version 4.3.52
+	Revamped spawnedHorse calls. New methods are now used to make the code a bit cleaner.
+	Fixed CC Error.
+
+Version 4.3.51b
+	Fixed vulnerability when horses are saved to database.
+
 Version 4.3.51
 	Edited logging system so it shows the amount of horses loaded, and not just print out all of the names
 	Fixed perma-death system so you can no longer check stats for horses that have died
