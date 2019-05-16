@@ -94,7 +94,7 @@ public class HorseConfigHandler {
 		config.set("Horses." + horse.owners_name + "." + horse.rpgUUID.toString() + Keys.variant, horse.variant.name());
 		config.set("Horses." + horse.owners_name + "." + horse.rpgUUID.toString() + Keys.hassaddle, horse.hasSaddle);
 		config.set("Horses." + horse.owners_name + "." + horse.rpgUUID.toString() + Keys.sex, horse.isMale);
-		config.set("Horses." + horse.owners_name + "." + horse.rpgUUID.toString() + Keys.SPAWNED, horse.spawned);
+		//config.set("Horses." + horse.owners_name + "." + horse.rpgUUID.toString() + Keys.SPAWNED, horse.spawned);
 		if ((horse.getHorse() != null && !((Ageable) horse.getHorse()).isAdult()) || horse.isBaby) {
 			config.set("Horses." + horse.owners_name + "." + horse.rpgUUID.toString() + Keys.isBaby,
 					(horse.getHorse() != null ? !((Ageable) horse.getHorse()).isAdult() : horse.isBaby));
@@ -206,7 +206,7 @@ public class HorseConfigHandler {
 					final RPGHorse rpgHorse = new RPGHorse(horsename, owner, c, s, v, gm, sswift, sagil, svit, swrath,
 							uuid, jumpPow, sprintPow, sex);
 					if (config.contains("Horses." + owner + "." + rpguuids + Keys.SPAWNED)) {
-						rpgHorse.spawned = config.getBoolean("Horses." + owner + "." + rpguuids + Keys.SPAWNED);
+				//		rpgHorse.spawned = config.getBoolean("Horses." + owner + "." + rpguuids + Keys.SPAWNED);
 					}
 					if (config.contains("Horses." + owner + "." + rpguuids + Keys.isBaby)) {
 						rpgHorse.isBaby = true;

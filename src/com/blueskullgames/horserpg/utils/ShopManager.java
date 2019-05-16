@@ -73,7 +73,7 @@ public class ShopManager implements Listener {
 
 	@EventHandler
 	public void onClickInv(InventoryClickEvent e) {
-		if (e.getInventory().getTitle().equals(title)) {
+		if (e.getView().getTitle().equals(title)) {
 			e.setCancelled(true);
 			if (e.getCurrentItem() != null) {
 				

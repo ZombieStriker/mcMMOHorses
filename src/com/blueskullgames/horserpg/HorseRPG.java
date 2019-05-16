@@ -639,8 +639,8 @@ public class HorseRPG extends JavaPlugin {
 					break;
 				}
 			}
-			if (rpg.spawned && ChatColor.translateAlternateColorCodes('&', rpg.name).equals(horse.getCustomName())) {
-				msg(p, "&aHorses name is the same as an already spawned horse. Canceling.");
+			if (horse.getCustomName()!=null && ChatColor.translateAlternateColorCodes('&', rpg.name).equals(horse.getCustomName())) {
+				msg(p, "&aYou already own a horse with this same name.");
 				return;
 			}
 		}
@@ -897,10 +897,10 @@ public class HorseRPG extends JavaPlugin {
 				msg(p, "&e" + h.name + "&a has already been summoned.");
 				return;
 			}
-			if (h.spawned) {
+			/*if (h.spawned) {
 				msg(p, "&e" + h.name + "&a has already been spawned.");
 				return;
-			}
+			}*/
 			if (h.isBanished || h.isDead) {
 				HorseRPG.msg(p, NEED_TIME_TO_RECHARGE.replaceAll("%name%", h.name));
 			} else {
@@ -1530,18 +1530,8 @@ public class HorseRPG extends JavaPlugin {
 		initMessages();
 		initConfig();
 		initHelp();
-		// This is just a work around. This makes sure that we can
-		// transfer db horses to the file
-		// Object o = h_config.getGlobalVariable(Keys.G_dbtransfermode.toString());
-		// if (o == null || (int) o < 1) {
-		// h_config.setGlobalVar(Keys.G_dbtransfermode.toString(), 1);
-		// }
 		initHorses();
 
-		// if (((int) h_config.getGlobalVariable(Keys.G_dbtransfermode.toString())) < 2)
-		// {
-		// h_config.setGlobalVar(Keys.G_dbtransfermode.toString(), 2);
-		// }
 
 		new BukkitRunnable() {
 			@Override
@@ -1899,8 +1889,6 @@ public class HorseRPG extends JavaPlugin {
 					RPGHorse h = new RPGHorse(rs.getString("name"), owner, color, style, variant,
 							rs.getInt("godmode") == 1, rs.getInt("swiftnessXP"), rs.getInt("agilityXP"),
 							rs.getInt("vitalityXP"), rs.getInt("wrathXP"), null, jump, speed, rs.getInt("sex") == 0);
-					// TODO:Tempfix. Since I don't want users to use the sql, just set the dfefault
-					// value to 2.25
 
 					if (!ownedHorses.containsKey(owner))
 						ownedHorses.put(owner, new TreeSet<RPGHorse>());
@@ -2330,7 +2318,7 @@ public class HorseRPG extends JavaPlugin {
 		return new ArrayList<>(hSpawnedHorsesHashmap.values());
 	}
 	public static Set<Entry<Entity, RPGHorse>> getRPGHorseEntrys(){
-		return hSpawnedHorsesHashmap.entrySet();
+		return  new HashSet<>(hSpawnedHorsesHashmap.entrySet());
 	}
 	public static boolean isRPGHorse(Entity horse) {
 		return hSpawnedHorsesHashmap.containsKey(horse);

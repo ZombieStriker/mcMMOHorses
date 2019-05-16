@@ -154,7 +154,7 @@ public class HorseListener implements Listener {
 		h.isDead = true;
 		h.holderOverUUID = null;
 		h.respawnTimer = HorseRPG.deathTimer;
-		h.spawned = false;
+		//h.spawned = false;
 
 		Player owner = Bukkit.getPlayer(h.owners_name);
 

@@ -1,0 +1,108 @@
+######################################################
+#                                                    #
+#              mcMMO Horses Config ${project.version}            #
+#                                                    #
+######################################################
+
+# Save interval (20 ticks = 1 second, 24000 ticks = 20 minutes)
+save-interval: 24000
+
+# Give a player's first horse for free (works with /h summon not /h claim)
+free-horse: false
+
+# If a claimed horse dies, it's gone forever
+permanent-death: false
+
+# Horse death timer (in seconds)
+# (Uses timer if permanent death is disabled)
+death-timer: 120
+
+# Horse banish timer (in seconds)
+# (A horse can't be summoned for this time after being banished)
+banish-timer: 120
+
+# Horse sprint cooldown (in seconds)
+sprint-cooldown: 20
+
+# Horse infuriate cooldown (in seconds)
+infuriate-cooldown: 20
+
+# Sets the max horses a player can own (-1 for unlimited)
+# Requires permission node mcmmohorses.groups.(group name)
+# I recommend using -1 for each group if using economy.
+# The horse cost multiplier makes owning tons of horses exponentially expensive
+groups:
+    default: 10 # Given to everyone by default
+    admin: -1 # Given to ops by default
+#    nooblets: 5 # Requires node: mcmmohorses.groups.nooblets
+#    moderators: -1 # Requires node: mcmmohorses.groups.moderators
+#    vip: 20 # Requires node: mcmmohorses.groups.vip
+
+
+#### Economy
+
+# Enables the economy features (requires Vault)
+enable-economy: false
+
+# Default cost to claim a horse
+claim-cost: 500
+
+# Horse claim cost multiplier (1 to disable)
+# (e.g. horse 1 = $500, horse 2 = $1000, horse 3 = $2000 with 2x multiplier)
+claim-cost-multiplier: 2
+
+# Horse cost per summon 
+summon-cost: 10
+
+# Horse banish cost
+banish-cost: 0
+
+# Allow for automatic updates
+auto-update: true
+
+# Stop the player from banishing horses. 
+disable_banishment: false
+
+# Banishes all claimed horses on disable. This helps prevent duplicate horses from occuring
+banish_on_disable: true
+
+# Disables the in game breeding. Useful for preventing players from being able to get unlimited horses
+disable_basegame_breeding: false
+
+# Banishes all of the player's horses when they quit. This will make sure the horse is protected
+banish_on_player_quit: true
+
+# Save type. Save types 0 and 1 are currently invalid, Savetype 2 is a flatfile, Savetype 3 is an SQL database (not to be confused with MySQL database, which this plugin currently does not support)
+savetype: 2
+
+logWhenSaved: true
+
+# Sets the price for each horse type in the shop.
+priceForHorse:
+  HORSE: 100.0
+  DONKEY: 100.0
+  MULE: 100.0
+  UNDEAD_HORSE: 400.0
+  SKELETON_HORSE: 400.0
+  LLAMA: 100.0
+  
+# Requires the horse to be claimed when they are tamed, or else the player is ejected from the horse
+Force_claim_on_tame: false
+
+# Requires the player to be able to claim the horse to ride them.
+RequirePermissionToRide: false
+
+# Disables base game taming. This makes sure that horses can only by purchased.
+disable_basegame_taming: false
+
+disable_StatsInChat: false
+disable_StatsInScoreboard: false
+
+#If claimed horses breed, the offspring will be claimed too.
+claimFoalOnBreed: true
+
+horsestats:
+  default_min_speed: 0.1125
+  default_max_speed: 0.3375
+  default_min_jump: 0.4
+  default_max_jump: 1.0

@@ -89,7 +89,7 @@ public class RPGHorse implements Comparable<RPGHorse> {
 	public static double minJump = 0.4;
 	public static double maxJump = 1.0;
 
-	public boolean spawned = false;
+//	public boolean spawned = false;
 
 	public static double getRandomSpeed() {
 		return ((maxSpeed - minSpeed) * Math.random()) + minSpeed;
@@ -181,7 +181,7 @@ public class RPGHorse implements Comparable<RPGHorse> {
 		this.isBaby = !((Ageable) horse).isAdult();
 		this.babyAge = ((Ageable) horse).getAge();
 		this.holderOverUUID = horse.getUniqueId();
-		spawned = true;
+	//	spawned = true;
 	}
 
 	/**
@@ -201,7 +201,7 @@ public class RPGHorse implements Comparable<RPGHorse> {
 		this.isBaby = !((Ageable) horse).isAdult();
 		this.babyAge = ((Ageable) horse).getAge();
 		this.holderOverUUID = horse.getUniqueId();
-		spawned = true;
+		//spawned = true;
 	}
 
 	/**
@@ -351,7 +351,7 @@ public class RPGHorse implements Comparable<RPGHorse> {
 		HorseRPG.updateHorseInstance(horse, this.horse, this);
 		this.horse = horse;
 		this.holderOverUUID = horse.getUniqueId();
-		spawned = true;
+		//spawned = true;
 	}
 
 	/**
@@ -381,7 +381,7 @@ public class RPGHorse implements Comparable<RPGHorse> {
 				((Horse) this.horse).setVariant(newVariant);
 			}
 			this.holderOverUUID = horse.getUniqueId();
-			spawned = true;
+			//spawned = true;
 			temp.remove();
 			HorseRPG.updateHorseInstance(this.horse, temp, this);
 		}
@@ -522,7 +522,7 @@ public class RPGHorse implements Comparable<RPGHorse> {
 		}
 
 		isBanished = false;
-		spawned = true;
+		//spawned = true;
 		try {
 			((LivingEntity) horse).getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(44 + vitality.healthBonus);
 			((Damageable) horse)
@@ -589,7 +589,7 @@ public class RPGHorse implements Comparable<RPGHorse> {
 		HorseRPG.h_config.saveHorse(this, true);
 
 		isBanished = true;
-		spawned = false;
+		//spawned = false;
 		if (timer)
 			respawnTimer = HorseRPG.banishTimer;
 	}
