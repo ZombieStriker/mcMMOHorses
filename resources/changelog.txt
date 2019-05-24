@@ -1,3 +1,10 @@
+Version 4.3.54
+	Fixed b that breaks updater
+	Fixed updater to ignore letters in update titles
+
+Version 4.3.53b
+	Fixed 1.13 support
+
 Version 4.3.53
 	Updated to 1.14
 	Updated to Maven

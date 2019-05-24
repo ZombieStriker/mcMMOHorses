@@ -30,12 +30,13 @@ public class GithubUpdater {
 
 			String parsedTagName = tagname.replace(".", "");
 
-			int latestVersion = Integer.valueOf(parsedTagName.substring(1, parsedTagName.length()));
+			int latestVersion = Integer.valueOf(parsedTagName.substring(1, parsedTagName.length()).replaceAll("[^\\d.]", ""));
+			int parsedVersion = Integer.parseInt(parseVersion.replaceAll("[^\\d.]", ""));
 
 			final URL download = new URL("https://github.com/" + author + "/" + githubProject + "/releases/download/"
 					+ tagname + "/" + jarname);
 
-			if (latestVersion > Integer.parseInt(parseVersion)) {
+			if (latestVersion > parsedVersion) {
 				Bukkit.getConsoleSender()
 						.sendMessage(ChatColor.GREEN + "Found a new version of " + ChatColor.GOLD
 								+ main.getDescription().getName() + ": " + ChatColor.WHITE + tagname
