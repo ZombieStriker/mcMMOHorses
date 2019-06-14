@@ -1,39 +1,42 @@
 package com.blueskullgames.horserpg;
 
-import java.io.File;
-import java.sql.*;
-import java.util.*;
-import java.util.Map.Entry;
-
+import com.blueskullgames.horserpg.configs.HorseConfigHandler;
+import com.blueskullgames.horserpg.configs.MessagesConfigHandler;
+import com.blueskullgames.horserpg.listeners.HorseListener;
+import com.blueskullgames.horserpg.listeners.PlayerListener;
+import com.blueskullgames.horserpg.tasks.CooldownTask;
+import com.blueskullgames.horserpg.tasks.OfferTask;
+import com.blueskullgames.horserpg.tasks.SaveTask;
+import com.blueskullgames.horserpg.tasks.ScoreboardTask;
+import com.blueskullgames.horserpg.utils.*;
 import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.economy.EconomyResponse;
-
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.entity.Donkey;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.Horse;
-import org.bukkit.entity.Horse.*;
-import org.bukkit.entity.Mule;
-import org.bukkit.entity.Player;
-import org.bukkit.entity.Tameable;
+import org.bukkit.entity.*;
+import org.bukkit.entity.Horse.Color;
+import org.bukkit.entity.Horse.Style;
+import org.bukkit.entity.Horse.Variant;
 import org.bukkit.event.HandlerList;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.plugin.*;
+import org.bukkit.plugin.PluginManager;
+import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
-import org.bukkit.scoreboard.*;
+import org.bukkit.scoreboard.DisplaySlot;
+import org.bukkit.scoreboard.Objective;
+import org.bukkit.scoreboard.Scoreboard;
+import org.bukkit.scoreboard.ScoreboardManager;
 
-import com.blueskullgames.horserpg.configs.HorseConfigHandler;
-import com.blueskullgames.horserpg.configs.MessagesConfigHandler;
-import com.blueskullgames.horserpg.listeners.*;
-import com.blueskullgames.horserpg.tasks.*;
-import com.blueskullgames.horserpg.utils.*;
+import java.io.File;
+import java.sql.*;
+import java.util.*;
+import java.util.Map.Entry;
 
 @SuppressWarnings("deprecation")
 public class HorseRPG extends JavaPlugin {
@@ -123,6 +126,33 @@ public class HorseRPG extends JavaPlugin {
 
 	public static String FOALBREED = "&a The foal &e%name%&a has been born.*";
 
+
+	public static String sb_STATS="\'s Stats";
+	public static String sb_Swiftness="Swiftness:";
+	public static String sb_Sprint="Sprint:";
+	public static String sb_Agility="Agility:";
+	public static String sb_Dodge="Dodge:";
+	public static String sb_Roll="Roll:";
+	public static String sb_Vitality="Vitality:";
+	public static String sb_Base="Base";
+	public static String sb_Bonus="Bonus";
+	public static String sb_Wrath="Wrath:";
+	public static String sb_Infuriate="Infuriate:";
+	public static String sb_PowerLevel="Power Level:";
+	public static String sb_Sex="Sex:";
+	public static String sb_Male="Male";
+	public static String sb_Female="Female";
+	public static String sb_Gelding="(Gelding)";
+	public static String sb_BaseSpeed="Base-Speed";
+	public static String sb_BaseJump="Base-Jump";
+
+
+	public static String sb_owned="&aOwned: &7";
+	public static String sb_Unlimited="Unlimited";
+	public static String sb_PlusAmountMore="Plus %amount% more...";
+
+
+
 	public static BukkitTask saveTask, cooldownTask;
 	public static ConfigAccessor config;
 	public static Economy econ;
@@ -176,11 +206,9 @@ public class HorseRPG extends JavaPlugin {
 
 	/**
 	 * Messages a sender
-	 * 
-	 * @param sender
-	 *            is the sender to message
-	 * @param message
-	 *            is the message to send
+	 *
+	 * @param sender  is the sender to message
+	 * @param message is the message to send
 	 */
 	public static void msg(CommandSender sender, String message, String... args) {
 		String tempmess = message;
@@ -192,13 +220,10 @@ public class HorseRPG extends JavaPlugin {
 
 	/**
 	 * Checks if the sender can execute the command
-	 * 
-	 * @param sender
-	 *            is the sender to check
-	 * @param permission
-	 *            is the permission node required
-	 * @param playerOnly
-	 *            is true if the command is player only
+	 *
+	 * @param sender     is the sender to check
+	 * @param permission is the permission node required
+	 * @param playerOnly is true if the command is player only
 	 * @return true if the sender is not allowed to execute the command
 	 */
 	public static boolean notAllowed(CommandSender sender, String permission, boolean playerOnly) {
@@ -222,7 +247,7 @@ public class HorseRPG extends JavaPlugin {
 
 	/**
 	 * Returns the sender's horse THAT IS NOT CURRENTLY SPAWNED
-	 * 
+	 *
 	 * @param p
 	 * @param args
 	 * @param offset
@@ -256,7 +281,7 @@ public class HorseRPG extends JavaPlugin {
 
 	/**
 	 * Returns the sender's horse THAT IS SPAWNED
-	 * 
+	 *
 	 * @param p
 	 * @param args
 	 * @param offset
@@ -290,13 +315,10 @@ public class HorseRPG extends JavaPlugin {
 
 	/**
 	 * Returns the sender's associated horse
-	 * 
-	 * @param p
-	 *            is the command sender
-	 * @param args
-	 *            are the command arguments
-	 * @param offset
-	 *            is the argument index offset of the horse name
+	 *
+	 * @param p      is the command sender
+	 * @param args   are the command arguments
+	 * @param offset is the argument index offset of the horse name
 	 */
 	public static RPGHorse currentHorse(Player p, String[] args, int offset) {
 		if (args.length <= offset) {
@@ -323,9 +345,8 @@ public class HorseRPG extends JavaPlugin {
 
 	/**
 	 * Gets the max horses a sender can own
-	 * 
-	 * @param sender
-	 *            is the sender to check
+	 *
+	 * @param sender is the sender to check
 	 * @return the max horses the sender can own
 	 */
 	public static int maxHorses(CommandSender sender) {
@@ -342,11 +363,9 @@ public class HorseRPG extends JavaPlugin {
 
 	/**
 	 * Displays the help message
-	 * 
-	 * @param sender
-	 *            is the sender to message
-	 * @param args
-	 *            are the command arguments
+	 *
+	 * @param sender is the sender to message
+	 * @param args   are the command arguments
 	 */
 	public static void showHelp(CommandSender sender, String[] args) {
 		if (notAllowed(sender, H_HELP, false))
@@ -384,9 +403,8 @@ public class HorseRPG extends JavaPlugin {
 
 	/**
 	 * Displays the player's stats
-	 * 
-	 * @param sender
-	 *            is the sender to message
+	 *
+	 * @param sender is the sender to message
 	 */
 	public static void showMe(CommandSender sender) {
 		if (notAllowed(sender, H_ME, true))
@@ -412,7 +430,7 @@ public class HorseRPG extends JavaPlugin {
 			int showedHorses = Math.min(ownedHor, 10);
 			try {
 				obj.getScore(Bukkit.getOfflinePlayer(ChatColor.translateAlternateColorCodes('&',
-						"&aOwned: &7" + myHorses.size() + " / " + (maxHorses(p) == -1 ? "Unlimited" : maxHorses(p)))))
+						sb_owned + myHorses.size() + " / " + (maxHorses(p) == -1 ? sb_Unlimited : maxHorses(p)))))
 						.setScore(showedHorses + 2);
 				obj.getScore(Bukkit.getOfflinePlayer(ChatColor.translateAlternateColorCodes('&', "&aHorses:")))
 						.setScore(showedHorses + 1);
@@ -423,13 +441,13 @@ public class HorseRPG extends JavaPlugin {
 				}
 				if (showedHorses < ownedHor)
 					obj.getScore(Bukkit.getOfflinePlayer(ChatColor.translateAlternateColorCodes('&',
-							"Plus " + (ownedHor - showedHorses) + " more..."))).setScore(-1);
+							sb_PlusAmountMore.replaceAll("%amount%",""+(ownedHor - showedHorses))))).setScore(-1);
 			} catch (Error | Exception e54) {
 				obj.getScore(ChatColor.translateAlternateColorCodes('&',
-						"&aOwned: &7" + myHorses.size() + " / " + (maxHorses(p) == -1 ? "Unlimited" : maxHorses(p))))
+						sb_owned + myHorses.size() + " / " + (maxHorses(p) == -1 ? sb_Unlimited : maxHorses(p))))
 						.setScore(showedHorses + 3);
 				obj.getScore(ChatColor.translateAlternateColorCodes('&',
-						"&aMax-Owned: &7" + (maxHorses(p) == -1 ? "Unlimited" : maxHorses(p))))
+						sb_owned + (maxHorses(p) == -1 ? sb_Unlimited : maxHorses(p))))
 						.setScore(showedHorses + 2);
 				obj.getScore((ChatColor.translateAlternateColorCodes('&', "&aHorses:"))).setScore(showedHorses + 1);
 				for (int i = 0; i < showedHorses; i++) {
@@ -438,7 +456,7 @@ public class HorseRPG extends JavaPlugin {
 				}
 				if (showedHorses < ownedHor)
 					obj.getScore((ChatColor.translateAlternateColorCodes('&',
-							"Plus " + (ownedHor - showedHorses) + " more"))).setScore(-1);
+							sb_PlusAmountMore.replaceAll("%amount%",""+(ownedHor - showedHorses))))).setScore(-1);
 			}
 			Scoreboard oldsb = p.getScoreboard();
 			p.setScoreboard(board);
@@ -451,9 +469,8 @@ public class HorseRPG extends JavaPlugin {
 
 	/**
 	 * Displays the player's horse stats
-	 * 
-	 * @param sender
-	 *            is the sender to update
+	 *
+	 * @param sender is the sender to update
 	 */
 	public static void showHorse(CommandSender sender, String[] args) {
 		if (notAllowed(sender, H_STATS, true))
@@ -472,27 +489,27 @@ public class HorseRPG extends JavaPlugin {
 		}
 
 		if (!DisableshowStatsInChat) {
-			p.sendMessage(ChatColor.YELLOW + "\"" + h.name + "\" Stats");
-			p.sendMessage((ChatColor.GREEN + "Swiftness") + ChatColor.WHITE + "  " + h.swiftness.level);
-			p.sendMessage((ChatColor.DARK_GRAY + "Sprint: ") + ChatColor.GRAY + "= " + ((int) (h.swiftness.amplitude))
+			p.sendMessage(ChatColor.YELLOW + "\"" + h.name + "\""+sb_STATS);
+			p.sendMessage((ChatColor.GREEN + sb_Swiftness) + ChatColor.WHITE + "  " + h.swiftness.level);
+			p.sendMessage((ChatColor.DARK_GRAY +sb_Swiftness) + ChatColor.GRAY + "= " + ((int) (h.swiftness.amplitude))
 					+ (ChatColor.DARK_GRAY + "Time: ") + ChatColor.GRAY + "= " + ((int) (h.swiftness.duration / 20))
 					+ "s");
-			p.sendMessage((ChatColor.GREEN + "Agility") + ChatColor.WHITE + "  " + h.agility.level);
-			p.sendMessage((ChatColor.DARK_GRAY + "Dodge:") + ChatColor.GRAY + "= "
-					+ ((int) (h.agility.dodgeChance * 100)) + "%" + (ChatColor.DARK_GRAY + "Roll:") + ChatColor.GRAY
+			p.sendMessage((ChatColor.GREEN + sb_Agility + ChatColor.WHITE + "  " + h.agility.level));
+			p.sendMessage((ChatColor.DARK_GRAY + sb_Dodge) + ChatColor.GRAY + "= "
+					+ ((int) (h.agility.dodgeChance * 100)) + "%" + (ChatColor.DARK_GRAY + sb_Roll) + ChatColor.GRAY
 					+ "= " + ((int) (h.agility.rollChance * 100)) + "%");
-			p.sendMessage((ChatColor.GREEN + "Vitality") + ChatColor.WHITE + "  " + h.vitality.level);
+			p.sendMessage((ChatColor.GREEN + sb_Vitality) + ChatColor.WHITE + "  " + h.vitality.level);
 			// TODO: Check if correct: 44 (22 hears) is the base health for all horses
-			p.sendMessage((ChatColor.DARK_GRAY + "Base") + ChatColor.GRAY + "= " + ((44 - h.vitality.healthBonus)) / 2
-					+ (ChatColor.DARK_GRAY + "  Bonus") + ChatColor.GRAY + "= " + ((int) (h.vitality.healthBonus / 2)));
-			p.sendMessage((ChatColor.GREEN + "Wrath") + ChatColor.WHITE + "  " + h.wrath.level);
-			p.sendMessage((ChatColor.DARK_GRAY + "Infuriate: ") + ChatColor.GRAY + "= "
+			p.sendMessage((ChatColor.DARK_GRAY + sb_Vitality) + ChatColor.GRAY + "= " + ((44 - h.vitality.healthBonus)) / 2
+					+ (ChatColor.DARK_GRAY + sb_Bonus) + ChatColor.GRAY + "= " + ((int) (h.vitality.healthBonus / 2)));
+			p.sendMessage((ChatColor.GREEN + sb_Wrath) + ChatColor.WHITE + "  " + h.wrath.level);
+			p.sendMessage((ChatColor.DARK_GRAY + sb_Infuriate) + ChatColor.GRAY + "= "
 					+ ((int) (h.wrath.infuriateChance * 100)) + "%");
-			p.sendMessage((ChatColor.GOLD + "Power Level") + ChatColor.WHITE + "  " + h.powerLevel);
-			p.sendMessage((ChatColor.GOLD + "Sex") + ChatColor.WHITE + "  " + (h.isMale ? "Male" : "Female")
-					+ (h.variant == Variant.DONKEY || h.variant == Variant.MULE ? "(Gelding)" : ""));
-			p.sendMessage((ChatColor.GREEN + "Base-Speed") + ChatColor.WHITE + "  " + h.generic_speed);
-			p.sendMessage((ChatColor.GREEN + "Base-Jump") + ChatColor.WHITE + "  " + h.generic_jump);
+			p.sendMessage((ChatColor.GOLD + sb_PowerLevel) + ChatColor.WHITE + "  " + h.powerLevel);
+			p.sendMessage((ChatColor.GOLD + sb_Sex) + ChatColor.WHITE + "  " + (h.isMale ? sb_Male: sb_Female)
+					+ (h.variant == Variant.DONKEY || h.variant == Variant.MULE ? sb_Gelding : ""));
+			p.sendMessage((ChatColor.GREEN + sb_BaseSpeed) + ChatColor.WHITE + "  " + h.generic_speed);
+			p.sendMessage((ChatColor.GREEN + sb_BaseJump) + ChatColor.WHITE + "  " + h.generic_jump);
 		}
 		if (!DisableshowStatsinInScoreboard) {
 
@@ -501,54 +518,54 @@ public class HorseRPG extends JavaPlugin {
 
 			Objective obj = board.registerNewObjective("horsestats", "dummy");
 			obj.setDisplaySlot(DisplaySlot.SIDEBAR);
-			obj.setDisplayName(ChatColor.YELLOW + "\"" + h.name + "\" Stats");
+			obj.setDisplayName(ChatColor.YELLOW + "\"" + h.name + "\""+sb_STATS);
 			try {
-				obj.getScore((ChatColor.GREEN + "Swiftness") + ChatColor.WHITE + "  " + h.swiftness.level).setScore(8);
-				obj.getScore((ChatColor.DARK_GRAY + "Sprint: ") + ChatColor.GRAY + "= "
+				obj.getScore((ChatColor.GREEN + sb_Swiftness) + ChatColor.WHITE + "  " + h.swiftness.level).setScore(8);
+				obj.getScore((ChatColor.DARK_GRAY + sb_Sprint) + ChatColor.GRAY + "= "
 						+ ((int) (h.swiftness.amplitude)) + (ChatColor.DARK_GRAY + "Time: ") + ChatColor.GRAY + "= "
 						+ ((int) (h.swiftness.duration / 20)) + "s").setScore(7);
-				obj.getScore((ChatColor.GREEN + "Agility") + ChatColor.WHITE + "  " + h.agility.level).setScore(6);
-				obj.getScore((ChatColor.DARK_GRAY + "Dodge:") + ChatColor.GRAY + "= "
-						+ ((int) (h.agility.dodgeChance * 100)) + "%" + (ChatColor.DARK_GRAY + "Roll:") + ChatColor.GRAY
+				obj.getScore((ChatColor.GREEN + sb_Agility) + ChatColor.WHITE + "  " + h.agility.level).setScore(6);
+				obj.getScore((ChatColor.DARK_GRAY + sb_Dodge) + ChatColor.GRAY + "= "
+						+ ((int) (h.agility.dodgeChance * 100)) + "%" + (ChatColor.DARK_GRAY + sb_Roll) + ChatColor.GRAY
 						+ "= " + ((int) (h.agility.rollChance * 100)) + "%").setScore(5);
-				obj.getScore((ChatColor.GREEN + "Vitality") + ChatColor.WHITE + "  " + h.vitality.level).setScore(4);
+				obj.getScore((ChatColor.GREEN + sb_Vitality) + ChatColor.WHITE + "  " + h.vitality.level).setScore(4);
 				// TODO: Check if correct: 44 (22 hears) is the base health for all horses
-				obj.getScore((ChatColor.DARK_GRAY + "Base") + ChatColor.GRAY + "= "
-						+ ((44 - h.vitality.healthBonus)) / 2 + (ChatColor.DARK_GRAY + "  Bonus") + ChatColor.GRAY
+				obj.getScore((ChatColor.DARK_GRAY + sb_Base) + ChatColor.GRAY + "= "
+						+ ((44 - h.vitality.healthBonus)) / 2 + (ChatColor.DARK_GRAY + sb_Bonus) + ChatColor.GRAY
 						+ "= " + ((int) (h.vitality.healthBonus / 2))).setScore(3);
-				obj.getScore((ChatColor.GREEN + "Wrath") + ChatColor.WHITE + "  " + h.wrath.level).setScore(2);
-				obj.getScore((ChatColor.DARK_GRAY + "Infuriate: ") + ChatColor.GRAY + "= "
+				obj.getScore((ChatColor.GREEN + sb_Wrath) + ChatColor.WHITE + "  " + h.wrath.level).setScore(2);
+				obj.getScore((ChatColor.DARK_GRAY + sb_Infuriate) + ChatColor.GRAY + "= "
 						+ ((int) (h.wrath.infuriateChance * 100)) + "%").setScore(1);
-				obj.getScore((ChatColor.GOLD + "Power Level") + ChatColor.WHITE + "  " + h.powerLevel).setScore(0);
+				obj.getScore((ChatColor.GOLD + sb_PowerLevel) + ChatColor.WHITE + "  " + h.powerLevel).setScore(0);
 
-				obj.getScore((ChatColor.GOLD + "Sex") + ChatColor.WHITE + "  " + (h.isMale ? "Male" : "Female")
-						+ (h.variant == Variant.DONKEY || h.variant == Variant.MULE ? "(Gelding)" : "")).setScore(-1);
-				obj.getScore((ChatColor.GREEN + "Base-Speed") + ChatColor.WHITE + "  " + h.generic_speed).setScore(-2);
-				obj.getScore((ChatColor.GREEN + "Base-Jump") + ChatColor.WHITE + "  " + h.generic_jump).setScore(-3);
+				obj.getScore((ChatColor.GOLD + sb_Sex) + ChatColor.WHITE + "  " + (h.isMale ? sb_Male : sb_Female)
+						+ (h.variant == Variant.DONKEY || h.variant == Variant.MULE ? sb_Gelding : "")).setScore(-1);
+				obj.getScore((ChatColor.GREEN + sb_BaseSpeed) + ChatColor.WHITE + "  " + h.generic_speed).setScore(-2);
+				obj.getScore((ChatColor.GREEN + sb_BaseJump) + ChatColor.WHITE + "  " + h.generic_jump).setScore(-3);
 
 			} catch (Exception e) {
-				obj.getScore(Bukkit.getOfflinePlayer(ChatColor.GREEN + "Swiftness")).setScore(h.swiftness.level);
-				obj.getScore(Bukkit.getOfflinePlayer(ChatColor.GREEN + "Agility")).setScore(h.agility.level);
-				obj.getScore(Bukkit.getOfflinePlayer(ChatColor.GREEN + "Vitality")).setScore(h.vitality.level);
-				obj.getScore(Bukkit.getOfflinePlayer(ChatColor.GREEN + "Wrath")).setScore(h.wrath.level);
-				obj.getScore(Bukkit.getOfflinePlayer(ChatColor.GOLD + "Power Level")).setScore(h.powerLevel);
+				obj.getScore(Bukkit.getOfflinePlayer(ChatColor.GREEN + sb_Swiftness)).setScore(h.swiftness.level);
+				obj.getScore(Bukkit.getOfflinePlayer(ChatColor.GREEN +sb_Agility)).setScore(h.agility.level);
+				obj.getScore(Bukkit.getOfflinePlayer(ChatColor.GREEN + sb_Vitality)).setScore(h.vitality.level);
+				obj.getScore(Bukkit.getOfflinePlayer(ChatColor.GREEN + sb_Wrath)).setScore(h.wrath.level);
+				obj.getScore(Bukkit.getOfflinePlayer(ChatColor.GOLD + sb_PowerLevel)).setScore(h.powerLevel);
 
-				obj.getScore(Bukkit.getOfflinePlayer((ChatColor.DARK_GRAY + "Sprint: ") + ChatColor.GRAY + "= "
+				obj.getScore(Bukkit.getOfflinePlayer((ChatColor.DARK_GRAY + sb_Sprint) + ChatColor.GRAY + "= "
 						+ ((int) (h.swiftness.amplitude)) + (ChatColor.DARK_GRAY + "Time: ") + ChatColor.GRAY + "= "
 						+ ((int) (h.swiftness.duration / 20)) + "s")).setScore(7);
 
-				obj.getScore(Bukkit.getOfflinePlayer((ChatColor.DARK_GRAY + "Dodge:") + ChatColor.GRAY + "= "
-						+ ((int) (h.agility.dodgeChance * 100)) + "%" + (ChatColor.DARK_GRAY + "Roll:") + ChatColor.GRAY
+				obj.getScore(Bukkit.getOfflinePlayer((ChatColor.DARK_GRAY + sb_Dodge) + ChatColor.GRAY + "= "
+						+ ((int) (h.agility.dodgeChance * 100)) + "%" + (ChatColor.DARK_GRAY + sb_Roll) + ChatColor.GRAY
 						+ "= " + ((int) (h.agility.rollChance * 100)) + "%")).setScore(5);
 				// TODO: Check if correct: 44 (22 hears) is the base health for all horses
-				obj.getScore(Bukkit.getOfflinePlayer((ChatColor.DARK_GRAY + "Base") + ChatColor.GRAY + "= "
-						+ (((44 - h.vitality.healthBonus) / 2)) + ChatColor.DARK_GRAY + "  Bonus" + ChatColor.GRAY
+				obj.getScore(Bukkit.getOfflinePlayer((ChatColor.DARK_GRAY + sb_Base) + ChatColor.GRAY + "= "
+						+ (((44 - h.vitality.healthBonus) / 2)) + ChatColor.DARK_GRAY + sb_Bonus + ChatColor.GRAY
 						+ "= " + ((int) (h.vitality.healthBonus / 2)))).setScore(3);
 
-				obj.getScore(Bukkit.getOfflinePlayer((ChatColor.DARK_GRAY + "Infuriate: ") + ChatColor.GRAY + "= "
+				obj.getScore(Bukkit.getOfflinePlayer((ChatColor.DARK_GRAY + sb_Infuriate) + ChatColor.GRAY + "= "
 						+ ((int) (h.wrath.infuriateChance * 100)) + "%")).setScore(1);
-				obj.getScore(Bukkit.getOfflinePlayer(ChatColor.GREEN + "Base-Speed")).setScore((int) h.generic_speed);
-				obj.getScore(Bukkit.getOfflinePlayer(ChatColor.GREEN + "Base-Jump")).setScore((int) h.generic_jump);
+				obj.getScore(Bukkit.getOfflinePlayer(ChatColor.GREEN + sb_BaseSpeed)).setScore((int) h.generic_speed);
+				obj.getScore(Bukkit.getOfflinePlayer(ChatColor.GREEN + sb_BaseJump)).setScore((int) h.generic_jump);
 
 			}
 
@@ -562,13 +579,10 @@ public class HorseRPG extends JavaPlugin {
 
 	/**
 	 * Displays the skill statistics message
-	 * 
-	 * @param sender
-	 *            is the sender to message
-	 * @param skill
-	 *            is the skill to show
-	 * @param args
-	 *            are the command arguments
+	 *
+	 * @param sender is the sender to message
+	 * @param skill  is the skill to show
+	 * @param args   are the command arguments
 	 */
 	public static void showSkill(CommandSender sender, String skill, String[] args) {
 		if (notAllowed(sender, H_SKILL, true))
@@ -579,26 +593,25 @@ public class HorseRPG extends JavaPlugin {
 			return;
 
 		switch (skill) {
-		case "swiftness":
-			h.swiftness.stats(sender);
-			break;
-		case "agility":
-			h.agility.stats(sender);
-			break;
-		case "vitality":
-			h.vitality.stats(sender);
-			break;
-		case "wrath":
-			h.wrath.stats(sender);
-			break;
+			case "swiftness":
+				h.swiftness.stats(sender);
+				break;
+			case "agility":
+				h.agility.stats(sender);
+				break;
+			case "vitality":
+				h.vitality.stats(sender);
+				break;
+			case "wrath":
+				h.wrath.stats(sender);
+				break;
 		}
 	}
 
 	/**
 	 * Attempts to claim a horse
-	 * 
-	 * @param sender
-	 *            is the sender to message
+	 *
+	 * @param sender is the sender to message
 	 */
 	public static void claimHorse(CommandSender sender) {
 		if (notAllowed(sender, H_CLAIM, true))
@@ -639,7 +652,7 @@ public class HorseRPG extends JavaPlugin {
 					break;
 				}
 			}
-			if (horse.getCustomName()!=null && ChatColor.translateAlternateColorCodes('&', rpg.name).equals(horse.getCustomName())) {
+			if (horse.getCustomName() != null && ChatColor.translateAlternateColorCodes('&', rpg.name).equals(horse.getCustomName())) {
 				msg(p, "&aYou already own a horse with this same name.");
 				return;
 			}
@@ -728,9 +741,8 @@ public class HorseRPG extends JavaPlugin {
 
 	/**
 	 * Accepts or declines a horse offer
-	 * 
-	 * @param sender
-	 *            is the sender to message
+	 *
+	 * @param sender is the sender to message
 	 */
 	public static void buyHorse(CommandSender sender, boolean buy) {
 		if (notAllowed(sender, H_BUY, true))
@@ -792,11 +804,9 @@ public class HorseRPG extends JavaPlugin {
 
 	/**
 	 * Attempts to sell your horse
-	 * 
-	 * @param sender
-	 *            is the sender to message
-	 * @param args
-	 *            are the command arguments
+	 *
+	 * @param sender is the sender to message
+	 * @param args   are the command arguments
 	 */
 	public static void sellHorse(CommandSender sender, String[] args) {
 		if (notAllowed(sender, H_SELL, true))
@@ -852,11 +862,9 @@ public class HorseRPG extends JavaPlugin {
 
 	/**
 	 * Summons the specified horse
-	 * 
-	 * @param sender
-	 *            is the sender to message
-	 * @param args
-	 *            are the command arguments
+	 *
+	 * @param sender is the sender to message
+	 * @param args   are the command arguments
 	 */
 	public static void summonHorse(CommandSender sender, String[] args) {
 		if (notAllowed(sender, H_SUMMON, true))
@@ -926,9 +934,8 @@ public class HorseRPG extends JavaPlugin {
 
 	/**
 	 * Banishes the player's horse
-	 * 
-	 * @param sender
-	 *            is the sender to message
+	 *
+	 * @param sender is the sender to message
 	 */
 	public static void banishHorse(CommandSender sender, String[] args, boolean forced) {
 		if (forced) {
@@ -1031,11 +1038,9 @@ public class HorseRPG extends JavaPlugin {
 
 	/**
 	 * Makes a horse invincible
-	 * 
-	 * @param sender
-	 *            is the sender to message
-	 * @param args
-	 *            are the command arguments
+	 *
+	 * @param sender is the sender to message
+	 * @param args   are the command arguments
 	 */
 	public static void protectHorse(CommandSender sender, String[] args, boolean useGodMode) {
 		if (useGodMode && notAllowed(sender, H_PROTECT, true))
@@ -1052,11 +1057,9 @@ public class HorseRPG extends JavaPlugin {
 
 	/**
 	 * Adds/removes xp from a horse
-	 * 
-	 * @param sender
-	 *            is the sender to message
-	 * @param args
-	 *            are the command arguments
+	 *
+	 * @param sender is the sender to message
+	 * @param args   are the command arguments
 	 */
 	public static void addHorseXP(CommandSender sender, String[] args) {
 		boolean addXP = args[0].equalsIgnoreCase("addxp");
@@ -1093,30 +1096,29 @@ public class HorseRPG extends JavaPlugin {
 		}
 
 		switch (args[1]) {
-		case "swiftness":
-			h.swiftness.addXP(xp, p);
-			break;
-		case "agility":
-			h.agility.addXP(xp, p);
-			break;
-		case "vitality":
-			h.vitality.addXP(xp, p);
-			break;
-		case "wrath":
-			h.wrath.addXP(xp, p);
-			break;
-		default:
-			msg(p, "&aPlease specify a valid skill.");
-			return;
+			case "swiftness":
+				h.swiftness.addXP(xp, p);
+				break;
+			case "agility":
+				h.agility.addXP(xp, p);
+				break;
+			case "vitality":
+				h.vitality.addXP(xp, p);
+				break;
+			case "wrath":
+				h.wrath.addXP(xp, p);
+				break;
+			default:
+				msg(p, "&aPlease specify a valid skill.");
+				return;
 		}
 		msg(p, op + xp + "&a from &b" + h.name);
 	}
 
 	/**
 	 * Displays the set help message
-	 * 
-	 * @param sender
-	 *            is the sender to message
+	 *
+	 * @param sender is the sender to message
 	 */
 	public static void showSetHelp(CommandSender sender) {
 		if (notAllowed(sender, H_SET, false))
@@ -1130,11 +1132,9 @@ public class HorseRPG extends JavaPlugin {
 
 	/**
 	 * Changes the currently spawned horse's name
-	 * 
-	 * @param sender
-	 *            is the sender to message
-	 * @param args
-	 *            are the command arguments
+	 *
+	 * @param sender is the sender to message
+	 * @param args   are the command arguments
 	 */
 	public static void setHorseName(CommandSender sender, String[] args) {
 		if (notAllowed(sender, H_SET_NAME, true))
@@ -1167,11 +1167,9 @@ public class HorseRPG extends JavaPlugin {
 
 	/**
 	 * Changes the currently spawned horse's name
-	 * 
-	 * @param sender
-	 *            is the sender to message
-	 * @param args
-	 *            are the command arguments
+	 *
+	 * @param sender is the sender to message
+	 * @param args   are the command arguments
 	 */
 	public static void setHorseSpeed(CommandSender sender, String[] args) {
 		if (notAllowed(sender, H_SET_SPEED, true))
@@ -1204,11 +1202,9 @@ public class HorseRPG extends JavaPlugin {
 
 	/**
 	 * Changes the currently spawned horse's name
-	 * 
-	 * @param sender
-	 *            is the sender to message
-	 * @param args
-	 *            are the command arguments
+	 *
+	 * @param sender is the sender to message
+	 * @param args   are the command arguments
 	 */
 	public static void setHorseJump(CommandSender sender, String[] args) {
 		if (notAllowed(sender, H_SET_SPEED, true))
@@ -1243,11 +1239,9 @@ public class HorseRPG extends JavaPlugin {
 
 	/**
 	 * Changes the current spawned horse's color
-	 * 
-	 * @param sender
-	 *            is the sender to message
-	 * @param args
-	 *            are the command arguments
+	 *
+	 * @param sender is the sender to message
+	 * @param args   are the command arguments
 	 */
 	public static void setHorseColor(CommandSender sender, String[] args) {
 		if (notAllowed(sender, H_SET_NAME, true))
@@ -1283,11 +1277,9 @@ public class HorseRPG extends JavaPlugin {
 
 	/**
 	 * Changes the currently spawned horse's style
-	 * 
-	 * @param sender
-	 *            is the sender to message
-	 * @param args
-	 *            are the command arguments
+	 *
+	 * @param sender is the sender to message
+	 * @param args   are the command arguments
 	 */
 	public static void setHorseStyle(CommandSender sender, String[] args) {
 		if (notAllowed(sender, H_SET_NAME, true))
@@ -1323,11 +1315,9 @@ public class HorseRPG extends JavaPlugin {
 
 	/**
 	 * Changes the currently spawned horse's variant
-	 * 
-	 * @param sender
-	 *            is the sender to message
-	 * @param args
-	 *            are the command arguments
+	 *
+	 * @param sender is the sender to message
+	 * @param args   are the command arguments
 	 */
 	public static void setHorseVariant(CommandSender sender, String[] args) {
 		if (notAllowed(sender, H_SET_TYPE, true))
@@ -1346,36 +1336,34 @@ public class HorseRPG extends JavaPlugin {
 		}
 
 		switch (args[2].toLowerCase()) {
-		case "donkey":
-			h.setVariant(Variant.DONKEY);
-			break;
-		case "horse":
-			h.setVariant(Variant.HORSE);
-			break;
-		case "mule":
-			h.setVariant(Variant.MULE);
-			break;
-		case "skele":
-			h.setVariant(Variant.SKELETON_HORSE);
-			break;
-		case "zombie":
-			h.setVariant(Variant.UNDEAD_HORSE);
-			break;
-		case "rand":
-			h.setVariant(RPGHorse.randomVariant());
-			break;
-		default:
-			msg(p, INVALID_VARIANT);
+			case "donkey":
+				h.setVariant(Variant.DONKEY);
+				break;
+			case "horse":
+				h.setVariant(Variant.HORSE);
+				break;
+			case "mule":
+				h.setVariant(Variant.MULE);
+				break;
+			case "skele":
+				h.setVariant(Variant.SKELETON_HORSE);
+				break;
+			case "zombie":
+				h.setVariant(Variant.UNDEAD_HORSE);
+				break;
+			case "rand":
+				h.setVariant(RPGHorse.randomVariant());
+				break;
+			default:
+				msg(p, INVALID_VARIANT);
 		}
 	}
 
 	/**
 	 * Allows the horse to be breed with by other players
-	 * 
-	 * @param sender
-	 *            is the sender to message
-	 * @param args
-	 *            are the command arguments
+	 *
+	 * @param sender is the sender to message
+	 * @param args   are the command arguments
 	 */
 	private void allowBreeding(CommandSender sender, String[] args) {
 		if (notAllowed(sender, H_BREED, true))
@@ -1401,11 +1389,9 @@ public class HorseRPG extends JavaPlugin {
 
 	/**
 	 * Creates a new horse
-	 * 
-	 * @param sender
-	 *            is the sender to message
-	 * @param args
-	 *            are the command arguments
+	 *
+	 * @param sender is the sender to message
+	 * @param args   are the command arguments
 	 */
 	public static void createHorse(CommandSender sender, String[] args, boolean gift) {
 		if (notAllowed(sender, H_CREATE, true))
@@ -1450,9 +1436,8 @@ public class HorseRPG extends JavaPlugin {
 
 	/**
 	 * Deletes the specified horse
-	 * 
-	 * @param sender
-	 *            is the sender to message
+	 *
+	 * @param sender is the sender to message
 	 */
 	public static void deleteHorse(CommandSender sender, String[] args) {
 		if (notAllowed(sender, H_DELETE, true))
@@ -1484,9 +1469,8 @@ public class HorseRPG extends JavaPlugin {
 
 	/**
 	 * Reloads the horse database
-	 * 
-	 * @param sender
-	 *            is the sender to message
+	 *
+	 * @param sender is the sender to message
 	 */
 	public void loadDatabase(CommandSender sender) {
 		if (notAllowed(sender, H_DB, false))
@@ -1508,9 +1492,8 @@ public class HorseRPG extends JavaPlugin {
 
 	/**
 	 * Reloads the plugin
-	 * 
-	 * @param sender
-	 *            is the sender to message
+	 *
+	 * @param sender is the sender to message
 	 */
 	public void reloadPlugin(CommandSender sender) {
 		if (notAllowed(sender, H_RELOAD, false))
@@ -1598,7 +1581,7 @@ public class HorseRPG extends JavaPlugin {
 
 	/**
 	 * Attempts to set up the economy
-	 * 
+	 *
 	 * @return true if economy is set up successfully
 	 */
 	private boolean setupEconomy() {
@@ -1686,6 +1669,29 @@ public class HorseRPG extends JavaPlugin {
 		RPGHorse.LAST_NAMES = messages.b("VALID_LAST_NAMES", RPGHorse.LAST_NAMES);
 
 		ShopManager.title = messages.a("Shop Title", ShopManager.title);
+
+
+		sb_BaseJump = messages.a("Scoreboard.baseJump", sb_BaseJump);
+		sb_Base = messages.a("Scoreboard.Base", sb_Base);
+		sb_BaseSpeed = messages.a("Scoreboard.baseJump", sb_BaseSpeed);
+		sb_Infuriate = messages.a("Scoreboard.Infuriate", sb_Infuriate);
+		sb_Bonus = messages.a("Scoreboard.bonus",sb_Bonus );
+		sb_Roll = messages.a("Scoreboard.roll",sb_Roll );
+		sb_Dodge = messages.a("Scoreboarddodge.",sb_Dodge );
+	sb_Sprint	 = messages.a("Scoreboard.spring",sb_Sprint);
+	sb_PowerLevel	 = messages.a("Scoreboard.wrath", sb_PowerLevel);
+	sb_Vitality	 = messages.a("Scoreboard.Vitality",sb_Vitality );
+		sb_Agility = messages.a("Scoreboard.Agility", sb_Agility);
+		 sb_Swiftness= messages.a("Scoreboard.Swiftness", sb_Swiftness);
+		 sb_Sex= messages.a("Scoreboard.Sex",sb_Sex );
+		sb_Male= messages.a("Scoreboard.Sex_Male", sb_Male);
+		sb_Female= messages.a("Scoreboard.Sex_Female", sb_Female);
+		sb_Gelding= messages.a("Scoreboard.Sex_Gelding", sb_Gelding);
+		 sb_PlusAmountMore= messages.a("Scoreboard.PlusMore",sb_PlusAmountMore );
+		 sb_owned= messages.a("Scoreboard.owned", sb_owned);
+		sb_Unlimited = messages.a("Scoreboard.Unlimited", sb_Unlimited);
+		sb_STATS = messages.a("Scoreboard.Stats", sb_STATS);
+
 	}
 
 	/**
@@ -1736,20 +1742,20 @@ public class HorseRPG extends JavaPlugin {
 			/*
 			 * if (!h_config.containsGlobalVariable(Keys.G_nobanish.toString())) {
 			 * h_config.setGlobalVar(Keys.G_nobanish.toString(), false); }else {
-			 * 
+			 *
 			 * }
-			 * 
+			 *
 			 * if (!h_config.containsGlobalVariable(Keys.G_banishOnDisable.toString())) {
 			 * h_config.setGlobalVar(Keys.G_banishOnDisable.toString(), true); }
-			 * 
+			 *
 			 * if (!h_config.containsGlobalVariable(Keys.G_DisableBreeding.toString())) {
 			 * h_config.setGlobalVar(Keys.G_DisableBreeding.toString(), false); }
-			 * 
+			 *
 			 * if (!h_config.containsGlobalVariable(Keys.G_banishonquit.toString())) {
 			 * h_config.setGlobalVar(Keys.G_banishonquit.toString(), true); } if
 			 * (!h_config.containsGlobalVariable(Keys.G_ClameOnTame.toString())) {
 			 * h_config.setGlobalVar(Keys.G_ClameOnTame.toString(), false); }
-			 * 
+			 *
 			 * if (!h_config.containsGlobalVariable(Keys.G_PermToRide.toString())) {
 			 * h_config.setGlobalVar(Keys.G_PermToRide.toString(), false); } if
 			 * (!h_config.containsGlobalVariable(Keys.G_REMOVETAME.toString())) {
@@ -1788,8 +1794,8 @@ public class HorseRPG extends JavaPlugin {
 			forcePermToRideUnclaimed = fc.getBoolean("RequirePermissionToRide");
 			for (Variant v : Variant.values()) {
 				costForHorse.put(v, fc.getDouble("priceForHorse." + v.name()));// (Double)
-																				// h_config.getGlobalVariable(Keys.G_horseCost.toString()
-																				// + "." + v.name()));
+				// h_config.getGlobalVariable(Keys.G_horseCost.toString()
+				// + "." + v.name()));
 			}
 		} catch (Exception e) {
 			getLogger().info("Error loading 'config.yml' file!");
@@ -1857,7 +1863,7 @@ public class HorseRPG extends JavaPlugin {
 						amount++;
 					}
 				}
-				HorseRPG.instance.getLogger().info("Finished loading "+amount+" horses.");
+				HorseRPG.instance.getLogger().info("Finished loading " + amount + " horses.");
 			}
 		} else {
 			try {
@@ -1907,9 +1913,8 @@ public class HorseRPG extends JavaPlugin {
 
 	/**
 	 * Saves all horses in the sql database
-	 * 
-	 * @param sender
-	 *            is the sender to message
+	 *
+	 * @param sender is the sender to message
 	 */
 	public static void saveHorses(CommandSender sender) {
 		if (sender != null && !notAllowed(sender, H_SAVE, false))
@@ -1926,47 +1931,48 @@ public class HorseRPG extends JavaPlugin {
 					}
 				}
 				h_config.save();
-			} else {try (Connection connect = DriverManager.getConnection("jdbc:sqlite:horses.db")) {
-				try (Statement statement = connect.createStatement()) {
-					statement.setQueryTimeout(30);
-					statement.executeUpdate("drop table if exists horses");
-				}
-				try (Statement statement = connect.createStatement()) {
-					statement.setQueryTimeout(30);
-					statement.executeUpdate("create table horses (	name string, " + "owner string, " + "color string, "
-							+ "style string, " + "variant string, " + "godmode integer, " + "swiftnessXP integer, "
-							+ "agilityXP integer, " + "vitalityXP integer, "
-							+ "wrathXP integer, sex integer, defaultSpeed integer, defaultJump integer)");
-				}
-				try (PreparedStatement statement = connect.prepareStatement("insert into horses values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);")) {
-					statement.setQueryTimeout(30);
-					for (TreeSet<RPGHorse> horseSet : ownedHorses.values()) {
-						for (RPGHorse h : horseSet)
-							try {
-								statement.setString(1, h.name);
-								statement.setString(2, h.owners_name);
-								statement.setString(3, h.color.toString());
-								statement.setString(4, h.style.toString());
-								statement.setString(5, h.variant.toString());
-								statement.setInt(6, h.godmode ? 1 : 0);
-								statement.setInt(7, h.swiftness.xp);
-								statement.setInt(8, h.agility.xp);
-								statement.setInt(9, h.vitality.xp);
-								statement.setInt(10, h.wrath.xp);
-								statement.setInt(11, h.isMale ? 0 : 1);
-								statement.setInt(12, (int) h.generic_speed);
-								statement.setInt(13, (int) h.generic_jump);
-								statement.addBatch();
-							} catch (Error | Exception ed4) {
-								ed4.printStackTrace();
-							}
+			} else {
+				try (Connection connect = DriverManager.getConnection("jdbc:sqlite:horses.db")) {
+					try (Statement statement = connect.createStatement()) {
+						statement.setQueryTimeout(30);
+						statement.executeUpdate("drop table if exists horses");
 					}
-					statement.executeBatch();
-				}
+					try (Statement statement = connect.createStatement()) {
+						statement.setQueryTimeout(30);
+						statement.executeUpdate("create table horses (	name string, " + "owner string, " + "color string, "
+								+ "style string, " + "variant string, " + "godmode integer, " + "swiftnessXP integer, "
+								+ "agilityXP integer, " + "vitalityXP integer, "
+								+ "wrathXP integer, sex integer, defaultSpeed integer, defaultJump integer)");
+					}
+					try (PreparedStatement statement = connect.prepareStatement("insert into horses values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);")) {
+						statement.setQueryTimeout(30);
+						for (TreeSet<RPGHorse> horseSet : ownedHorses.values()) {
+							for (RPGHorse h : horseSet)
+								try {
+									statement.setString(1, h.name);
+									statement.setString(2, h.owners_name);
+									statement.setString(3, h.color.toString());
+									statement.setString(4, h.style.toString());
+									statement.setString(5, h.variant.toString());
+									statement.setInt(6, h.godmode ? 1 : 0);
+									statement.setInt(7, h.swiftness.xp);
+									statement.setInt(8, h.agility.xp);
+									statement.setInt(9, h.vitality.xp);
+									statement.setInt(10, h.wrath.xp);
+									statement.setInt(11, h.isMale ? 0 : 1);
+									statement.setInt(12, (int) h.generic_speed);
+									statement.setInt(13, (int) h.generic_jump);
+									statement.addBatch();
+								} catch (Error | Exception ed4) {
+									ed4.printStackTrace();
+								}
+						}
+						statement.executeBatch();
+					}
 
-				if (!connect.getAutoCommit()) {
-					connect.commit();
-				}/*
+					if (!connect.getAutoCommit()) {
+						connect.commit();
+					}/*
 				for (TreeSet<RPGHorse> horseSet : ownedHorses.values()) {
 					for (RPGHorse h : horseSet)
 						try {
@@ -1979,7 +1985,8 @@ public class HorseRPG extends JavaPlugin {
 							ed4.printStackTrace();
 						}
 				}*/
-			}}
+				}
+			}
 
 			if (sender != null)
 				msg(sender, HORSES_SAVED);
@@ -2097,118 +2104,118 @@ public class HorseRPG extends JavaPlugin {
 			subcmd = args[1].toLowerCase();
 
 		switch (hCmd) {
-		case "help":
-			showHelp(sender, args);
-			return true;
-		case "me":
-			showMe(sender);
-			return true;
-		case "info":
-		case "stats":
-		case "horse":
-			showHorse(sender, args);
-			return true;
-		case "shop":
-			shop.openInventory(sender);
-			return true;
-		case "swiftness":
-		case "agility":
-		case "vitality":
-		case "wrath":
-			showSkill(sender, hCmd, args);
-			return true;
-		case "claim":
-			claimHorse(sender);
-			return true;
-		case "buy":
-		case "accept":
-			buyHorse(sender, true);
-			return true;
-		case "deny":
-		case "decline":
-			buyHorse(sender, false);
-			return true;
-		case "sell":
-			sellHorse(sender, args);
-			return true;
-		case "leaderboard":
-			showLeaderBoard(sender, args);
-			return true;
-		case "spawn":
-		case "s":
-		case "summon":
-			summonHorse(sender, args);
-			return true;
-		case "b":
-		case "banish":
-		case "stable":
-			banishHorse(sender, args, false);
-			return true;
-		case "banishfor":
-			banishHorse(sender, args, true);
-			return true;
-		case "addxp":
-		case "delxp":
-			addHorseXP(sender, args);
-			return true;
-		case "lock":
-		case "protect":
-			protectHorse(sender, args, true);
-			return true;
-		case "unlock":
-		case "unprotect":
-			protectHorse(sender, args, false);
-			return true;
-		case "save":
-			saveHorses(sender);
-			return true;
-		case "gift":
-		case "create":
-			createHorse(sender, args, hCmd.equals("gift"));
-			return true;
-		case "allowbreeding":
-			allowBreeding(sender, args);
-			return true;
-		case "delete":
-		case "kill":
-		case "remove":
-			deleteHorse(sender, args);
-			return true;
-		case "set":
-			switch (subcmd) {
-			case "name":
-				setHorseName(sender, args);
+			case "help":
+				showHelp(sender, args);
 				return true;
-			case "speed":
-				setHorseSpeed(sender, args);
+			case "me":
+				showMe(sender);
 				return true;
-			case "jump":
-				setHorseJump(sender, args);
+			case "info":
+			case "stats":
+			case "horse":
+				showHorse(sender, args);
 				return true;
-			case "type":
-				setHorseVariant(sender, args);
+			case "shop":
+				shop.openInventory(sender);
 				return true;
-			case "color":
-				setHorseColor(sender, args);
+			case "swiftness":
+			case "agility":
+			case "vitality":
+			case "wrath":
+				showSkill(sender, hCmd, args);
 				return true;
-			case "style":
-				setHorseStyle(sender, args);
+			case "claim":
+				claimHorse(sender);
+				return true;
+			case "buy":
+			case "accept":
+				buyHorse(sender, true);
+				return true;
+			case "deny":
+			case "decline":
+				buyHorse(sender, false);
+				return true;
+			case "sell":
+				sellHorse(sender, args);
+				return true;
+			case "leaderboard":
+				showLeaderBoard(sender, args);
+				return true;
+			case "spawn":
+			case "s":
+			case "summon":
+				summonHorse(sender, args);
+				return true;
+			case "b":
+			case "banish":
+			case "stable":
+				banishHorse(sender, args, false);
+				return true;
+			case "banishfor":
+				banishHorse(sender, args, true);
+				return true;
+			case "addxp":
+			case "delxp":
+				addHorseXP(sender, args);
+				return true;
+			case "lock":
+			case "protect":
+				protectHorse(sender, args, true);
+				return true;
+			case "unlock":
+			case "unprotect":
+				protectHorse(sender, args, false);
+				return true;
+			case "save":
+				saveHorses(sender);
+				return true;
+			case "gift":
+			case "create":
+				createHorse(sender, args, hCmd.equals("gift"));
+				return true;
+			case "allowbreeding":
+				allowBreeding(sender, args);
+				return true;
+			case "delete":
+			case "kill":
+			case "remove":
+				deleteHorse(sender, args);
+				return true;
+			case "set":
+				switch (subcmd) {
+					case "name":
+						setHorseName(sender, args);
+						return true;
+					case "speed":
+						setHorseSpeed(sender, args);
+						return true;
+					case "jump":
+						setHorseJump(sender, args);
+						return true;
+					case "type":
+						setHorseVariant(sender, args);
+						return true;
+					case "color":
+						setHorseColor(sender, args);
+						return true;
+					case "style":
+						setHorseStyle(sender, args);
+						return true;
+					default:
+						showSetHelp(sender);
+						return true;
+				}
+			case "db":
+			case "data":
+			case "database":
+				loadDatabase(sender);
+				return true;
+			case "reload":
+				reloadPlugin(sender);
 				return true;
 			default:
-				showSetHelp(sender);
+				msg(sender, INVALID_COMMAND);
 				return true;
-			}
-		case "db":
-		case "data":
-		case "database":
-			loadDatabase(sender);
-			return true;
-		case "reload":
-			reloadPlugin(sender);
-			return true;
-		default:
-			msg(sender, INVALID_COMMAND);
-			return true;
 		}
 	}
 
@@ -2236,9 +2243,8 @@ public class HorseRPG extends JavaPlugin {
 
 	/**
 	 * Displays the player's horse stats
-	 * 
-	 * @param sender
-	 *            is the sender to update
+	 *
+	 * @param sender is the sender to update
 	 */
 	public static void showLeaderBoard(CommandSender sender, String[] args) {
 		if (notAllowed(sender, H_LEADERBOARD, true))
@@ -2296,32 +2302,35 @@ public class HorseRPG extends JavaPlugin {
 			Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(instance, new ScoreboardTask(p, oldsb), 200);
 		}
 	}
-	
-	
-	
-	
-	
+
+
 	public static void addSpawnedHorse(Entity horse, RPGHorse instance) {
 		hSpawnedHorsesHashmap.put(horse, instance);
 	}
+
 	public static RPGHorse getHorse(Entity horse) {
 		return hSpawnedHorsesHashmap.get(horse);
 	}
+
 	public static RPGHorse removeHorseInstance(Entity horse) {
 		return hSpawnedHorsesHashmap.remove(horse);
 	}
+
 	public static void updateHorseInstance(Entity newEntity, Entity holdinstance, RPGHorse horse) {
 		hSpawnedHorsesHashmap.remove(holdinstance);
 		hSpawnedHorsesHashmap.put(newEntity, horse);
 	}
-	public static Collection<RPGHorse> getRPGHorseInstances(){
+
+	public static Collection<RPGHorse> getRPGHorseInstances() {
 		return new ArrayList<>(hSpawnedHorsesHashmap.values());
 	}
-	public static Set<Entry<Entity, RPGHorse>> getRPGHorseEntrys(){
-		return  new HashSet<>(hSpawnedHorsesHashmap.entrySet());
+
+	public static Set<Entry<Entity, RPGHorse>> getRPGHorseEntrys() {
+		return new HashSet<>(hSpawnedHorsesHashmap.entrySet());
 	}
+
 	public static boolean isRPGHorse(Entity horse) {
 		return hSpawnedHorsesHashmap.containsKey(horse);
 	}
-	
+
 }

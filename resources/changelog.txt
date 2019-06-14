@@ -1,3 +1,6 @@
+Version 4.3.55
+    Updated messages.yml to include scoreboard stats
+
 Version 4.3.54
 	Fixed b that breaks updater
 	Fixed updater to ignore letters in update titles
