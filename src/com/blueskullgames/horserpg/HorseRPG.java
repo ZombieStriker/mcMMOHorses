@@ -1677,7 +1677,7 @@ public class HorseRPG extends JavaPlugin {
 		sb_Infuriate = messages.a("Scoreboard.Infuriate", sb_Infuriate);
 		sb_Bonus = messages.a("Scoreboard.bonus",sb_Bonus );
 		sb_Roll = messages.a("Scoreboard.roll",sb_Roll );
-		sb_Dodge = messages.a("Scoreboarddodge.",sb_Dodge );
+		sb_Dodge = messages.a("Scoreboard.dodge",sb_Dodge );
 	sb_Sprint	 = messages.a("Scoreboard.spring",sb_Sprint);
 	sb_PowerLevel	 = messages.a("Scoreboard.wrath", sb_PowerLevel);
 	sb_Vitality	 = messages.a("Scoreboard.Vitality",sb_Vitality );

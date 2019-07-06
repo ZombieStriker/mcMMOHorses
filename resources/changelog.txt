@@ -1,3 +1,7 @@
+Version 4.3.56
+    Included source code.
+    Fixed error on startup for messages.
+
 Version 4.3.55
     Updated messages.yml to include scoreboard stats
 
