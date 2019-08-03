@@ -218,6 +218,9 @@ public class HorseConfigHandler {
 					if (config.contains("Horses." + owner + "." + rpguuids + Keys.hasChest)) {
 						rpgHorse.setHasChest(config.getBoolean("Horses." + owner + "." + rpguuids + Keys.hasChest));
 					}
+					if (config.contains("Horses." + owner + "." + rpguuids + Keys.health)) {
+						rpgHorse.generic_health=(config.getDouble("Horses." + owner + "." + rpguuids + Keys.health));
+					}
 
 					if (config.contains("Horses." + owner + "." + rpguuids + Keys.inventory.toString())) {
 						ItemStack[] dymbtemp2 = null;
@@ -286,7 +289,7 @@ public class HorseConfigHandler {
 				".godmode"), inventory(".inventory"), hassaddle(".hassaddle"), wrath(".wrath"), agility(
 						".agility"), swiftness(".swiftness"), vitality(".vitality"), color(".color"), isdead(
 								".isdead"), powerlevel(".powerlevel"), style(".style"), variant(".variant"), jump(
-										".defaultJump"), sprint(".defaultSpeed"), sex(".sex"), hasChest(
+										".defaultJump"), sprint(".defaultSpeed"), health(".defaultHealth"), sex(".sex"), hasChest(
 												".hasChest"), isBaby(".isBaby"), AGE(".age"), SPAWNED(".spawned");
 		private String n;
 

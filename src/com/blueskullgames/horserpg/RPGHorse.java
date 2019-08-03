@@ -83,6 +83,7 @@ public class RPGHorse implements Comparable<RPGHorse> {
 
 	public double generic_speed = 0.25f;
 	public double generic_jump = 0.7f;
+	public double generic_health = 30f;
 
 	public static double minSpeed = 0.1125;
 	public static double maxSpeed = 0.33;
@@ -219,8 +220,6 @@ public class RPGHorse implements Comparable<RPGHorse> {
 	 *            is the variant of the horse
 	 * @param godmode
 	 *            sets whether horse is invisible or not
-	 * @param enduranceXP
-	 *            is the enduranceXP
 	 * @param swiftnessXP
 	 *            is the swiftnessXP
 	 * @param agilityXP
@@ -293,7 +292,7 @@ public class RPGHorse implements Comparable<RPGHorse> {
 	/**
 	 * Sets a new color for the horse
 	 * 
-	 * @param newName
+	 * @param newColor
 	 *            is the new color
 	 */
 	public void setColor(Color newColor) {
@@ -318,7 +317,7 @@ public class RPGHorse implements Comparable<RPGHorse> {
 	/**
 	 * Sets a new style for the horse
 	 * 
-	 * @param newName
+	 * @param newStyle
 	 *            is the new style
 	 */
 	public void setStyle(Style newStyle) {
@@ -357,7 +356,7 @@ public class RPGHorse implements Comparable<RPGHorse> {
 	/**
 	 * Sets a new variant for the horse
 	 * 
-	 * @param newName
+	 * @param newVariant
 	 *            is the new variant
 	 */
 	public void setVariant(Variant newVariant) {
@@ -524,11 +523,11 @@ public class RPGHorse implements Comparable<RPGHorse> {
 		isBanished = false;
 		//spawned = true;
 		try {
-			((LivingEntity) horse).getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(44 + vitality.healthBonus);
+			((LivingEntity) horse).getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(generic_health + vitality.healthBonus);
 			((Damageable) horse)
 					.setHealth(((LivingEntity) horse).getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue());
 		} catch (Exception | Error e) {
-			((Damageable) horse).setMaxHealth(44 + vitality.healthBonus);
+			((Damageable) horse).setMaxHealth(generic_health + vitality.healthBonus);
 			((Damageable) horse).setHealth(((Damageable) horse).getMaxHealth());
 		}
 

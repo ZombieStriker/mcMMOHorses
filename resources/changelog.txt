@@ -1,3 +1,7 @@
+Version 4.3.57
+    Fixed max health
+    Fixed saving horse health amount
+
 Version 4.3.56
     Included source code.
     Fixed error on startup for messages.
