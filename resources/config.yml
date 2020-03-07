@@ -21,6 +21,12 @@ death-timer: 120
 # (A horse can't be summoned for this time after being banished)
 banish-timer: 120
 
+#If enabled, horses are invincible when the owner is not riding them
+invincible-freerange-horses: false
+
+#If enabled, removing the saddle from claimed horses will banish them.
+saddle-linked-horses: false
+
 # Horse sprint cooldown (in seconds)
 sprint-cooldown: 20
 

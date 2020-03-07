@@ -1,3 +1,8 @@
+Version 4.3.58
+    Updated to 1.15.
+    [Optional] Added option to enable invincible horses if the owner is not riding them.
+    [Optional] Added ability to summon horses using saddles.
+
 Version 4.3.57
     Fixed max health
     Fixed saving horse health amount

@@ -1,8 +1,9 @@
 package com.blueskullgames.horserpg.listeners;
 
-import java.util.UUID;
-
-import org.bukkit.*;
+import com.blueskullgames.horserpg.HorseRPG;
+import com.blueskullgames.horserpg.RPGHorse;
+import com.blueskullgames.horserpg.utils.NewHorseUtil;
+import org.bukkit.Material;
 import org.bukkit.entity.AbstractHorse;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Horse;
@@ -10,16 +11,11 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerInteractEntityEvent;
-import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerMoveEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.player.*;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import com.blueskullgames.horserpg.HorseRPG;
-import com.blueskullgames.horserpg.RPGHorse;
-import com.blueskullgames.horserpg.utils.NewHorseUtil;
+import java.util.UUID;
 
 public class PlayerListener implements Listener {
 
@@ -149,7 +145,53 @@ public class PlayerListener implements Listener {
 				}
 			}
 		}
+	}
 
+	@EventHandler
+	public void onClick(PlayerInteractEvent e) {
+		if (HorseRPG.useSaddles) {
+			if (e.getItem() != null && e.getItem().getType() == Material.SADDLE && e.getItem().hasItemMeta()) {
+				String name = e.getItem().getItemMeta().getDisplayName();
+				String prefix = HorseRPG.SADDLE_SUMMON.split("%name%")[0];
+				if (name.startsWith(prefix)) {
+					String horsename = name.split(prefix)[1];
+					RPGHorse h = null;
+					for (RPGHorse rpg : HorseRPG.getRPGHorseInstances()) {
+						if (rpg.name.equals(horsename)) {
+							if (rpg.owners_name.equals(e.getPlayer().getName())) {
+
+								if (HorseRPG.isRPGHorse(h.getHorse())) {
+									HorseRPG.msg(e.getPlayer(), "&e" + h.name + "&a has already been summoned.");
+									return;
+								}
+								if (h.isBanished || h.isDead) {
+									HorseRPG.msg(e.getPlayer(), HorseRPG.NEED_TIME_TO_RECHARGE.replaceAll("%name%", h.name));
+								} else {
+									if (HorseRPG.useEconomy && HorseRPG.summonCost > 0) {
+										boolean b = false;
+										try {
+											b = HorseRPG.econ.withdrawPlayer(e.getPlayer(), HorseRPG.summonCost).transactionSuccess();
+										} catch (Exception e5) {
+											b = HorseRPG.econ.withdrawPlayer(e.getPlayer().getName(), HorseRPG.summonCost).transactionSuccess();
+										}
+										if (b)
+											HorseRPG.msg(e.getPlayer(), "&aHorse summoned for &e" + HorseRPG.econ.format(HorseRPG.summonCost));
+										else {
+											HorseRPG.msg(e.getPlayer(), "&aYou need &e" + HorseRPG.econ.format(HorseRPG.summonCost) + "&a to summon a horse.");
+											return;
+										}
+									}
+									h.summon(e.getPlayer());
+									HorseRPG.pCurrentHorse.put(e.getPlayer().getUniqueId(), h);
+									e.setCancelled(true);
+									e.getPlayer().getInventory().setItemInHand(null);
+								}
+							}
+						}
+					}
+				}
+			}
+		}
 	}
 
 }

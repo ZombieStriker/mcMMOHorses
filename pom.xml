@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>me.zombie_striker</groupId>
   <artifactId>mcMMOHorses</artifactId>
-  <version>4.3.57</version>
+  <version>4.3.58</version>
 	<repositories>
 
 		<repository>
@@ -39,7 +39,7 @@
 		<dependency>
 			<groupId>org.spigotmc</groupId>
 			<artifactId>spigot</artifactId>
-			<version>1.14.2-R0.1-SNAPSHOT</version>
+			<version>1.15-R0.1-SNAPSHOT</version>
 			<scope>provided</scope>
 		</dependency>
 		<!-- Vault API -->
@@ -107,6 +107,14 @@
           <target>1.7</target>
         </configuration>
       </plugin>
-    </plugins>
+		<plugin>
+			<groupId>org.apache.maven.plugins</groupId>
+			<artifactId>maven-compiler-plugin</artifactId>
+			<configuration>
+				<source>8</source>
+				<target>8</target>
+			</configuration>
+		</plugin>
+	</plugins>
   </build>
 </project>

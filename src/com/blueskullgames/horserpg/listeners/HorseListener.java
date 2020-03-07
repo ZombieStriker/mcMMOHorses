@@ -24,6 +24,9 @@ import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.HorseJumpEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.inventory.HorseInventory;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 
@@ -41,15 +44,34 @@ public class HorseListener implements Listener {
 	 */
 	@EventHandler
 	public void onInventoryClick(InventoryClickEvent e) {
-		if (e.getSlot() == 0 && ((e.getCurrentItem() != null && e.getCurrentItem().getType() == Material.SADDLE)
-				|| (e.getCursor() != null && e.getCursor().getType() == Material.SADDLE))) {
-			for (Entry<Entity, RPGHorse> horse : HorseRPG.getRPGHorseEntrys()) {
-				if (e.getInventory().equals(RPGHorse.attributeUtil.getInventory(horse.getKey()))) {
-					horse.getValue().hasSaddle = (e.getCursor() != null && e.getCursor().getType() == Material.SADDLE);
-					break;
+		if (e.getInventory() instanceof HorseInventory)
+			if (e.getSlot() == 0 && ((e.getCurrentItem() != null && e.getCurrentItem().getType() == Material.SADDLE)
+					|| (e.getCursor() != null && e.getCursor().getType() == Material.SADDLE))) {
+
+				if (HorseRPG.useSaddles) {
+					RPGHorse h = HorseRPG.getHorse((Entity) e.getInventory().getHolder());
+					ItemStack newSaddlePlace = new ItemStack(Material.SADDLE);
+					ItemMeta im = newSaddlePlace.getItemMeta();
+					im.setDisplayName(HorseRPG.SADDLE_SUMMON.replaceAll("%name%",h.name));
+					newSaddlePlace.setItemMeta(im);
+					if(e.getWhoClicked().getInventory().firstEmpty()==-1){
+						e.setCancelled(true);
+						return;
+					}
+					e.getWhoClicked().getInventory().addItem(newSaddlePlace);
+					e.setCancelled(true);
+					e.getWhoClicked().closeInventory();
+					h.banish();
+					return;
+				}
+
+				for (Entry<Entity, RPGHorse> horse : HorseRPG.getRPGHorseEntrys()) {
+					if (e.getInventory().equals(RPGHorse.attributeUtil.getInventory(horse.getKey()))) {
+						horse.getValue().hasSaddle = (e.getCursor() != null && e.getCursor().getType() == Material.SADDLE);
+						break;
+					}
 				}
 			}
-		}
 	}
 
 	/**
@@ -67,6 +89,12 @@ public class HorseListener implements Listener {
 				evt.setCancelled(true);
 				return;
 			}
+
+			if (HorseRPG.invinciblefreerangehorses)
+				if (horse.getPassenger() == null || !horse.getPassenger().getName().equals(h.owners_name)) {
+					evt.setCancelled(true);
+					return;
+				}
 
 			double chance = Math.random();
 
@@ -88,42 +116,42 @@ public class HorseListener implements Listener {
 				}
 
 				switch (evt.getCause()) {
-				case BLOCK_EXPLOSION:
-				case ENTITY_ATTACK:
-				case ENTITY_EXPLOSION:
-				case FIRE:
-				case FIRE_TICK:
-				case LAVA:
-				case LIGHTNING:
-				case THORNS:
-					if (h.wrath.refreshed && chance < h.wrath.infuriateChance) {
-						HorseRPG.msg(p, "&c**INFURIATE**");
-						h.wrath.infuriate();
-					}
-					break;
-				case PROJECTILE:
-					if (h.wrath.refreshed && chance < h.wrath.infuriateChance) {
-						HorseRPG.msg(p, "&c**INFURIATE**");
-						h.wrath.infuriate();
-					} else if (chance < h.agility.dodgeChance) {
-						HorseRPG.msg(p, "&e**DODGE**");
-						evt.setDamage(dmg / 2);
-					}
-					break;
+					case BLOCK_EXPLOSION:
+					case ENTITY_ATTACK:
+					case ENTITY_EXPLOSION:
+					case FIRE:
+					case FIRE_TICK:
+					case LAVA:
+					case LIGHTNING:
+					case THORNS:
+						if (h.wrath.refreshed && chance < h.wrath.infuriateChance) {
+							HorseRPG.msg(p, "&c**INFURIATE**");
+							h.wrath.infuriate();
+						}
+						break;
+					case PROJECTILE:
+						if (h.wrath.refreshed && chance < h.wrath.infuriateChance) {
+							HorseRPG.msg(p, "&c**INFURIATE**");
+							h.wrath.infuriate();
+						} else if (chance < h.agility.dodgeChance) {
+							HorseRPG.msg(p, "&e**DODGE**");
+							evt.setDamage(dmg / 2);
+						}
+						break;
 
-				case FALL:
-					int xp = dmg > 10 ? 10 : (int) dmg;
-					if (chance < h.agility.gracefulChance) {
-						HorseRPG.msg(p, "&a**GRACEFUL ROLL**");
-						xp += 8;
-						evt.setDamage(dmg / 10);
-					} else if (chance < h.agility.rollChance) {
-						HorseRPG.msg(p, "&a**ROLL**");
-						xp += 6;
-						evt.setDamage(dmg / 2);
-					}
-					h.agility.addXP(xp, p);
-				default:
+					case FALL:
+						int xp = dmg > 10 ? 10 : (int) dmg;
+						if (chance < h.agility.gracefulChance) {
+							HorseRPG.msg(p, "&a**GRACEFUL ROLL**");
+							xp += 8;
+							evt.setDamage(dmg / 10);
+						} else if (chance < h.agility.rollChance) {
+							HorseRPG.msg(p, "&a**ROLL**");
+							xp += 6;
+							evt.setDamage(dmg / 2);
+						}
+						h.agility.addXP(xp, p);
+					default:
 				}
 
 				if (evt.getCause() != DamageCause.FALL) {
@@ -222,22 +250,22 @@ public class HorseListener implements Listener {
 					if (!swiftness.refreshed)
 						HorseRPG.msg(p,
 								HorseRPG.TOO_TIRED.replace("%name%", h.name).replace("%cd%", swiftness.sprintCd + ""));// "&c"
-																														// +
-																														// h.name
-																														// +
-																														// "
-																														// is
-																														// too
-																														// tired
-																														// to
-																														// use
-																														// that
-																														// ability.
-																														// &e("
-																														// +
-																														// swiftness.sprintCd
-																														// +
-																														// "s)");
+						// +
+						// h.name
+						// +
+						// "
+						// is
+						// too
+						// tired
+						// to
+						// use
+						// that
+						// ability.
+						// &e("
+						// +
+						// swiftness.sprintCd
+						// +
+						// "s)");
 
 					else {
 						HorseRPG.msg(p, "&a**SPRINTING**");
@@ -269,12 +297,12 @@ public class HorseListener implements Listener {
 					HorseRPG.msg(e.getBreeder(),
 							h1.name + " : "
 									+ (h1.variant == Variant.MULE || h1.variant == Variant.DONKEY ? ChatColor.RED
-											: ChatColor.GREEN)
+									: ChatColor.GREEN)
 									+ h1.variant.name());
 					HorseRPG.msg(e.getBreeder(),
 							h2.name + " : "
 									+ (h2.variant == Variant.MULE || h2.variant == Variant.DONKEY ? ChatColor.RED
-											: ChatColor.GREEN)
+									: ChatColor.GREEN)
 									+ h2.variant.name());
 					return;
 				}

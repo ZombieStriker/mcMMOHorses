@@ -1,26 +1,5 @@
 package com.blueskullgames.horserpg;
 
-import java.util.UUID;
-
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.attribute.Attribute;
-import org.bukkit.entity.AbstractHorse;
-import org.bukkit.entity.Ageable;
-import org.bukkit.entity.Damageable;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
-import org.bukkit.entity.Horse;
-import org.bukkit.entity.Horse.Variant;
-import org.bukkit.entity.LivingEntity;
-import org.bukkit.entity.Horse.Color;
-import org.bukkit.entity.Horse.Style;
-import org.bukkit.entity.Player;
-import org.bukkit.entity.Tameable;
-import org.bukkit.inventory.ItemStack;
-
 import com.blueskullgames.horserpg.skills.Agility;
 import com.blueskullgames.horserpg.skills.Swiftness;
 import com.blueskullgames.horserpg.skills.Vitality;
@@ -31,6 +10,19 @@ import com.blueskullgames.horserpg.utils.ReflectionUtil;
 import com.blueskullgames.horserpg.utils.atributeutils.AtributeUtilAbstractHorse;
 import com.blueskullgames.horserpg.utils.atributeutils.AtributeUtilHorse;
 import com.blueskullgames.horserpg.utils.atributeutils.BaseAtributeUtil;
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.attribute.Attribute;
+import org.bukkit.entity.*;
+import org.bukkit.entity.Horse.Color;
+import org.bukkit.entity.Horse.Style;
+import org.bukkit.entity.Horse.Variant;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+
+import java.util.UUID;
 
 @SuppressWarnings("deprecation")
 public class RPGHorse implements Comparable<RPGHorse> {
@@ -107,6 +99,21 @@ public class RPGHorse implements Comparable<RPGHorse> {
 		} catch (Error | Exception e4) {
 			attributeUtil = new AtributeUtilHorse();
 		}
+	}
+
+	public boolean initSaddleForClicks(){
+		if(!HorseRPG.useSaddles)
+			return false;
+		ItemStack saddle = new ItemStack(Material.SADDLE);
+		ItemMeta im = saddle.getItemMeta();
+		im.setDisplayName(HorseRPG.SADDLE_NAME.replaceAll("%name%",name));
+		saddle.setItemMeta(im);
+		try {
+			((AbstractHorse) horse).getInventory().setSaddle(saddle);
+		} catch (Exception | Error e) {
+			((Horse) horse).getInventory().setItem(0,saddle);
+		}
+		return true;
 	}
 
 	/**
@@ -260,6 +267,8 @@ public class RPGHorse implements Comparable<RPGHorse> {
 		}
 		this.generic_jump = jumpPow;
 		this.generic_speed = sprintPow;
+		if(getHorse()!=null)
+			initSaddleForClicks();
 	}
 
 	/**
@@ -481,8 +490,12 @@ public class RPGHorse implements Comparable<RPGHorse> {
 		horse.setCustomName(ChatColor.translateAlternateColorCodes('&', name));
 		if (inventory == null) {
 			inventory = new ItemStack[hasChest ? 16 : 1];
-			if (hasSaddle)
-				inventory[0] = new ItemStack(Material.SADDLE);
+			if(HorseRPG.useSaddles){
+				initSaddleForClicks();
+			}else {
+				if (hasSaddle)
+					inventory[0] = new ItemStack(Material.SADDLE);
+			}
 		}
 		if (horse instanceof org.bukkit.entity.ChestedHorse) {
 			if (hasChest)

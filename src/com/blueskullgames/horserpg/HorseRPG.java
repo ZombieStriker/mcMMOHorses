@@ -126,31 +126,33 @@ public class HorseRPG extends JavaPlugin {
 
 	public static String FOALBREED = "&a The foal &e%name%&a has been born.*";
 
-
-	public static String sb_STATS="\'s Stats";
-	public static String sb_Swiftness="Swiftness:";
-	public static String sb_Sprint="Sprint:";
-	public static String sb_Agility="Agility:";
-	public static String sb_Dodge="Dodge:";
-	public static String sb_Roll="Roll:";
-	public static String sb_Vitality="Vitality:";
-	public static String sb_Base="Base";
-	public static String sb_Bonus="Bonus";
-	public static String sb_Wrath="Wrath:";
-	public static String sb_Infuriate="Infuriate:";
-	public static String sb_PowerLevel="Power Level:";
-	public static String sb_Sex="Sex:";
-	public static String sb_Male="Male";
-	public static String sb_Female="Female";
-	public static String sb_Gelding="(Gelding)";
-	public static String sb_BaseSpeed="Base-Speed";
-	public static String sb_BaseJump="Base-Jump";
+	public static String SADDLE_NAME = "&aClick to banish %name%";
+	public static String SADDLE_SUMMON = "&bSummon %name%";
 
 
-	public static String sb_owned="&aOwned: &7";
-	public static String sb_Unlimited="Unlimited";
-	public static String sb_PlusAmountMore="Plus %amount% more...";
+	public static String sb_STATS = "\'s Stats";
+	public static String sb_Swiftness = "Swiftness:";
+	public static String sb_Sprint = "Sprint:";
+	public static String sb_Agility = "Agility:";
+	public static String sb_Dodge = "Dodge:";
+	public static String sb_Roll = "Roll:";
+	public static String sb_Vitality = "Vitality:";
+	public static String sb_Base = "Base";
+	public static String sb_Bonus = "Bonus";
+	public static String sb_Wrath = "Wrath:";
+	public static String sb_Infuriate = "Infuriate:";
+	public static String sb_PowerLevel = "Power Level:";
+	public static String sb_Sex = "Sex:";
+	public static String sb_Male = "Male";
+	public static String sb_Female = "Female";
+	public static String sb_Gelding = "(Gelding)";
+	public static String sb_BaseSpeed = "Base-Speed";
+	public static String sb_BaseJump = "Base-Jump";
 
+
+	public static String sb_owned = "&aOwned: &7";
+	public static String sb_Unlimited = "Unlimited";
+	public static String sb_PlusAmountMore = "Plus %amount% more...";
 
 
 	public static BukkitTask saveTask, cooldownTask;
@@ -176,6 +178,9 @@ public class HorseRPG extends JavaPlugin {
 	public static boolean claimBreeding = true;
 
 	public static boolean disableTamedHorses = false;
+
+	public static boolean invinciblefreerangehorses = false;
+	public static boolean useSaddles = false;
 
 	public static int savetype = 2;
 	public static boolean logWhenSave = true;
@@ -441,7 +446,7 @@ public class HorseRPG extends JavaPlugin {
 				}
 				if (showedHorses < ownedHor)
 					obj.getScore(Bukkit.getOfflinePlayer(ChatColor.translateAlternateColorCodes('&',
-							sb_PlusAmountMore.replaceAll("%amount%",""+(ownedHor - showedHorses))))).setScore(-1);
+							sb_PlusAmountMore.replaceAll("%amount%", "" + (ownedHor - showedHorses))))).setScore(-1);
 			} catch (Error | Exception e54) {
 				obj.getScore(ChatColor.translateAlternateColorCodes('&',
 						sb_owned + myHorses.size() + " / " + (maxHorses(p) == -1 ? sb_Unlimited : maxHorses(p))))
@@ -456,7 +461,7 @@ public class HorseRPG extends JavaPlugin {
 				}
 				if (showedHorses < ownedHor)
 					obj.getScore((ChatColor.translateAlternateColorCodes('&',
-							sb_PlusAmountMore.replaceAll("%amount%",""+(ownedHor - showedHorses))))).setScore(-1);
+							sb_PlusAmountMore.replaceAll("%amount%", "" + (ownedHor - showedHorses))))).setScore(-1);
 			}
 			Scoreboard oldsb = p.getScoreboard();
 			p.setScoreboard(board);
@@ -489,9 +494,9 @@ public class HorseRPG extends JavaPlugin {
 		}
 
 		if (!DisableshowStatsInChat) {
-			p.sendMessage(ChatColor.YELLOW + "\"" + h.name + "\""+sb_STATS);
+			p.sendMessage(ChatColor.YELLOW + "\"" + h.name + "\"" + sb_STATS);
 			p.sendMessage((ChatColor.GREEN + sb_Swiftness) + ChatColor.WHITE + "  " + h.swiftness.level);
-			p.sendMessage((ChatColor.DARK_GRAY +sb_Swiftness) + ChatColor.GRAY + "= " + ((int) (h.swiftness.amplitude))
+			p.sendMessage((ChatColor.DARK_GRAY + sb_Swiftness) + ChatColor.GRAY + "= " + ((int) (h.swiftness.amplitude))
 					+ (ChatColor.DARK_GRAY + "Time: ") + ChatColor.GRAY + "= " + ((int) (h.swiftness.duration / 20))
 					+ "s");
 			p.sendMessage((ChatColor.GREEN + sb_Agility + ChatColor.WHITE + "  " + h.agility.level));
@@ -506,7 +511,7 @@ public class HorseRPG extends JavaPlugin {
 			p.sendMessage((ChatColor.DARK_GRAY + sb_Infuriate) + ChatColor.GRAY + "= "
 					+ ((int) (h.wrath.infuriateChance * 100)) + "%");
 			p.sendMessage((ChatColor.GOLD + sb_PowerLevel) + ChatColor.WHITE + "  " + h.powerLevel);
-			p.sendMessage((ChatColor.GOLD + sb_Sex) + ChatColor.WHITE + "  " + (h.isMale ? sb_Male: sb_Female)
+			p.sendMessage((ChatColor.GOLD + sb_Sex) + ChatColor.WHITE + "  " + (h.isMale ? sb_Male : sb_Female)
 					+ (h.variant == Variant.DONKEY || h.variant == Variant.MULE ? sb_Gelding : ""));
 			p.sendMessage((ChatColor.GREEN + sb_BaseSpeed) + ChatColor.WHITE + "  " + h.generic_speed);
 			p.sendMessage((ChatColor.GREEN + sb_BaseJump) + ChatColor.WHITE + "  " + h.generic_jump);
@@ -518,7 +523,7 @@ public class HorseRPG extends JavaPlugin {
 
 			Objective obj = board.registerNewObjective("horsestats", "dummy");
 			obj.setDisplaySlot(DisplaySlot.SIDEBAR);
-			obj.setDisplayName(ChatColor.YELLOW + "\"" + h.name + "\""+sb_STATS);
+			obj.setDisplayName(ChatColor.YELLOW + "\"" + h.name + "\"" + sb_STATS);
 			try {
 				obj.getScore((ChatColor.GREEN + sb_Swiftness) + ChatColor.WHITE + "  " + h.swiftness.level).setScore(8);
 				obj.getScore((ChatColor.DARK_GRAY + sb_Sprint) + ChatColor.GRAY + "= "
@@ -545,7 +550,7 @@ public class HorseRPG extends JavaPlugin {
 
 			} catch (Exception e) {
 				obj.getScore(Bukkit.getOfflinePlayer(ChatColor.GREEN + sb_Swiftness)).setScore(h.swiftness.level);
-				obj.getScore(Bukkit.getOfflinePlayer(ChatColor.GREEN +sb_Agility)).setScore(h.agility.level);
+				obj.getScore(Bukkit.getOfflinePlayer(ChatColor.GREEN + sb_Agility)).setScore(h.agility.level);
 				obj.getScore(Bukkit.getOfflinePlayer(ChatColor.GREEN + sb_Vitality)).setScore(h.vitality.level);
 				obj.getScore(Bukkit.getOfflinePlayer(ChatColor.GREEN + sb_Wrath)).setScore(h.wrath.level);
 				obj.getScore(Bukkit.getOfflinePlayer(ChatColor.GOLD + sb_PowerLevel)).setScore(h.powerLevel);
@@ -905,10 +910,6 @@ public class HorseRPG extends JavaPlugin {
 				msg(p, "&e" + h.name + "&a has already been summoned.");
 				return;
 			}
-			/*if (h.spawned) {
-				msg(p, "&e" + h.name + "&a has already been spawned.");
-				return;
-			}*/
 			if (h.isBanished || h.isDead) {
 				HorseRPG.msg(p, NEED_TIME_TO_RECHARGE.replaceAll("%name%", h.name));
 			} else {
@@ -1360,34 +1361,6 @@ public class HorseRPG extends JavaPlugin {
 	}
 
 	/**
-	 * Allows the horse to be breed with by other players
-	 *
-	 * @param sender is the sender to message
-	 * @param args   are the command arguments
-	 */
-	private void allowBreeding(CommandSender sender, String[] args) {
-		if (notAllowed(sender, H_BREED, true))
-			return;
-		Player p = (Player) sender;
-		String name = p.getName();
-
-		if (!ownedHorses.containsKey(name))
-			ownedHorses.put(name, new TreeSet<RPGHorse>());
-		if (maxHorses(p) != -1 && ownedHorses.get(p.getName()).size() >= maxHorses(p)) {
-			msg(p, MAX_HORSES);
-			return;
-		}
-
-		RPGHorse h = currentHorse(p, args, 1);
-		if (h == null) {
-			msg(p, NO_HORSE_SUMMONED);
-			return;
-		}
-		h.allowBreeding = !h.allowBreeding;
-		msg(p, ALLOW_BREEDING, h.name, h.allowBreeding + "");
-	}
-
-	/**
 	 * Creates a new horse
 	 *
 	 * @param sender is the sender to message
@@ -1465,6 +1438,215 @@ public class HorseRPG extends JavaPlugin {
 		}
 
 		msg(p, "&b" + h.name + "&a won't be bothering you anymore.");
+	}
+
+	/**
+	 * Saves all horses in the sql database
+	 *
+	 * @param sender is the sender to message
+	 */
+	public static void saveHorses(CommandSender sender) {
+		if (sender != null && !notAllowed(sender, H_SAVE, false))
+			return;
+		try {
+			if (savetype == 2) {
+				for (TreeSet<RPGHorse> horseSet : ownedHorses.values()) {
+					for (RPGHorse h : horseSet) {
+						try {
+							h_config.saveHorse(h, false);
+						} catch (Error | Exception ed4) {
+							ed4.printStackTrace();
+						}
+					}
+				}
+				h_config.save();
+			} else {
+				try (Connection connect = DriverManager.getConnection("jdbc:sqlite:horses.db")) {
+					try (Statement statement = connect.createStatement()) {
+						statement.setQueryTimeout(30);
+						statement.executeUpdate("drop table if exists horses");
+					}
+					try (Statement statement = connect.createStatement()) {
+						statement.setQueryTimeout(30);
+						statement.executeUpdate("create table horses (	name string, " + "owner string, " + "color string, "
+								+ "style string, " + "variant string, " + "godmode integer, " + "swiftnessXP integer, "
+								+ "agilityXP integer, " + "vitalityXP integer, "
+								+ "wrathXP integer, sex integer, defaultSpeed integer, defaultJump integer)");
+					}
+					try (PreparedStatement statement = connect.prepareStatement("insert into horses values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);")) {
+						statement.setQueryTimeout(30);
+						for (TreeSet<RPGHorse> horseSet : ownedHorses.values()) {
+							for (RPGHorse h : horseSet)
+								try {
+									statement.setString(1, h.name);
+									statement.setString(2, h.owners_name);
+									statement.setString(3, h.color.toString());
+									statement.setString(4, h.style.toString());
+									statement.setString(5, h.variant.toString());
+									statement.setInt(6, h.godmode ? 1 : 0);
+									statement.setInt(7, h.swiftness.xp);
+									statement.setInt(8, h.agility.xp);
+									statement.setInt(9, h.vitality.xp);
+									statement.setInt(10, h.wrath.xp);
+									statement.setInt(11, h.isMale ? 0 : 1);
+									statement.setInt(12, (int) h.generic_speed);
+									statement.setInt(13, (int) h.generic_jump);
+									statement.addBatch();
+								} catch (Error | Exception ed4) {
+									ed4.printStackTrace();
+								}
+						}
+						statement.executeBatch();
+					}
+
+					if (!connect.getAutoCommit()) {
+						connect.commit();
+					}/*
+				for (TreeSet<RPGHorse> horseSet : ownedHorses.values()) {
+					for (RPGHorse h : horseSet)
+						try {
+							statement.executeUpdate("insert into horses values('" + h.name + "', '" + h.owners_name
+									+ "', '" + h.color + "', '" + h.style + "', '" + h.variant + "', "
+									+ (h.godmode ? 1 : 0) + ", " + h.swiftness.xp + ", " + h.agility.xp + ", "
+									+ h.vitality.xp + ", " + h.wrath.xp + ", " + (h.isMale ? 0 : 1) + ", "
+									+ h.generic_speed + ", " + h.generic_jump + ")");
+						} catch (Error | Exception ed4) {
+							ed4.printStackTrace();
+						}
+				}*/
+				}
+			}
+
+			if (sender != null)
+				msg(sender, HORSES_SAVED);
+			if (instance != null)
+				if (logWhenSave)
+					msg(Bukkit.getConsoleSender(), HORSES_SAVED);
+		} catch (Exception e) {
+			System.err.println(e);
+			msg(sender,
+					"&a A problem has occured. Report the error message in the console to Zombie_Striker on spigot:");
+			sender.sendMessage("https://www.spigotmc.org/resources/mcmmohorses.46301/");
+		}
+	}
+
+	/**
+	 * Displays the player's horse stats
+	 *
+	 * @param sender is the sender to update
+	 */
+	public static void showLeaderBoard(CommandSender sender, String[] args) {
+		if (notAllowed(sender, H_LEADERBOARD, true))
+			return;
+
+		Player p = (Player) sender;
+		if (playersWithScoreboards.contains(p.getName())) {
+			p.sendMessage(ChatColor.GREEN + "Already showing a scoreboard-menu.");
+			return;
+		}
+
+		NavigableMap<RPGHorse, Integer> map = new TreeMap<RPGHorse, Integer>(Collections.reverseOrder());
+		for (TreeSet<RPGHorse> hor : ownedHorses.values()) {
+			for (RPGHorse h : hor) {
+				map.put(h, Integer.MAX_VALUE - h.agility.xp - h.wrath.xp - h.vitality.xp - h.swiftness.xp);
+			}
+		}
+
+		ScoreboardManager manager = Bukkit.getScoreboardManager();
+		Scoreboard board = null;
+		Objective obj = null;
+		if (!DisableshowStatsinInScoreboard) {
+			board = manager.getNewScoreboard();
+
+			obj = board.registerNewObjective("leaderboard", "dummy");
+			obj.setDisplaySlot(DisplaySlot.SIDEBAR);
+			obj.setDisplayName(ChatColor.YELLOW + "Leaderboard");
+			sender.sendMessage(ChatColor.YELLOW + "Leaderboard");
+		}
+
+		int index = 0;
+		for (RPGHorse h : map.descendingKeySet()) {
+			String k = ChatColor.GREEN + "#" + index + "  " + h.name.substring(0, Math.min(h.name.length(), 16));
+			String plaeyerName = h.owners_name.substring(0, Math.min(29 - k.length(), h.owners_name.length()));
+			k = k + ChatColor.WHITE + " " + plaeyerName;
+			if (!DisableshowStatsinInScoreboard)
+				try {
+					obj.getScore(k).setScore(20 - index);
+				} catch (Exception e) {
+					obj.getScore(Bukkit.getOfflinePlayer(k)).setScore(20 - index);
+				}
+			if (!DisableshowStatsInChat)
+				sender.sendMessage(
+						k + " = " + (h.agility.level + h.wrath.level + h.vitality.level + h.swiftness.level));
+			index++;
+			if (index >= 20)
+				break;
+		}
+
+		if (!DisableshowStatsinInScoreboard) {
+			Scoreboard oldsb = p.getScoreboard();
+			p.setScoreboard(board);
+			playersWithScoreboards.add(p.getName());
+
+			Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(instance, new ScoreboardTask(p, oldsb), 200);
+		}
+	}
+
+	public static void addSpawnedHorse(Entity horse, RPGHorse instance) {
+		hSpawnedHorsesHashmap.put(horse, instance);
+	}
+
+	public static RPGHorse getHorse(Entity horse) {
+		return hSpawnedHorsesHashmap.get(horse);
+	}
+
+	public static RPGHorse removeHorseInstance(Entity horse) {
+		return hSpawnedHorsesHashmap.remove(horse);
+	}
+
+	public static void updateHorseInstance(Entity newEntity, Entity holdinstance, RPGHorse horse) {
+		hSpawnedHorsesHashmap.remove(holdinstance);
+		hSpawnedHorsesHashmap.put(newEntity, horse);
+	}
+
+	public static Collection<RPGHorse> getRPGHorseInstances() {
+		return new ArrayList<>(hSpawnedHorsesHashmap.values());
+	}
+
+	public static Set<Entry<Entity, RPGHorse>> getRPGHorseEntrys() {
+		return new HashSet<>(hSpawnedHorsesHashmap.entrySet());
+	}
+
+	public static boolean isRPGHorse(Entity horse) {
+		return hSpawnedHorsesHashmap.containsKey(horse);
+	}
+
+	/**
+	 * Allows the horse to be breed with by other players
+	 *
+	 * @param sender is the sender to message
+	 * @param args   are the command arguments
+	 */
+	private void allowBreeding(CommandSender sender, String[] args) {
+		if (notAllowed(sender, H_BREED, true))
+			return;
+		Player p = (Player) sender;
+		String name = p.getName();
+
+		if (!ownedHorses.containsKey(name))
+			ownedHorses.put(name, new TreeSet<RPGHorse>());
+		if (maxHorses(p) != -1 && ownedHorses.get(p.getName()).size() >= maxHorses(p)) {
+			msg(p, MAX_HORSES);
+			return;
+		}
+
+		RPGHorse h = currentHorse(p, args, 1);
+		if (h == null) {
+			msg(p, NO_HORSE_SUMMONED);
+			return;
+		}
+		h.allowBreeding = !h.allowBreeding;
+		msg(p, ALLOW_BREEDING, h.name, h.allowBreeding + "");
 	}
 
 	/**
@@ -1633,6 +1815,9 @@ public class HorseRPG extends JavaPlugin {
 		PAGE_DOES_NOT_EXIST = messages.a("Page_does_not_exist", PAGE_DOES_NOT_EXIST);
 		PLAYER_ONLY = messages.a("Player_only", PLAYER_ONLY);
 
+		SADDLE_NAME = messages.a("Saddle_click_to_banish",SADDLE_NAME);
+		SADDLE_SUMMON = messages.a("Saddle_Summon_Item_Name",SADDLE_SUMMON);
+
 		FOALBREED = messages.a("Breed_New_Foal", FOALBREED);
 
 		NO_WILD_HORSES = messages.a("No_wild_horses", NO_WILD_HORSES);
@@ -1675,20 +1860,20 @@ public class HorseRPG extends JavaPlugin {
 		sb_Base = messages.a("Scoreboard.Base", sb_Base);
 		sb_BaseSpeed = messages.a("Scoreboard.baseJump", sb_BaseSpeed);
 		sb_Infuriate = messages.a("Scoreboard.Infuriate", sb_Infuriate);
-		sb_Bonus = messages.a("Scoreboard.bonus",sb_Bonus );
-		sb_Roll = messages.a("Scoreboard.roll",sb_Roll );
-		sb_Dodge = messages.a("Scoreboard.dodge",sb_Dodge );
-	sb_Sprint	 = messages.a("Scoreboard.spring",sb_Sprint);
-	sb_PowerLevel	 = messages.a("Scoreboard.wrath", sb_PowerLevel);
-	sb_Vitality	 = messages.a("Scoreboard.Vitality",sb_Vitality );
+		sb_Bonus = messages.a("Scoreboard.bonus", sb_Bonus);
+		sb_Roll = messages.a("Scoreboard.roll", sb_Roll);
+		sb_Dodge = messages.a("Scoreboard.dodge", sb_Dodge);
+		sb_Sprint = messages.a("Scoreboard.spring", sb_Sprint);
+		sb_PowerLevel = messages.a("Scoreboard.wrath", sb_PowerLevel);
+		sb_Vitality = messages.a("Scoreboard.Vitality", sb_Vitality);
 		sb_Agility = messages.a("Scoreboard.Agility", sb_Agility);
-		 sb_Swiftness= messages.a("Scoreboard.Swiftness", sb_Swiftness);
-		 sb_Sex= messages.a("Scoreboard.Sex",sb_Sex );
-		sb_Male= messages.a("Scoreboard.Sex_Male", sb_Male);
-		sb_Female= messages.a("Scoreboard.Sex_Female", sb_Female);
-		sb_Gelding= messages.a("Scoreboard.Sex_Gelding", sb_Gelding);
-		 sb_PlusAmountMore= messages.a("Scoreboard.PlusMore",sb_PlusAmountMore );
-		 sb_owned= messages.a("Scoreboard.owned", sb_owned);
+		sb_Swiftness = messages.a("Scoreboard.Swiftness", sb_Swiftness);
+		sb_Sex = messages.a("Scoreboard.Sex", sb_Sex);
+		sb_Male = messages.a("Scoreboard.Sex_Male", sb_Male);
+		sb_Female = messages.a("Scoreboard.Sex_Female", sb_Female);
+		sb_Gelding = messages.a("Scoreboard.Sex_Gelding", sb_Gelding);
+		sb_PlusAmountMore = messages.a("Scoreboard.PlusMore", sb_PlusAmountMore);
+		sb_owned = messages.a("Scoreboard.owned", sb_owned);
 		sb_Unlimited = messages.a("Scoreboard.Unlimited", sb_Unlimited);
 		sb_STATS = messages.a("Scoreboard.Stats", sb_STATS);
 
@@ -1710,6 +1895,12 @@ public class HorseRPG extends JavaPlugin {
 			banishTimer = fc.getInt("banish-timer");
 			sprintCooldown = fc.getInt("sprint-cooldown");
 			infuriateCooldown = fc.getInt("infuriate-cooldown");
+
+			if(fc.contains("invincible-freeroaming-horses"))
+				invinciblefreerangehorses = fc.getBoolean("invincible-freeroaming-horses");
+
+			if(fc.contains("saddle-linked-horses"))
+				useSaddles = fc.getBoolean("saddle-linked-horses");
 
 			groups = new HashMap<String, Integer>();
 			Map<String, Object> groupsRaw = fc.getConfigurationSection("groups").getValues(false);
@@ -1908,96 +2099,6 @@ public class HorseRPG extends JavaPlugin {
 				getLogger().info("Error loading 'horses.db' file!");
 				System.out.println(e.getMessage());
 			}
-		}
-	}
-
-	/**
-	 * Saves all horses in the sql database
-	 *
-	 * @param sender is the sender to message
-	 */
-	public static void saveHorses(CommandSender sender) {
-		if (sender != null && !notAllowed(sender, H_SAVE, false))
-			return;
-		try {
-			if (savetype == 2) {
-				for (TreeSet<RPGHorse> horseSet : ownedHorses.values()) {
-					for (RPGHorse h : horseSet) {
-						try {
-							h_config.saveHorse(h, false);
-						} catch (Error | Exception ed4) {
-							ed4.printStackTrace();
-						}
-					}
-				}
-				h_config.save();
-			} else {
-				try (Connection connect = DriverManager.getConnection("jdbc:sqlite:horses.db")) {
-					try (Statement statement = connect.createStatement()) {
-						statement.setQueryTimeout(30);
-						statement.executeUpdate("drop table if exists horses");
-					}
-					try (Statement statement = connect.createStatement()) {
-						statement.setQueryTimeout(30);
-						statement.executeUpdate("create table horses (	name string, " + "owner string, " + "color string, "
-								+ "style string, " + "variant string, " + "godmode integer, " + "swiftnessXP integer, "
-								+ "agilityXP integer, " + "vitalityXP integer, "
-								+ "wrathXP integer, sex integer, defaultSpeed integer, defaultJump integer)");
-					}
-					try (PreparedStatement statement = connect.prepareStatement("insert into horses values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);")) {
-						statement.setQueryTimeout(30);
-						for (TreeSet<RPGHorse> horseSet : ownedHorses.values()) {
-							for (RPGHorse h : horseSet)
-								try {
-									statement.setString(1, h.name);
-									statement.setString(2, h.owners_name);
-									statement.setString(3, h.color.toString());
-									statement.setString(4, h.style.toString());
-									statement.setString(5, h.variant.toString());
-									statement.setInt(6, h.godmode ? 1 : 0);
-									statement.setInt(7, h.swiftness.xp);
-									statement.setInt(8, h.agility.xp);
-									statement.setInt(9, h.vitality.xp);
-									statement.setInt(10, h.wrath.xp);
-									statement.setInt(11, h.isMale ? 0 : 1);
-									statement.setInt(12, (int) h.generic_speed);
-									statement.setInt(13, (int) h.generic_jump);
-									statement.addBatch();
-								} catch (Error | Exception ed4) {
-									ed4.printStackTrace();
-								}
-						}
-						statement.executeBatch();
-					}
-
-					if (!connect.getAutoCommit()) {
-						connect.commit();
-					}/*
-				for (TreeSet<RPGHorse> horseSet : ownedHorses.values()) {
-					for (RPGHorse h : horseSet)
-						try {
-							statement.executeUpdate("insert into horses values('" + h.name + "', '" + h.owners_name
-									+ "', '" + h.color + "', '" + h.style + "', '" + h.variant + "', "
-									+ (h.godmode ? 1 : 0) + ", " + h.swiftness.xp + ", " + h.agility.xp + ", "
-									+ h.vitality.xp + ", " + h.wrath.xp + ", " + (h.isMale ? 0 : 1) + ", "
-									+ h.generic_speed + ", " + h.generic_jump + ")");
-						} catch (Error | Exception ed4) {
-							ed4.printStackTrace();
-						}
-				}*/
-				}
-			}
-
-			if (sender != null)
-				msg(sender, HORSES_SAVED);
-			if (instance != null)
-				if (logWhenSave)
-					msg(Bukkit.getConsoleSender(), HORSES_SAVED);
-		} catch (Exception e) {
-			System.err.println(e);
-			msg(sender,
-					"&a A problem has occured. Report the error message in the console to Zombie_Striker on spigot:");
-			sender.sendMessage("https://www.spigotmc.org/resources/mcmmohorses.46301/");
 		}
 	}
 
@@ -2239,98 +2340,6 @@ public class HorseRPG extends JavaPlugin {
 		saveTask.cancel();
 		if (cooldownTask != null)
 			cooldownTask.cancel();
-	}
-
-	/**
-	 * Displays the player's horse stats
-	 *
-	 * @param sender is the sender to update
-	 */
-	public static void showLeaderBoard(CommandSender sender, String[] args) {
-		if (notAllowed(sender, H_LEADERBOARD, true))
-			return;
-
-		Player p = (Player) sender;
-		if (playersWithScoreboards.contains(p.getName())) {
-			p.sendMessage(ChatColor.GREEN + "Already showing a scoreboard-menu.");
-			return;
-		}
-
-		NavigableMap<RPGHorse, Integer> map = new TreeMap<RPGHorse, Integer>(Collections.reverseOrder());
-		for (TreeSet<RPGHorse> hor : ownedHorses.values()) {
-			for (RPGHorse h : hor) {
-				map.put(h, Integer.MAX_VALUE - h.agility.xp - h.wrath.xp - h.vitality.xp - h.swiftness.xp);
-			}
-		}
-
-		ScoreboardManager manager = Bukkit.getScoreboardManager();
-		Scoreboard board = null;
-		Objective obj = null;
-		if (!DisableshowStatsinInScoreboard) {
-			board = manager.getNewScoreboard();
-
-			obj = board.registerNewObjective("leaderboard", "dummy");
-			obj.setDisplaySlot(DisplaySlot.SIDEBAR);
-			obj.setDisplayName(ChatColor.YELLOW + "Leaderboard");
-			sender.sendMessage(ChatColor.YELLOW + "Leaderboard");
-		}
-
-		int index = 0;
-		for (RPGHorse h : map.descendingKeySet()) {
-			String k = ChatColor.GREEN + "#" + index + "  " + h.name.substring(0, Math.min(h.name.length(), 16));
-			String plaeyerName = h.owners_name.substring(0, Math.min(29 - k.length(), h.owners_name.length()));
-			k = k + ChatColor.WHITE + " " + plaeyerName;
-			if (!DisableshowStatsinInScoreboard)
-				try {
-					obj.getScore(k).setScore(20 - index);
-				} catch (Exception e) {
-					obj.getScore(Bukkit.getOfflinePlayer(k)).setScore(20 - index);
-				}
-			if (!DisableshowStatsInChat)
-				sender.sendMessage(
-						k + " = " + (h.agility.level + h.wrath.level + h.vitality.level + h.swiftness.level));
-			index++;
-			if (index >= 20)
-				break;
-		}
-
-		if (!DisableshowStatsinInScoreboard) {
-			Scoreboard oldsb = p.getScoreboard();
-			p.setScoreboard(board);
-			playersWithScoreboards.add(p.getName());
-
-			Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(instance, new ScoreboardTask(p, oldsb), 200);
-		}
-	}
-
-
-	public static void addSpawnedHorse(Entity horse, RPGHorse instance) {
-		hSpawnedHorsesHashmap.put(horse, instance);
-	}
-
-	public static RPGHorse getHorse(Entity horse) {
-		return hSpawnedHorsesHashmap.get(horse);
-	}
-
-	public static RPGHorse removeHorseInstance(Entity horse) {
-		return hSpawnedHorsesHashmap.remove(horse);
-	}
-
-	public static void updateHorseInstance(Entity newEntity, Entity holdinstance, RPGHorse horse) {
-		hSpawnedHorsesHashmap.remove(holdinstance);
-		hSpawnedHorsesHashmap.put(newEntity, horse);
-	}
-
-	public static Collection<RPGHorse> getRPGHorseInstances() {
-		return new ArrayList<>(hSpawnedHorsesHashmap.values());
-	}
-
-	public static Set<Entry<Entity, RPGHorse>> getRPGHorseEntrys() {
-		return new HashSet<>(hSpawnedHorsesHashmap.entrySet());
-	}
-
-	public static boolean isRPGHorse(Entity horse) {
-		return hSpawnedHorsesHashmap.containsKey(horse);
 	}
 
 }
